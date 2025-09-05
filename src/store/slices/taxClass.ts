@@ -105,14 +105,14 @@ export const fetchTaxes = createAsyncThunk<
     const data = response.data;
     console.log("Fetched Taxes Data:", data);
     return {
-      taxes: data.data.data || [],
+      taxes: data?.body?.data?.result || [],
       pagination: {
-        total: data.data.pagination.totalItems || 0,
-        page: data.data.pagination.page || 1,
-        limit: data.data.pagination.limit || limit,
+        total: data?.body?.data?.totalItems || 0,
+        page: data?.body?.data?.page || 1,
+        limit: data?.body?.data?.limit || limit,
         totalPages:
-          data.data.pagination.totalPages ||
-          Math.ceil((data.data.pagination.totalItems || 0) / limit),
+          data?.body?.data?.totalPages ||
+          Math.ceil((data?.body?.data?.totalItems || 0) / limit),
       },
     };
   } catch (error: any) {

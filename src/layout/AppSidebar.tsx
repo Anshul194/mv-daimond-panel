@@ -251,16 +251,16 @@ const navItems: NavItem[] = [
         path: "/add-product",
         pro: false,
       },
-      {
-        name: "Bulk Product Upload",
-        path: "/products/bulk-upload",
-        pro: false,
-      },
-      {
-        name: "Product Import/Export",
-        path: "/products/import-export",
-        pro: false,
-      },
+      // {
+      //   name: "Bulk Product Upload",
+      //   path: "/products/bulk-upload",
+      //   pro: false,
+      // },
+      // {
+      //   name: "Product Import/Export",
+      //   path: "/products/import-export",
+      //   pro: false,
+      // },
     ],
   },
 
@@ -440,7 +440,7 @@ const AppSidebar: React.FC = () => {
       // Remove blog section for vendor users
       // Remove 'Blogs' and the 'Delivery Options' subitem from 'Attributes Management' for vendor users
       return navItems
-        .filter(item => item.name !== 'Blogs')
+        .filter(item => item.name !== 'Blogs' && item.name !== 'vendor')
         .map(item => {
           if (item.name === 'Attributes Management' && item.subItems) {
         return {

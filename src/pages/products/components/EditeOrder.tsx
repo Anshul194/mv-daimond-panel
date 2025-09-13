@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Package,
   User,
@@ -19,29 +19,35 @@ import axiosInstance from "../../../services/axiosConfig";
 
 const OrderDetailsPage = () => {
   const [activeTab, setActiveTab] = useState("overview");
-  const [orderData, setOrderData] = useState([]);
+  const [orderData, setOrderData] = useState<any>(null);
   const params = useParams();
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const orderId = params.id; // Assuming the URL is like /orders/:orderId
   const [nextStep, setNextStep] = useState("");
-  const steps = [
-    "pending",
-    "processing",
-    "shipped",
-    "delivered",
-    "canceled",
-    "returned",
-  ];
-  const fetchOrderDetails = async () => {
+  const fetchOrderDetails = useCallback(async () => {
+    const steps = [
+      "pending",
+      "processing",
+      "shipped",
+      "delivered",
+      "canceled",
+      "returned",
+    ];
+
+    if (!orderId) {
+      console.error("Order ID is undefined");
+      return;
+    }
+
     try {
-      const response = await dispatch(fetchOrderById(orderId));
+      const response = await dispatch(fetchOrderById({ orderId }));
       console.log("Fetching order details for ID:", orderId);
-      console.log("Order details response:", response.payload.data);
-      setOrderData(response.payload.data);
+      console.log("Order details response:", response.payload);
+      setOrderData(response.payload?.data);
 
       const currentStatusIndex = steps.indexOf(
-        response.payload.data.order_status
+        (response.payload as { order_status: string }).order_status
       );
       if (currentStatusIndex !== -1 && currentStatusIndex < steps.length - 1) {
         setNextStep(steps[currentStatusIndex + 1]);
@@ -49,18 +55,23 @@ const OrderDetailsPage = () => {
     } catch (error) {
       console.error("Error fetching order details:", error);
     }
-  };
+  }, [orderId, dispatch]);
 
   useEffect(() => {
     // Fetch order details using the orderId
     fetchOrderDetails();
-  }, [orderId]);
+  }, [orderId, dispatch, fetchOrderDetails]);
 
   const handleNextStep = async () => {
+    if (!orderId) {
+      console.error("Order ID is undefined");
+      return;
+    }
+
     try {
       if (nextStep) {
         setLoading(true);
-        const response = await axiosInstance.put(
+        await axiosInstance.put(
           "api/order_update/" + orderId,
           {
             order_status: nextStep,
@@ -124,7 +135,7 @@ const OrderDetailsPage = () => {
   //     ],
   //   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
       case "delivered":
         return "text-green-600 bg-green-100";
@@ -141,7 +152,7 @@ const OrderDetailsPage = () => {
     }
   };
 
-  const getStatusIcon = (status) => {
+  const getStatusIcon = (status: string) => {
     switch (status?.toLowerCase()) {
       case "delivered":
         return <CheckCircle className="w-4 h-4" />;
@@ -158,7 +169,7 @@ const OrderDetailsPage = () => {
     }
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString("en-US", {
       year: "numeric",
       month: "short",
@@ -168,7 +179,7 @@ const OrderDetailsPage = () => {
     });
   };
 
-  const formatCurrency = (amount) => {
+  const formatCurrency = (amount: number) => {
     return `$${amount?.toFixed(2)}`;
   };
 
@@ -451,7 +462,7 @@ const OrderDetailsPage = () => {
                       Order Tracking History
                     </h3>
                     <div className="space-y-4">
-                      {orderData.order_track.map((track, index) => (
+                      {orderData.order_track.map((track: { name: string; created_at: string }, index: number) => (
                         <div key={index} className="flex items-start gap-4">
                           <div
                             className={`flex items-center justify-center w-8 h-8 rounded-full ${getStatusColor(

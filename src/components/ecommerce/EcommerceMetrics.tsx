@@ -1,59 +1,53 @@
-import {
-  ArrowDownIcon,
-  ArrowUpIcon,
-  BoxIconLine,
-  GroupIcon,
-} from "../../icons";
-import Badge from "../ui/badge/Badge";
+import React from "react";
 
-export default function EcommerceMetrics() {
+interface Props {
+  products: any;
+  orders: any;
+  revenue: any;
+  vendors?: any; // only for superadmin
+  users?: any;   // only for superadmin
+}
+
+export default function EcommerceMetrics({
+  products,
+  orders,
+  revenue,
+  vendors,
+  users,
+}: Props) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6">
-      {/* <!-- Metric Item Start --> */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-        <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-          <GroupIcon className="text-gray-800 size-6 dark:text-white/90" />
-        </div>
-
-        <div className="flex items-end justify-between mt-5">
-          <div>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              Sales
-            </span>
-            <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-              3,782
-            </h4>
-          </div>
-          <Badge color="success">
-            <ArrowUpIcon />
-            11.01%
-          </Badge>
-        </div>
+    <div className="col-span-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Products */}
+      <div className="p-4 bg-white shadow rounded-2xl">
+        <h4 className="text-gray-500">Products</h4>
+        <p className="text-xl font-bold">{products?.totalProducts || 0}</p>
       </div>
-      {/* <!-- Metric Item End --> */}
 
-      {/* <!-- Metric Item Start --> */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-        <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-          <BoxIconLine className="text-gray-800 size-6 dark:text-white/90" />
-        </div>
-        <div className="flex items-end justify-between mt-5">
-          <div>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              Enrollements
-            </span>
-            <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-              5,359
-            </h4>
-          </div>
-
-          <Badge color="error">
-            <ArrowDownIcon />
-            9.05%
-          </Badge>
-        </div>
+      {/* Orders */}
+      <div className="p-4 bg-white shadow rounded-2xl">
+        <h4 className="text-gray-500">Orders</h4>
+        <p className="text-xl font-bold">{orders?.totalOrders || 0}</p>
       </div>
-      {/* <!-- Metric Item End --> */}
+
+      {/* Revenue */}
+      <div className="p-4 bg-white shadow rounded-2xl">
+        <h4 className="text-gray-500">Revenue</h4>
+        <p className="text-xl font-bold">₹{revenue?.totalRevenue || 0}</p>
+      </div>
+
+      {/* Vendors & Users (only superadmin) */}
+      {vendors && (
+        <div className="p-4 bg-white shadow rounded-2xl">
+          <h4 className="text-gray-500">Vendors</h4>
+          <p className="text-xl font-bold">{vendors?.totalVendors || 0}</p>
+        </div>
+      )}
+      {users && (
+        <div className="p-4 bg-white shadow rounded-2xl">
+          <h4 className="text-gray-500">Users</h4>
+          <p className="text-xl font-bold">{users?.totalUsers || 0}</p>
+        </div>
+      )}
     </div>
   );
 }

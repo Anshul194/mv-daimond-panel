@@ -20,6 +20,8 @@ const initialState: SizeState = {
     error: null,
 };
 
+const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
+
 // Async thunk to create a new size
 export const createSize = createAsyncThunk<
     Size,
@@ -28,7 +30,7 @@ export const createSize = createAsyncThunk<
 >('size/createSize', async (data, { rejectWithValue }) => {
     try {
         const response = await axiosInstance.post(
-            'http://localhost:3000/api/size',
+            `${API_BASE_URL}/api/size`,
             data,
             {
                 headers: {
@@ -96,7 +98,7 @@ export const fetchSizes = createAsyncThunk<
         }
 
         const response = await axiosInstance.get(
-            `http://localhost:3000/api/size?${queryParams.toString()}`
+            `${API_BASE_URL}/api/size?${queryParams.toString()}`
         );
 
         const data = response.data;
@@ -122,7 +124,7 @@ export const fetchSizeById = createAsyncThunk<
 >('size/fetchSizeById', async (id, { rejectWithValue }) => {
     try {
         const response = await axiosInstance.get(
-            `http://localhost:3000/api/size/${id}`,
+            `${API_BASE_URL}/api/size/${id}`,
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -144,7 +146,7 @@ export const updateSize = createAsyncThunk<
 >('size/updateSize', async ({ id, data, token }, { rejectWithValue }) => {
     try {
         const response = await axiosInstance.put(
-            `http://localhost:3000/api/size/${id}`,
+            `${API_BASE_URL}/api/size/${id}`,
             data,
             {
                 headers: {
@@ -164,7 +166,7 @@ export const deleteSize = createAsyncThunk<
 >('size/deleteSize', async ({ id }, { rejectWithValue }) => {
     try {
         await axiosInstance.delete(
-            `http://localhost:3000/api/size/${id}`,
+            `${API_BASE_URL}/api/size/${id}`,
             {
                 headers: {
                     'Content-Type': 'application/json'

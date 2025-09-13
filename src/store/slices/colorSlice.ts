@@ -46,7 +46,7 @@ const initialState: ColorState = {
     error: null,
 };
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:3000';
 
 export const fetchColorCodes = createAsyncThunk<
     {

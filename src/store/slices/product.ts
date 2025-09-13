@@ -38,6 +38,8 @@ const initialState: ProductState = {
   filters: {},
 };
 
+const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
+
 export const createProduct = createAsyncThunk<
   any,
   FormData,
@@ -45,7 +47,7 @@ export const createProduct = createAsyncThunk<
 >("product/create", async (formData, { rejectWithValue }) => {
   try {
     const response = await axiosInstance.post(
-      "http://localhost:3000/api/product",
+      `${API_BASE_URL}/api/product`,
       formData,
       {
         headers: {

@@ -71,7 +71,7 @@ const initialState: CourseCategoryState = {
     subcategoriesLoading: undefined
 };
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:3000';
 
 // 1. Define the SubCategory interface
 interface SubCategory {

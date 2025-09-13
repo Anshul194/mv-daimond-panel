@@ -50,6 +50,7 @@ const initialState: TaxClassOptionState = {
     totalPages: 0,
   },
 };
+const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
 
 // ----------------------
 // ✅ Create Option
@@ -60,7 +61,7 @@ export const createTaxClassOption = createAsyncThunk<
   { rejectValue: string }
 >("taxClassOption/create", async (data, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.post("/api/tax-class-option", data);
+    const response = await axiosInstance.post(`${API_BASE_URL}/api/tax-class-option`, data);
     return response.data;
   } catch (err: any) {
     return rejectWithValue(
@@ -100,7 +101,7 @@ export const fetchTaxClassOptions = createAsyncThunk<
     const queryParams = new URLSearchParams();
 
     const response = await axiosInstance.get(
-      `/api/tax-class-option?${queryParams.toString()}`
+      `${API_BASE_URL}/api/tax-class-option?${queryParams.toString()}`
     );
     const data = response.data;
 
@@ -134,7 +135,7 @@ export const deleteTaxClassOption = createAsyncThunk<
 >("taxClassOption/delete", async ({ optionId }, { rejectWithValue }) => {
   try {
     const response = await axiosInstance.delete(
-      `/api/tax-class-option/${optionId}`
+      `${API_BASE_URL}/api/tax-class-option/${optionId}`
     );
     return response.data;
   } catch (err: any) {
@@ -154,7 +155,7 @@ export const updateTaxClassOption = createAsyncThunk<
 >("taxClassOption/update", async ({ optionId, data }, { rejectWithValue }) => {
   try {
     const response = await axiosInstance.put(
-      `/api/tax-class-option/${optionId}`,
+      `${API_BASE_URL}/api/tax-class-option/${optionId}`,
       data
     );
     return response.data;
@@ -175,7 +176,7 @@ export const getTaxClassOptionById = createAsyncThunk<
 >("taxClassOption/getById", async ({ optionId }, { rejectWithValue }) => {
   try {
     const response = await axiosInstance.get(
-      `/api/tax-class-option/${optionId}`
+      `${API_BASE_URL}/api/tax-class-option/${optionId}`
     );
     return response.data;
   } catch (err: any) {

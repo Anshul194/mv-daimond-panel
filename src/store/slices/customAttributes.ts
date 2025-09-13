@@ -56,6 +56,8 @@ export interface FetchCustomAttributesParams {
     sort?: Record<string, any>;
 }
 
+const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
+
 export const fetchCustomAttributes = createAsyncThunk<
     {
         data: CustomAttribute[];
@@ -96,7 +98,7 @@ export const fetchCustomAttributes = createAsyncThunk<
             }
 
             const response = await axiosInstance.get(
-                `http://localhost:3000/api/productattribute?${queryParams.toString()}`
+                `${API_BASE_URL}/api/productattribute?${queryParams.toString()}`
             );
 
             const data = response.data;
@@ -161,7 +163,7 @@ export const createCustomAttribute = createAsyncThunk(
             });
 
             const response = await axiosInstance.post(
-                'http://localhost:3000/api/productattribute',
+                `${API_BASE_URL}/api/productattribute`,
                 formData,
                 {
                     headers: {
@@ -211,7 +213,7 @@ export const updateCustomAttribute = createAsyncThunk(
             });
 
             const response = await axiosInstance.put(
-                `http://localhost:3000/api/productattribute`,
+                `${API_BASE_URL}/api/productattribute`,
                 formData,
                 {
                     params: { id },
@@ -252,7 +254,7 @@ export const deleteCustomAttribute = createAsyncThunk(
             });
 
             const response = await axiosInstance.delete(
-                'http://localhost:3000/api/productattribute',
+                `${API_BASE_URL}/api/productattribute`,
                 {
                     params: { id },
                     data: formData,

@@ -62,6 +62,8 @@ const initialState: OrderState = {
   },
 };
 
+const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
+
 // ✅ Create Order
 export const createOrder = createAsyncThunk<
   Order,
@@ -69,7 +71,7 @@ export const createOrder = createAsyncThunk<
   { rejectValue: string }
 >("order/create", async (orderData, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.post("/api/order", orderData);
+    const response = await axiosInstance.post(`${API_BASE_URL}/api/order`, orderData);
     return response.data;
   } catch (err: unknown) {
     const error = err as { response?: { data?: { message?: string } } };
@@ -122,7 +124,7 @@ export const fetchOrders = createAsyncThunk<
     }
 
     const response = await axiosInstance.get(
-      `api/order?admin=true&${queryParams.toString()}`
+      `${API_BASE_URL}/api/order?admin=true&${queryParams.toString()}`
     );
     const data = response.data;
     console.log("Fetched Orders:", data);
@@ -168,7 +170,7 @@ export const deleteOrder = createAsyncThunk<
   { rejectValue: string }
 >("order/delete", async ({ orderId }, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.delete(`/api/order/${orderId}`);
+    const response = await axiosInstance.delete(`${API_BASE_URL}/api/order/${orderId}`);
     return response.data;
   } catch (err: unknown) {
     const error = err as { response?: { data?: { message?: string } } };
@@ -182,7 +184,7 @@ export const fetchOrderById = createAsyncThunk<Order, { orderId: string }>(
   "order/fetchById",
   async ({ orderId }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get(`/api/order/${orderId}`);
+      const response = await axiosInstance.get(`${API_BASE_URL}/api/order/${orderId}`);
       return response.data;
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };

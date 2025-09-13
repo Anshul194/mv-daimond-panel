@@ -14,6 +14,8 @@ const initialState: BrandState = {
     data: null,
 };
 
+const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
+
 export const createBrand = createAsyncThunk(
     'brand/createBrand',
     async (
@@ -37,7 +39,7 @@ export const createBrand = createAsyncThunk(
             formData.append('description', description);
             formData.append('logo', logo);
 
-            const response = await axiosInstance.post('http://localhost:3000/api/brands', formData, {
+            const response = await axiosInstance.post(`${API_BASE_URL}/api/brands`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -106,7 +108,7 @@ export const fetchBrands = createAsyncThunk<
         }
 
         const response = await axiosInstance.get(
-            `http://localhost:3000/api/brands?${queryParams.toString()}`
+            `${API_BASE_URL}/api/brands?${queryParams.toString()}`
         );
 
         const data = response.data;
@@ -155,7 +157,7 @@ export const updateBrand = createAsyncThunk(
             }
 
             const response = await axiosInstance.put(
-                `http://localhost:3000/api/brands/${id}`,
+                `${API_BASE_URL}/api/brands/${id}`,
                 formData,
                 {
                     headers: {
@@ -179,7 +181,7 @@ export const deleteBrand = createAsyncThunk(
     'brand/deleteBrand',
     async ({ id, token }: { id: string; token: string }, { rejectWithValue }) => {
         try {
-            await axiosInstance.delete(`http://localhost:3000/api/brands/${id}`, {
+            await axiosInstance.delete(`${API_BASE_URL}/api/brands/${id}`, {
                 headers: {
              'Content-Type': 'application/json',
                 },
@@ -200,7 +202,7 @@ export const fetchBrandById = createAsyncThunk(
         { rejectWithValue }
     ) => {
         try {
-            const response = await axiosInstance.get(`http://localhost:3000/api/brands/${id}`, {
+            const response = await axiosInstance.get(`${API_BASE_URL}/api/brands/${id}`, {
                 headers: {
                   'Content-Type': 'application/json',
                 },

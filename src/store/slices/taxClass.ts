@@ -51,6 +51,8 @@ const initialState: TaxState = {
   },
 };
 
+const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
+
 // ----------------------
 // ✅ Create Tax
 // ----------------------
@@ -60,7 +62,7 @@ export const createTax = createAsyncThunk<
   { rejectValue: string }
 >("tax/create", async (taxData, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.post("/api/tax-class", taxData);
+    const response = await axiosInstance.post(`${API_BASE_URL}/api/tax-class`, taxData);
     return response.data;
   } catch (err: any) {
     return rejectWithValue(
@@ -100,7 +102,7 @@ export const fetchTaxes = createAsyncThunk<
     const queryParams = new URLSearchParams();
 
     const response = await axiosInstance.get(
-      `/api/tax-class?${queryParams.toString()}`
+      `${API_BASE_URL}/api/tax-class?${queryParams.toString()}`
     );
     const data = response.data;
     console.log("Fetched Taxes Data:", data);
@@ -131,7 +133,7 @@ export const deleteTax = createAsyncThunk<
   { rejectValue: string }
 >("tax/delete", async ({ taxId }, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.delete(`/api/tax-class/${taxId}`);
+    const response = await axiosInstance.delete(`${API_BASE_URL}/api/tax-class/${taxId}`);
     return response.data;
   } catch (err: any) {
     return rejectWithValue(
@@ -150,7 +152,7 @@ export const updateTax = createAsyncThunk<
 >("tax/update", async ({ taxId, taxData }, { rejectWithValue }) => {
   try {
     const response = await axiosInstance.put(
-      `/api/tax-class/${taxId}`,
+      `${API_BASE_URL}/api/tax-class/${taxId}`,
       taxData
     );
     return response.data;
@@ -170,7 +172,7 @@ export const getTaxById = createAsyncThunk<
   { rejectValue: string }
 >("tax/getById", async ({ taxId }, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.get(`api/tax-class/${taxId}`);
+    const response = await axiosInstance.get(`${API_BASE_URL}/api/tax-class/${taxId}`);
     return response.data;
   } catch (err: any) {
     return rejectWithValue(

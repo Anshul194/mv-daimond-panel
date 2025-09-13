@@ -349,6 +349,16 @@ const navItems: NavItem[] = [
     ],
   },
   {
+    name: "vendor",
+    icon: <ListIcon />,
+    subItems: [
+      { name: "Add vendor", path: "/vendor/add", pro: false },
+      { name: "vendor List", path: "/vendor/list", pro: false },
+     
+      
+    ],
+  },
+  {
     icon: <UserCircleIcon />,
     name: "User Profile",
     path: "/profile",

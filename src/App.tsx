@@ -59,6 +59,8 @@ import EditBlogSubCategory from "./pages/blogs/EditSubCategory";
 import AddBlog from "./pages/blogs/AddBlog";
 import BlogList from "./pages/blogs/BlogList";
 import EditBlog from "./pages/blogs/EditeBlog";
+import AddVendor from "./pages/Vendor/AddVendor";
+import VenderList from "./pages/Vendor/VenderList";
 
 export default function App() {
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -152,6 +154,10 @@ export default function App() {
             {/* orders */}
             <Route path="/orders/all" element={<OrderList />} />
             <Route path="/orders/edit/:id" element={<EditOrder />} />
+
+            {/* orders */}
+            <Route path="/vendor/add" element={<AddVendor />} />
+            <Route path="/vendor/list" element={< VenderList/>} />
 
             {/* Coupons */}
             {/* <Route path="/coupons/all" element={<CouponList />} /> */}

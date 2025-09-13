@@ -15,6 +15,7 @@ import taxClassOption from "./slices/taxClassOption";
 import blogCategoryReducer from "./slices/blogCategorySlice";
 import blogSubCategoryReducer from "./slices/blogSubcategorySlice";
 import blogReducer from "./slices/blog";
+import vendorReducer from "./slices/vendorslice";
 
 export const store = configureStore({
   reducer: {
@@ -33,6 +34,7 @@ export const store = configureStore({
     blogCategory: blogCategoryReducer,
     blogSubCategory: blogSubCategoryReducer,
     blog: blogReducer,
+    vendor: vendorReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

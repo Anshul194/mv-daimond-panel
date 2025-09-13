@@ -120,14 +120,14 @@ export const fetchCoupons = createAsyncThunk<
     const data = response.data;
     console.log("Fetched coupons:", data);
     return {
-      coupons: data.result || [],
+      coupons: data?.data?.result || [],
       pagination: {
-        total: data.total || 0,
-        page: data.page || 1,
-        limit: data.limit || limit,
+        total: data?.data?.total || 0,
+        page: data?.data?.page || 1,
+        limit: data?.data?.limit || limit,
         totalPages:
-          data.totalPages ||
-          Math.ceil((data.total || 0) / limit),
+          data?.data?.totalPages ||
+          Math.ceil((data?.data?.coupons?.total || 0) / limit),
       },
     };
   } catch (error: any) {

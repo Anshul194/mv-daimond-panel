@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
 
 // Assume these icons are imported from an icon library
@@ -409,6 +409,30 @@ const AppSidebar: React.FC = () => {
   );
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
+  // Get user role from localStorage and memoize it
+  const userRole = useMemo(() => {
+    try {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        const user = JSON.parse(userData);
+        return user.role;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error parsing user data from localStorage:', error);
+      return null;
+    }
+  }, []);
+
+  // Filter navigation items based on user role and memoize the result
+  const filteredNavItems = useMemo(() => {
+    if (userRole === 'vendor') {
+      // Remove blog section for vendor users
+      return navItems.filter(item => item.name !== 'Blogs');
+    }
+    return navItems;
+  }, [userRole]);
+
   const isActive = useCallback(
     (path: string) => location.pathname === path,
     [location.pathname]
@@ -447,11 +471,11 @@ const AppSidebar: React.FC = () => {
       });
     };
 
-    checkMenuItems(navItems, "main");
+    checkMenuItems(filteredNavItems, "main");
     checkMenuItems(othersItems, "others");
 
     setOpenSubmenu(activeMenus);
-  }, [location, hasActiveSubItem]);
+  }, [location, hasActiveSubItem, filteredNavItems]);
 
   // Update submenu heights when they open
   useEffect(() => {
@@ -746,7 +770,7 @@ const AppSidebar: React.FC = () => {
                   <HorizontaLDots className="size-6" />
                 )}
               </h2>
-              {renderMenuItems(navItems, "main")}
+              {renderMenuItems(filteredNavItems, "main")}
             </div>
             {/* <div className="">
               <h2

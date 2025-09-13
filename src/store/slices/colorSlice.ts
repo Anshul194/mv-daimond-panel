@@ -85,7 +85,7 @@ export const fetchColorCodes = createAsyncThunk<
             queryParams.append('sort', JSON.stringify(sort));
         }
 
-        const response = await axios.get(
+        const response = await axiosInstance.get(
             `${API_BASE_URL}/api/colorcode?${queryParams.toString()}`
         );
 

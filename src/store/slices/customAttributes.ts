@@ -95,7 +95,7 @@ export const fetchCustomAttributes = createAsyncThunk<
                 queryParams.append('sort', JSON.stringify(sort));
             }
 
-            const response = await axios.get(
+            const response = await axiosInstance.get(
                 `http://localhost:3000/api/productattribute?${queryParams.toString()}`
             );
 
@@ -251,7 +251,7 @@ export const deleteCustomAttribute = createAsyncThunk(
                 formData.append(`terms[${idx}][image]`, term.image);
             });
 
-            const response = await axios.delete(
+            const response = await axiosInstance.delete(
                 'http://localhost:3000/api/productattribute',
                 {
                     params: { id },

@@ -428,7 +428,18 @@ const AppSidebar: React.FC = () => {
   const filteredNavItems = useMemo(() => {
     if (userRole === 'vendor') {
       // Remove blog section for vendor users
-      return navItems.filter(item => item.name !== 'Blogs');
+      // Remove 'Blogs' and the 'Delivery Options' subitem from 'Attributes Management' for vendor users
+      return navItems
+        .filter(item => item.name !== 'Blogs')
+        .map(item => {
+          if (item.name === 'Attributes Management' && item.subItems) {
+        return {
+          ...item,
+          subItems: item.subItems.filter(sub => sub.name !== 'Delivery Options'),
+        };
+          }
+          return item;
+        });
     }
     return navItems;
   }, [userRole]);

@@ -112,14 +112,16 @@ export const fetchBrands = createAsyncThunk<
         );
 
         const data = response.data;
-        console.log('Fetched Brands:', data?.body?.data?.result);
+        // Updated to match new API structure
+        const brands = data?.body?.data?.results || [];
+        const paginationData = data?.body?.data || {};
         return {
-            brands: data?.body?.data?.result || [],
+            brands,
             pagination: {
-                total: data.body?.data?.totalDocuments || data.body.total || 0,
-                page: data.body?.data?.currentPage || data.body.page || 1,
-                limit: data.body?.data?.limit || limit,
-                totalPages: data.body?.data?.totalPages || Math.ceil((data.body.totalDocuments || 0) / limit),
+                total: paginationData.totalDocuments || 0,
+                page: paginationData.currentPage || 1,
+                limit: paginationData.limit || limit,
+                totalPages: paginationData.totalPages || 1,
             }
         };
     } catch (err: any) {

@@ -195,6 +195,26 @@ export const fetchOrderById = createAsyncThunk<Order, { orderId: string }>(
   }
 );
 
+// ✅ Update Order
+export const updateOrder = createAsyncThunk<
+  Order,
+  { orderId: string; updateData: Partial<Order> },
+  { rejectValue: string }
+>("order/update", async ({ orderId, updateData }, { rejectWithValue }) => {
+  try {
+    const response = await axiosInstance.put(
+      `${API_BASE_URL}/api/order_update/${orderId}`,
+      updateData
+    );
+    return response.data;
+  } catch (err: unknown) {
+    const error = err as { response?: { data?: { message?: string } } };
+    return rejectWithValue(
+      error.response?.data?.message || "Failed to update order"
+    );
+  }
+});
+
 // ✅ Slice
 const orderSlice = createSlice({
   name: "order",
@@ -251,6 +271,20 @@ const orderSlice = createSlice({
       .addCase(deleteOrder.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to delete order";
+      })
+      .addCase(updateOrder.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(updateOrder.fulfilled, (state) => {
+        state.loading = false;
+        state.success = true;
+      })
+      .addCase(updateOrder.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to update order";
+        state.success = false;
       });
   },
 });

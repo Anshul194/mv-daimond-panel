@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { createProduct, updateProduct } from "../../store/slices/product";
+import { createProduct, updateProduct, fetchProductAttributes } from "../../store/slices/product";
 import Sidebar from "./components/Sidebar";
 import GeneralInfoSection from "./components/GeneralInfoSection";
 import PriceSection from "./components/PriceSection";
@@ -17,7 +17,7 @@ const EditProductForm = () => {
   const dispatch = useDispatch<AppDispatch>();
   const params = useParams();
   const productId = params.id; // Assuming the product ID is passed as a URL parameter
-  const { loading, error, success } = useSelector(
+  const { loading, error, success, productAttributes, productAttributesLoading } = useSelector(
     (state: RootState) => state.product
   );
 
@@ -149,6 +149,26 @@ const EditProductForm = () => {
   useEffect(() => {
     getData();
   }, [productId]);
+
+  // Fetch product attributes when category_id changes
+  useEffect(() => {
+    if (formData.category_id) {
+      dispatch(fetchProductAttributes(formData.category_id));
+    }
+  }, [formData.category_id, dispatch]);
+
+  useEffect(() => {
+    if (productAttributes && Array.isArray(productAttributes)) {
+      productAttributes.forEach((property) => {
+        if (property.title && !property.title.toLowerCase().includes("metal")) {
+          setProperties((prev) => ({
+            ...prev,
+            [property.title]: prev[property.title] ?? "",
+          }));
+        }
+      });
+    }
+  }, [productAttributes]);
 
   const handleSubmit = async () => {
     try {
@@ -373,6 +393,7 @@ const EditProductForm = () => {
           <PropertiesSection
             formData={formData}
             propertys={propertys}
+            productAttributes={productAttributes}
             updateFormData={updateProperties}
           />
         );

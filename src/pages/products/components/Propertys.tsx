@@ -1,8 +1,6 @@
-import React, { useEffect } from "react";
+import React from "react";
 
-import axiosInstance from "../../../services/axiosConfig";
-
-interface PropertiesSection {
+interface PropertiesSectionProps {
   formData: {
     regularPrice?: string | number;
     salePrice?: string | number;
@@ -10,33 +8,30 @@ interface PropertiesSection {
     stockQuantity?: string | number;
     lowStockThreshold?: string | number;
     stockStatus?: string;
+    category_id?: string;
     [key: string]: any;
   };
+  propertys: { [key: string]: any };
+  productAttributes: any[];
   updateFormData: (field: string, value: any) => void;
 }
 
-const PropertiesSection: React.FC<PriceSectionProps> = ({
+const PropertiesSection: React.FC<PropertiesSectionProps> = ({
   formData,
   propertys,
+  productAttributes,
   updateFormData,
 }) => {
-  const [data, setData] = React.useState<any[]>([]);
-  useEffect(() => {
-    const getData = async () => {
-      try {
-        const res = await axiosInstance.get(
-          `/api/productattribute/${formData.category_id}`
-        );
+  // Debug: log the productAttributes to check the data structure
+  console.log("PropertiesSection productAttributes:", productAttributes);
 
-        console.log("Fetched Taxes:", res.data.data);
-        setData(res.data.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-    getData();
-  }, []);
-  console.log("formData", formData);
+  // Ensure productAttributes is always an array
+  const attributesArray = Array.isArray(productAttributes)
+    ? productAttributes
+    : productAttributes
+    ? [productAttributes]
+    : [];
+
   return (
     <div className="max-w-4xl p-8">
       <div className="flex items-center justify-between mb-8">
@@ -47,11 +42,8 @@ const PropertiesSection: React.FC<PriceSectionProps> = ({
 
       {formData.category_id ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {data && data.length > 0 ? (
-            data?.map((property) => {
-              if (property.title.toLowerCase().includes("metal")) {
-                return null; // Skip rendering if the title includes "metal"
-              }
+          {attributesArray && attributesArray.length > 0 ? (
+            attributesArray.map((property) => {
               return (
                 <div key={property._id} className="mb-6">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -65,7 +57,7 @@ const PropertiesSection: React.FC<PriceSectionProps> = ({
                     className="w-full px-4 py-3 opacity-80 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-colors"
                   >
                     <option value="">Select {property.title}</option>
-                    {property.terms?.map((tax) => (
+                    {(property.terms || []).map((tax) => (
                       <option key={tax._id} value={tax.value}>
                         {tax.value}
                       </option>

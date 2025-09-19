@@ -330,6 +330,7 @@ const ProductForm = () => {
           <PropertiesSection
             formData={formData}
             propertys={propertys}
+            productAttributes={productAttributes}
             updateFormData={updateProperties}
           />
         );

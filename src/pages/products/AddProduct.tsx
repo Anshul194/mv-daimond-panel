@@ -130,7 +130,8 @@ const ProductForm = () => {
       );
       // Category and Subcategory from GeneralInfoSection
       formDataToSend.append("category_id", formData.category_id || "");
-      formDataToSend.append("subcategory_id", formData.subcategory_id || ""); // Fixed: was subCategory_id
+      formDataToSend.append("subcategory_id", formData.subcategory_id || "");
+      formDataToSend.append("subCategory_id", formData.subcategory_id || ""); // <-- add this line
 
       // Optional: Include category and subcategory names if needed by backend
       if (formData.categoryName) {
@@ -145,7 +146,7 @@ const ProductForm = () => {
         formDataToSend.append("price", formData.regularPrice);
       }
       if (formData.salePrice) {
-        formDataToSend.append("sale_price", formData.salePrice);
+        formDataToSend.append("saleprice", formData.salePrice);
       }
 
       // Inventory fields (if you have InventorySection)

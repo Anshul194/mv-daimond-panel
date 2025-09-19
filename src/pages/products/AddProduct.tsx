@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { createProduct } from "../../store/slices/product";
+import { createProduct, fetchProductAttributes } from "../../store/slices/product";
 import Sidebar from "./components/Sidebar";
 import GeneralInfoSection from "./components/GeneralInfoSection";
 import PriceSection from "./components/PriceSection";
@@ -10,11 +10,10 @@ import AttributesSection from "./components/AttributesSection";
 import type { AppDispatch, RootState } from "../../store"; // <-- import your types
 import DeliverySection from "./components/DeliverySection";
 import PropertiesSection from "./components/Propertys";
-import axiosInstance from "../../services/axiosConfig";
 
 const ProductForm = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { loading, error, success } = useSelector(
+  const { loading, error, success, productAttributes, productAttributesLoading } = useSelector(
     (state: RootState) => state.product
   );
 
@@ -96,32 +95,23 @@ const ProductForm = () => {
   }, []);
 
   useEffect(() => {
-    const getData = async () => {
-      try {
-        const res = await axiosInstance.get(
-          `/api/productattribute/${formData.category_id}`
-        );
+    if (formData.category_id) {
+      dispatch(fetchProductAttributes(formData.category_id));
+    }
+  }, [formData.category_id, dispatch]);
 
-        console.log("Fetched Taxes:", res.data.data);
-
-        res.data.data.forEach((property) => {
-          if (property.title.toLowerCase().includes("metal")) {
-            return; // Skip rendering if the title includes "metal"
-          }
-          // Initialize formData with empty values for each property
-          if (!formData[property.title]) {
-            setProperties((prev) => ({
-              ...prev,
-              [property.title]: "",
-            }));
-          }
-        });
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-    getData();
-  }, [formData.category_id]);
+  useEffect(() => {
+    if (productAttributes && Array.isArray(productAttributes)) {
+      productAttributes.forEach((property) => {
+        if (property.title && !property.title.toLowerCase().includes("metal")) {
+          setProperties((prev) => ({
+            ...prev,
+            [property.title]: prev[property.title] ?? "",
+          }));
+        }
+      });
+    }
+  }, [productAttributes]);
 
   const handleSubmit = async () => {
     try {
@@ -416,5 +406,7 @@ const ProductForm = () => {
     </div>
   );
 };
+
+
 
 export default ProductForm;

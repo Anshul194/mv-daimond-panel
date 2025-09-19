@@ -38,12 +38,12 @@ const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: "Dashboard",
-    // subItems: [
-    //   { name: "Overview Ananylitics", path: "/", pro: false },
-    //   { name: "Sales", path: "/", pro: false },
-    //   { name: "Recent Orders", path: "/", pro: false },
-    //   { name: "Low stock alerts", path: "/", pro: false },
-    // ],
+    subItems: [
+      { name: "Overview Ananylitics", path: "/", pro: false },
+      { name: "Sales", path: "/", pro: false },
+      { name: "Recent Orders", path: "/", pro: false },
+      { name: "Low stock alerts", path: "/", pro: false },
+    ],
   },
 
   {

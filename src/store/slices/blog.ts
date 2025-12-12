@@ -53,6 +53,8 @@ const initialState: BlogState = {
   },
 };
 
+const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
+
 // ----------------------
 // ✅ Create Blog
 // ----------------------
@@ -62,7 +64,7 @@ export const createBlog = createAsyncThunk<
   { rejectValue: string }
 >("blog/create", async (data, { rejectWithValue }) => {
   try {
-    const res = await axiosInstance.post("/api/blog", data, {
+    const res = await axiosInstance.post(`${API_BASE_URL}/api/blog`, data, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -117,7 +119,7 @@ export const fetchBlogs = createAsyncThunk<
       queryParams.append(`sort[${key}]`, value)
     );
 
-    const res = await axiosInstance.get(`/api/blog?${queryParams.toString()}`);
+    const res = await axiosInstance.get(`${API_BASE_URL}/api/blog?${queryParams.toString()}`);
     const data = res.data.body.data;
     console.log("Fetched blogs:", data);
     return {
@@ -143,7 +145,7 @@ export const deleteBlog = createAsyncThunk<
   { rejectValue: string }
 >("blog/delete", async ({ id }, { rejectWithValue }) => {
   try {
-    const res = await axiosInstance.delete(`/api/blog/${id}`);
+    const res = await axiosInstance.delete(`${API_BASE_URL}/api/blog/${id}`);
     return res.data;
   } catch (err: any) {
     return rejectWithValue(err.response?.data?.message || "Delete failed");
@@ -159,7 +161,7 @@ export const updateBlog = createAsyncThunk<
   { rejectValue: string }
 >("blog/update", async ({ id, blogData }, { rejectWithValue }) => {
   try {
-    const res = await axiosInstance.put(`/api/blog/${id}`, blogData, {
+    const res = await axiosInstance.put(`${API_BASE_URL}/api/blog/${id}`, blogData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },

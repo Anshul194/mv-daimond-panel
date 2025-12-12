@@ -13,7 +13,7 @@ import type {
 } from "../../types/auth";
 
 // API base URL
-const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:5000/";
+const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
 
 // Helper function to handle API errors
 const handleApiError = (error: unknown): string => {

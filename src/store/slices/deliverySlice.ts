@@ -20,7 +20,7 @@ const initialState: DeliveryState = {
     loading: false,
     error: null,
 };
-
+const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
 
 // Async thunk to fetch delivery options
 export const fetchDeliveryOptions = createAsyncThunk<
@@ -69,7 +69,7 @@ export const fetchDeliveryOptions = createAsyncThunk<
             }
 
             const response = await axios.get(
-                `http://localhost:3000/api/delivery-options?${queryParams.toString()}`,
+                `${API_BASE_URL}/api/delivery-options?${queryParams.toString()}`,
                 {
                     headers: {
                         'Content-Type': 'application/json',
@@ -108,7 +108,7 @@ export const fetchDeliveryOptionById = createAsyncThunk<
     'delivery/fetchOptionById',
     async (id, { rejectWithValue }) => {
         try {
-            const response = await axios.get(`http://localhost:3000/api/delivery-options/${id}`, {
+            const response = await axios.get(`${API_BASE_URL}/api/delivery-options/${id}`, {
                 headers: {
                     Authorization: 'Bearer <YOUR_TOKEN_HERE>',
                 },
@@ -130,7 +130,7 @@ export const deleteDeliveryOption = createAsyncThunk<
     'delivery/deleteOption',
     async (id, { rejectWithValue }) => {
         try {
-            await axiosInstance.delete(`http://localhost:3000/api/delivery-options/${id}`, {
+            await axiosInstance.delete(`${API_BASE_URL}/api/delivery-options/${id}`, {
                 headers: {
                     'Content-Type': 'application/json',},   
             });
@@ -156,7 +156,7 @@ export const updateDeliveryOption = createAsyncThunk<
             if (sub_title) formData.append('sub_title', sub_title);
 
             const response = await axiosInstance.put(
-                `http://localhost:3000/api/delivery-options/${id}`,
+                `${API_BASE_URL}/api/delivery-options/${id}`,
                 formData,
                 {
                     headers: {
@@ -182,7 +182,7 @@ export const createDeliveryOption = createAsyncThunk<
         formData.append('title', data.title);
         formData.append('sub_title', data.sub_title);
 
-        const response = await axiosInstance.post('http://localhost:3000/api/delivery-options', formData, {
+        const response = await axiosInstance.post(`${API_BASE_URL}/api/delivery-options`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },

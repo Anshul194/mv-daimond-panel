@@ -51,6 +51,8 @@ const initialState: BlogSubcategoryState = {
   },
 };
 
+const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
+
 // ----------------------
 // ✅ Create Subcategory
 // ----------------------
@@ -60,7 +62,7 @@ export const createBlogSubcategory = createAsyncThunk<
   { rejectValue: string }
 >("blogSubcategory/create", async (data, { rejectWithValue }) => {
   try {
-    const res = await axiosInstance.post("/api/blog-subcategory", data, {
+    const res = await axiosInstance.post(`${API_BASE_URL}/api/blog-subcategory`, data, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -102,7 +104,7 @@ export const fetchBlogSubcategories = createAsyncThunk<
     const queryParams = new URLSearchParams();
 
     const res = await axiosInstance.get(
-      `/api/blog-subcategory?${queryParams.toString()}`
+      `${API_BASE_URL}/api/blog-subcategory?${queryParams.toString()}`
     );
     const data = res.data.body.data;
     console.log("Fetched blog subcategories:", {
@@ -141,7 +143,7 @@ export const deleteBlogSubcategory = createAsyncThunk<
   { rejectValue: string }
 >("blogSubcategory/delete", async ({ id }, { rejectWithValue }) => {
   try {
-    const res = await axiosInstance.delete(`/api/blog-subcategory/${id}`);
+    const res = await axiosInstance.delete(`${API_BASE_URL}/api/blog-subcategory/${id}`);
     return res.data;
   } catch (err: any) {
     return rejectWithValue(err.response?.data?.message || "Delete failed");
@@ -160,7 +162,7 @@ export const updateBlogSubcategory = createAsyncThunk<
   async ({ id, subcategoryData }, { rejectWithValue }) => {
     try {
       const res = await axiosInstance.put(
-        `/api/blog-subcategory/${id}`,
+        `${API_BASE_URL}/api/blog-subcategory/${id}`,
         subcategoryData,
         {
           headers: {
@@ -184,7 +186,7 @@ export const getBlogSubcategoryById = createAsyncThunk<
   { rejectValue: string }
 >("blogSubcategory/getById", async ({ id }, { rejectWithValue }) => {
   try {
-    const res = await axiosInstance.get(`/api/blog-subcategory/${id}`);
+    const res = await axiosInstance.get(`${API_BASE_URL}/api/blog-subcategory/${id}`);
     return res.data;
   } catch (err: any) {
     return rejectWithValue(err.response?.data?.message || "Get failed");

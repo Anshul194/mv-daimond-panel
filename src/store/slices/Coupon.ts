@@ -52,6 +52,7 @@ const initialState: CouponState = {
   },
 };
 
+const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
 // ----------------------
 // ✅ Create Coupon
 // ----------------------
@@ -61,7 +62,7 @@ export const createCoupon = createAsyncThunk<
   { rejectValue: string }
 >("coupon/create", async (couponData, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.post("/api/coupon", couponData);
+    const response = await axiosInstance.post(`${API_BASE_URL}/api/coupon`, couponData);
     return response.data;
   } catch (err: any) {
     return rejectWithValue(
@@ -115,7 +116,7 @@ export const fetchCoupons = createAsyncThunk<
     // }
 
     const response = await axiosInstance.get(
-      `/api/coupon?${queryParams.toString()}`
+      `${API_BASE_URL}/api/coupon?${queryParams.toString()}`
     );
     const data = response.data;
     console.log("Fetched coupons:", data);
@@ -148,7 +149,7 @@ export const deleteCoupon = createAsyncThunk<
   { rejectValue: string }
 >("coupon/delete", async ({ couponId }, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.delete(`/api/coupon/${couponId}`);
+    const response = await axiosInstance.delete(`${API_BASE_URL}/api/coupon/${couponId}`);
     return response.data;
   } catch (err: any) {
     return rejectWithValue(
@@ -164,7 +165,7 @@ export const updateCoupon = createAsyncThunk<
 >("coupon/update", async ({ couponId, couponData }, { rejectWithValue }) => {
   try {
     const response = await axiosInstance.put(
-      `/api/coupon/${couponId}`,
+      `${API_BASE_URL}/api/coupon/${couponId}`,
       couponData
     );
     return response.data;
@@ -181,7 +182,7 @@ export const getCouponById = createAsyncThunk<
   { rejectValue: string }
 >("coupon/getById", async (couponId, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.get(`/api/coupon/${couponId}`);
+    const response = await axiosInstance.get(`${API_BASE_URL}/api/coupon/${couponId}`);
         return response.data.coupon;
   } catch (err: any) {
     return rejectWithValue(

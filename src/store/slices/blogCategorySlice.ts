@@ -50,6 +50,8 @@ const initialState: BlogCategoryState = {
   },
 };
 
+const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
+
 // ----------------------
 // ✅ Create Category
 // ----------------------
@@ -59,7 +61,7 @@ export const createBlogCategory = createAsyncThunk<
   { rejectValue: string }
 >("blogCategory/create", async (data, { rejectWithValue }) => {
   try {
-    const res = await axiosInstance.post("/api/blog-category", data, {
+    const res = await axiosInstance.post(`${API_BASE_URL}/api/blog-category`, data, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -101,7 +103,7 @@ export const fetchBlogCategories = createAsyncThunk<
     const queryParams = new URLSearchParams();
 
     const res = await axiosInstance.get(
-      `/api/blog-category?${queryParams.toString()}`
+      `${API_BASE_URL}/api/blog-category?${queryParams.toString()}`
     );
     const data = res.data.body.data;
     console.log("Fetched blog categories:", data);
@@ -132,7 +134,7 @@ export const deleteBlogCategory = createAsyncThunk<
   { rejectValue: string }
 >("blogCategory/delete", async (id, { rejectWithValue }) => {
   try {
-    const res = await axiosInstance.delete(`/api/blog-category/${id}`);
+    const res = await axiosInstance.delete(`${API_BASE_URL}/api/blog-category/${id}`);
     return res.data;
   } catch (err: any) {
     return rejectWithValue(err.response?.data?.message || "Delete failed");
@@ -149,7 +151,7 @@ export const updateBlogCategory = createAsyncThunk<
 >("blogCategory/update", async ({ id, categoryData }, { rejectWithValue }) => {
   try {
     const res = await axiosInstance.put(
-      `/api/blog-category/${id}`,
+      `${API_BASE_URL}/api/blog-category/${id}`,
       categoryData,
       {
         headers: {
@@ -172,7 +174,7 @@ export const getBlogCategoryById = createAsyncThunk<
   { rejectValue: string }
 >("blogCategory/getById", async ({ id }, { rejectWithValue }) => {
   try {
-    const res = await axiosInstance.get(`/api/blog-category/${id}`);
+    const res = await axiosInstance.get(`${API_BASE_URL}/api/blog-category/${id}`);
     return res.data;
   } catch (err: any) {
     return rejectWithValue(err.response?.data?.message || "Get failed");

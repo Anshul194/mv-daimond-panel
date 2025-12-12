@@ -27,6 +27,9 @@ interface ProductState {
   success: boolean;
   searchQuery: string;
   filters: ProductFilters;
+  productAttributes?: any[]; // <-- add this
+  productAttributesLoading?: boolean;
+  productAttributesError?: string | null;
 }
 
 const initialState: ProductState = {
@@ -36,7 +39,12 @@ const initialState: ProductState = {
   success: false,
   searchQuery: "",
   filters: {},
+  productAttributes: [],
+  productAttributesLoading: false,
+  productAttributesError: null,
 };
+
+const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
 
 export const createProduct = createAsyncThunk<
   any,
@@ -45,7 +53,7 @@ export const createProduct = createAsyncThunk<
 >("product/create", async (formData, { rejectWithValue }) => {
   try {
     const response = await axiosInstance.post(
-      "http://localhost:3000/api/product",
+      `${API_BASE_URL}/api/product`,
       formData,
       {
         headers: {
@@ -166,8 +174,7 @@ export const updateProduct = createAsyncThunk<
   try {
     const response = await axiosInstance.put(
       `http://localhost:3000/api/product/${productId}`,
-      data,
-      
+      data
     );
     return response.data;
   } catch (err: any) {
@@ -195,6 +202,24 @@ export const deleteproduct = createAsyncThunk<
   } catch (err: any) {
     return rejectWithValue(
       err.response?.data?.message || "Failed to delete brand"
+    );
+  }
+});
+
+// Add Product Attribute Thunk
+export const fetchProductAttributes = createAsyncThunk<
+  any,
+  string,
+  { rejectValue: string }
+>("product/fetchProductAttributes", async (categoryId, { rejectWithValue }) => {
+  try {
+    const response = await axiosInstance.get(
+      `/api/productattribute/${categoryId}`
+    );
+    return response.data.data;
+  } catch (err: any) {
+    return rejectWithValue(
+      err.response?.data?.message || "Failed to fetch product attributes"
     );
   }
 });
@@ -271,6 +296,20 @@ const productSlice = createSlice({
       .addCase(deleteproduct.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to delete brand";
+      })
+      // Product Attribute Thunk
+      .addCase(fetchProductAttributes.pending, (state) => {
+        state.productAttributesLoading = true;
+        state.productAttributesError = null;
+      })
+      .addCase(fetchProductAttributes.fulfilled, (state, action) => {
+        state.productAttributesLoading = false;
+        state.productAttributes = action.payload;
+      })
+      .addCase(fetchProductAttributes.rejected, (state, action) => {
+        state.productAttributesLoading = false;
+        state.productAttributesError =
+          action.payload || "Failed to fetch product attributes";
       });
   },
 });
@@ -279,3 +318,4 @@ export const { setProductSearchQuery, setProductFilters, resetProductFilters } =
   productSlice.actions;
 
 export default productSlice.reducer;
+

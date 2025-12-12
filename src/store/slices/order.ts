@@ -62,6 +62,8 @@ const initialState: OrderState = {
   },
 };
 
+const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
+
 // ✅ Create Order
 export const createOrder = createAsyncThunk<
   Order,
@@ -69,7 +71,7 @@ export const createOrder = createAsyncThunk<
   { rejectValue: string }
 >("order/create", async (orderData, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.post("/api/order", orderData);
+    const response = await axiosInstance.post(`${API_BASE_URL}/api/order`, orderData);
     return response.data;
   } catch (err: unknown) {
     const error = err as { response?: { data?: { message?: string } } };
@@ -122,7 +124,7 @@ export const fetchOrders = createAsyncThunk<
     }
 
     const response = await axiosInstance.get(
-      `api/order?admin=true&${queryParams.toString()}`
+      `${API_BASE_URL}/api/order?admin=true&${queryParams.toString()}`
     );
     const data = response.data;
     console.log("Fetched Orders:", data);
@@ -168,7 +170,7 @@ export const deleteOrder = createAsyncThunk<
   { rejectValue: string }
 >("order/delete", async ({ orderId }, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.delete(`/api/order/${orderId}`);
+    const response = await axiosInstance.delete(`${API_BASE_URL}/api/order/${orderId}`);
     return response.data;
   } catch (err: unknown) {
     const error = err as { response?: { data?: { message?: string } } };
@@ -182,7 +184,7 @@ export const fetchOrderById = createAsyncThunk<Order, { orderId: string }>(
   "order/fetchById",
   async ({ orderId }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get(`/api/order/${orderId}`);
+      const response = await axiosInstance.get(`${API_BASE_URL}/api/order/${orderId}`);
       return response.data;
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
@@ -192,6 +194,26 @@ export const fetchOrderById = createAsyncThunk<Order, { orderId: string }>(
     }
   }
 );
+
+// ✅ Update Order
+export const updateOrder = createAsyncThunk<
+  Order,
+  { orderId: string; updateData: Partial<Order> },
+  { rejectValue: string }
+>("order/update", async ({ orderId, updateData }, { rejectWithValue }) => {
+  try {
+    const response = await axiosInstance.put(
+      `${API_BASE_URL}/api/order_update/${orderId}`,
+      updateData
+    );
+    return response.data;
+  } catch (err: unknown) {
+    const error = err as { response?: { data?: { message?: string } } };
+    return rejectWithValue(
+      error.response?.data?.message || "Failed to update order"
+    );
+  }
+});
 
 // ✅ Slice
 const orderSlice = createSlice({
@@ -249,6 +271,20 @@ const orderSlice = createSlice({
       .addCase(deleteOrder.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to delete order";
+      })
+      .addCase(updateOrder.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(updateOrder.fulfilled, (state) => {
+        state.loading = false;
+        state.success = true;
+      })
+      .addCase(updateOrder.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to update order";
+        state.success = false;
       });
   },
 });

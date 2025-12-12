@@ -10,7 +10,13 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { useNavigate } from "react-router";
-import { fetchOrders, setOrderSearchQuery, setOrderFilters, resetOrderFilters } from "../../../store/slices/order";
+import {
+  fetchOrders,
+  setOrderSearchQuery,
+  setOrderFilters,
+  resetOrderFilters,
+  updateOrder,
+} from "../../../store/slices/order";
 import PageMeta from "../../../components/common/PageMeta";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 
@@ -20,7 +26,13 @@ interface Order {
   payment_gateway: string;
   transaction_id: string;
   orderSessionId: string;
-  order_status: "pending" | "processing" | "shipped" | "delivered" | "canceled" | "returned";
+  order_status:
+    | "pending"
+    | "processing"
+    | "shipped"
+    | "delivered"
+    | "canceled"
+    | "returned";
   payment_status: "paid" | "unpaid";
   invoice_number: number;
   user_id: string;
@@ -37,6 +49,15 @@ interface Order {
   order_payment_meta?: Record<string, unknown> | null;
 }
 
+const ORDER_STATUS_OPTIONS = [
+  "pending",
+  "processing",
+  "shipped",
+  "delivered",
+  "canceled",
+  "returned",
+];
+
 const OrderList: React.FC = () => {
   const dispatch = useAppDispatch();
   const { orders, loading, error, pagination, searchQuery } =
@@ -46,6 +67,10 @@ const OrderList: React.FC = () => {
 
   const [searchInput, setSearchInput] = useState(searchQuery);
   const [localFilters, setLocalFilters] = useState<Record<string, string>>({});
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [editStatus, setEditStatus] = useState<Order["order_status"]>("pending");
+  const [editLoading, setEditLoading] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -125,8 +150,46 @@ const OrderList: React.FC = () => {
   };
 
   const openEditModal = (order: Order) => {
-    // Navigate to edit page instead of opening modal
-    navigate(`/orders/edit/${order._id}`);
+    setSelectedOrder(order);
+    setEditStatus(order.order_status);
+    setEditModalOpen(true);
+  };
+
+  const closeEditModal = () => {
+    setEditModalOpen(false);
+    setSelectedOrder(null);
+  };
+
+  const handleStatusUpdate = async () => {
+    if (!selectedOrder) return;
+    setEditLoading(true);
+    try {
+      await dispatch(
+        updateOrder({
+          orderId: selectedOrder._id,
+          updateData: { order_status: editStatus },
+        })
+      ).unwrap();
+      setEditModalOpen(false);
+      setSelectedOrder(null);
+      // Refresh orders
+      dispatch(
+        fetchOrders({
+          page: pagination.page,
+          limit: pagination.limit,
+          filters: {
+            ...(localFilters.status ? { status: localFilters.status } : {}),
+            ...(localFilters.category ? { category: localFilters.category } : {}),
+          },
+          searchFields: searchQuery ? { name: searchQuery } : {},
+          sort: { createdAt: "desc" },
+        })
+      );
+    } catch (e) {
+      // Optionally handle error
+    } finally {
+      setEditLoading(false);
+    }
   };
 
   const generatePageNumbers = () => {
@@ -149,7 +212,7 @@ const OrderList: React.FC = () => {
         description="List of all orders in TailAdmin"
       />
       <PageBreadcrumb pageTitle="Order List" />
-      <div className="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12">
+      <div className="min-h-screen rounded-2xl border border-gray-200 bg-white px-4 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white/90">
             Orders
@@ -217,26 +280,26 @@ const OrderList: React.FC = () => {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
                   #
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
                   Order ID
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
                   Payment Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
                  Transaction ID
                 </th>
 
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
                   Created
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
                   Actions
                 </th>
               </tr>
@@ -247,14 +310,14 @@ const OrderList: React.FC = () => {
                   key={order._id}
                   className="hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
-                  <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
+                  <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
                     {(pagination.page - 1) * pagination.limit + idx + 1}
                   </td>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                  <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
                     {order._id}
                   </td>
 
-                  <td className="px-6 py-4 text-sm">
+                  <td className="px-4 py-3 text-sm">
                     {order.order_status === "pending" && (
                       <div className="text-orange-500 w-fit px-4  capitalize  bg-orange-500/10 rounded-full">
                         {order.order_status}
@@ -287,7 +350,7 @@ const OrderList: React.FC = () => {
                     )}
                   </td>
 
-                  <td className="px-6 py-4 text-sm">
+                  <td className="px-4 py-3 text-sm">
                     {order.payment_status === "paid" ? (
                       <div className="text-green-500 w-fit px-4  capitalize  bg-green-500/10 rounded-full">
                         {order.payment_status}
@@ -298,13 +361,16 @@ const OrderList: React.FC = () => {
                       </div>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
+                  <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 break-words whitespace-normal max-w-[200px]">
                     {order?.transaction_id || "N/A"}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+
+
+
+                  <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
                     {new Date(order.createdAt).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 text-right space-x-2">
+                  <td className="px-4 py-3 text-right space-x-2">
                     <button
                       onClick={() => openEditModal(order)}
                       className="text-blue-500 hover:text-blue-700 transition-colors"
@@ -359,6 +425,51 @@ const OrderList: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Edit Status Modal */}
+      {editModalOpen && selectedOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-sm">
+            <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
+              Update Order Status
+            </h2>
+            <div className="mb-4">
+              <label className="block mb-2 text-sm text-gray-700 dark:text-gray-300">
+                Status
+              </label>
+              <select
+                value={editStatus}
+                onChange={(e) =>
+                  setEditStatus(e.target.value as Order["order_status"])
+                }
+                className="w-full border border-gray-300 rounded-md px-3 py-2 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+              >
+                {ORDER_STATUS_OPTIONS.map((status) => (
+                  <option key={status} value={status}>
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={closeEditModal}
+                className="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200"
+                disabled={editLoading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleStatusUpdate}
+                className="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+                disabled={editLoading}
+              >
+                {editLoading ? "Updating..." : "Update"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

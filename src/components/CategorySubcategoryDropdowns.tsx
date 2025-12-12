@@ -36,8 +36,8 @@ export default function CategorySubcategoryDropdowns({
     // Fetch categories on mount
     useEffect(() => {
         dispatch(fetchCourseCategories({
-            page: 0,
-            limit: 1000,
+            page: 1,
+            limit: 100,
             filters: {
                 status: 'active'
             }

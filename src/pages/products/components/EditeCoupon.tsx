@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Save, ArrowLeft, AlertCircle, Check } from "lucide-react";
 import { useDispatch } from "react-redux";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import { getCouponById, updateCoupon } from "../../../store/slices/Coupon";
+import toast, { Toaster } from "react-hot-toast";
 
 const UpdateCouponPage = () => {
   const [formData, setFormData] = useState({
@@ -22,6 +23,7 @@ const UpdateCouponPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const params = useParams();
   const couponId = params.id; // Assuming the URL is like /coupons/edit/:id
   // Mock function to simulate loading existing coupon data
@@ -135,14 +137,44 @@ const UpdateCouponPage = () => {
     setIsLoading(true);
 
     try {
-      // Simulate API call
+      // Update coupon
       await dispatch(
         updateCoupon({ couponId: couponId, couponData: formData })
-      );
-      getData(); // Refresh data after update
-      setTimeout(() => setShowSuccess(false), 3000);
-    } catch (error) {
+      ).unwrap();
+      
+      // Show success message
+      setShowSuccess(true);
+      toast.success("Coupon updated successfully! 🎉", {
+        duration: 4000,
+        position: "top-right",
+        style: {
+          background: '#10B981',
+          color: '#fff',
+          zIndex: 9999,
+          minWidth: '300px',
+          fontSize: '14px',
+          padding: '16px',
+        },
+      });
+      
+      // Redirect to list page after 1.5 seconds
+      setTimeout(() => {
+        navigate("/coupons/all");
+      }, 1500);
+    } catch (error: any) {
       console.error("Error updating coupon:", error);
+      toast.error(error?.message || "Failed to update coupon.", {
+        duration: 4000,
+        position: "top-right",
+        style: {
+          background: '#EF4444',
+          color: '#fff',
+          zIndex: 9999,
+          minWidth: '300px',
+          fontSize: '14px',
+          padding: '16px',
+        },
+      });
     } finally {
       setIsLoading(false);
     }
@@ -150,11 +182,51 @@ const UpdateCouponPage = () => {
 
   const handleBack = () => {
     // Navigate back to coupon list
-    console.log("Navigate back to coupon list");
+    navigate("/coupons/all");
   };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+      <Toaster 
+        position="top-right"
+        containerStyle={{
+          top: 80,
+          zIndex: 9999,
+        }}
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#10B981',
+            color: '#fff',
+            zIndex: 9999,
+            minWidth: '300px',
+            fontSize: '14px',
+            padding: '16px',
+          },
+          success: {
+            duration: 4000,
+            style: {
+              background: '#10B981',
+              color: '#fff',
+              zIndex: 9999,
+              minWidth: '300px',
+              fontSize: '14px',
+              padding: '16px',
+            },
+          },
+          error: {
+            duration: 4000,
+            style: {
+              background: '#EF4444',
+              color: '#fff',
+              zIndex: 9999,
+              minWidth: '300px',
+              fontSize: '14px',
+              padding: '16px',
+            },
+          },
+        }}
+      />
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">

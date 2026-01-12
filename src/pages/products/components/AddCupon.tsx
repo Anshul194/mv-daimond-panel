@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Save, ArrowLeft, AlertCircle, Check } from "lucide-react";
 import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router";
 import { createCoupon } from "../../../store/slices/Coupon";
+import toast, { Toaster } from "react-hot-toast";
 
 const UpdateCouponPage = () => {
   const [formData, setFormData] = useState({
@@ -20,6 +22,7 @@ const UpdateCouponPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -98,28 +101,55 @@ const UpdateCouponPage = () => {
     setIsLoading(true);
 
     try {
-      // Simulate API call
+      // Create coupon
+      await dispatch(createCoupon(formData)).unwrap();
 
-      await dispatch(createCoupon(formData));
-
+      // Show success message
       setShowSuccess(true);
+      toast.success("Coupon created successfully! 🎉", {
+        duration: 4000,
+        position: "top-right",
+        style: {
+          background: '#10B981',
+          color: '#fff',
+          zIndex: 9999,
+          minWidth: '300px',
+          fontSize: '14px',
+          padding: '16px',
+        },
+      });
+
+      // Reset form
       setFormData({
         code: "",
         type: "flat",
-        value: "",
-        minOrderAmount: "",
-        maxDiscount: "",
-        usageLimit: "",
+        value: 0,
+        minOrderAmount: 0,
+        maxDiscount: null,
+        usageLimit: 0,
         validFrom: "",
         validTo: "",
         isActive: true,
       });
+
+      // Redirect to list page after 1.5 seconds
       setTimeout(() => {
-        setShowSuccess(false);
-        // Optionally, reset form data
-      }, 2000);
-    } catch (error) {
-      console.error("Error updating coupon:", error);
+        navigate("/coupons/all");
+      }, 1500);
+    } catch (error: any) {
+      console.error("Error creating coupon:", error);
+      toast.error(error?.message || "Failed to create coupon.", {
+        duration: 4000,
+        position: "top-right",
+        style: {
+          background: '#EF4444',
+          color: '#fff',
+          zIndex: 9999,
+          minWidth: '300px',
+          fontSize: '14px',
+          padding: '16px',
+        },
+      });
     } finally {
       setIsLoading(false);
     }
@@ -127,6 +157,46 @@ const UpdateCouponPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+      <Toaster 
+        position="top-right"
+        containerStyle={{
+          top: 80,
+          zIndex: 9999,
+        }}
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#10B981',
+            color: '#fff',
+            zIndex: 9999,
+            minWidth: '300px',
+            fontSize: '14px',
+            padding: '16px',
+          },
+          success: {
+            duration: 4000,
+            style: {
+              background: '#10B981',
+              color: '#fff',
+              zIndex: 9999,
+              minWidth: '300px',
+              fontSize: '14px',
+              padding: '16px',
+            },
+          },
+          error: {
+            duration: 4000,
+            style: {
+              background: '#EF4444',
+              color: '#fff',
+              zIndex: 9999,
+              minWidth: '300px',
+              fontSize: '14px',
+              padding: '16px',
+            },
+          },
+        }}
+      />
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">

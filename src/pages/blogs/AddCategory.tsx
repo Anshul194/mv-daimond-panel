@@ -5,8 +5,10 @@ import toast, { Toaster } from "react-hot-toast";
 import PageMeta from "../../components/common/PageMeta";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import { createBlogCategory } from "../../store/slices/blogCategorySlice";
+import { useNavigate } from "react-router";
 
 export default function AddBlogCategory() {
+  const navigate = useNavigate();
   const [category, setCategory] = useState({
     name: "",
     image: null as File | null,
@@ -54,6 +56,7 @@ export default function AddBlogCategory() {
         position: "top-right",
       });
       setCategory({ name: "", image: null });
+      navigate("/blog/category/list");
     } catch (err: any) {
       toast.error(err?.message || "Failed to create category.", {
         duration: 8000,

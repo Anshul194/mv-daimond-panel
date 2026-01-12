@@ -5,8 +5,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { createCourseCategory } from "../store/slices/courseCategorySlice";
 import type { AppDispatch, RootState } from "../store";
 import toast, { Toaster } from "react-hot-toast";
+import { useNavigate } from "react-router";
 
 export default function AddCategory() {
+  const navigate = useNavigate();
   const [category, setCategory] = useState({
     name: "",
     description: "",
@@ -67,6 +69,7 @@ export default function AddCategory() {
         position: "top-right",
       });
       setCategory({ name: "", description: "", status: "active", image: null });
+      navigate("/attributes/categories/list");
     } catch (err: any) {
       toast.error(err?.message || "Failed to create category.", {
         duration: 8000,

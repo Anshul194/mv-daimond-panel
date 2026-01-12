@@ -8,8 +8,10 @@ import {
   fetchCourseCategories,
 } from "../store/slices/courseCategorySlice";
 import type { AppDispatch, RootState } from "../store";
+import { useNavigate } from "react-router";
 
 export default function AddSubCategory() {
+  const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { categories, loading } = useSelector(
     (state: RootState) => state.courseCategory
@@ -88,6 +90,7 @@ export default function AddSubCategory() {
         categoryId: "",
         image: null,
       });
+      navigate("/attributes/subcategories/");
     } catch (err: any) {
       toast.error(err?.message || "Failed to create subcategory.", {
         duration: 8000,

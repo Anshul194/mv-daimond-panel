@@ -9,9 +9,10 @@ import {
   getBlogCategoryById,
   updateBlogCategory,
 } from "../../store/slices/blogCategorySlice";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 const imageUrl = import.meta.env.VITE_IMAGE_URL;
 export default function EditBlogCategory() {
+  const navigate = useNavigate();
   const [category, setCategory] = useState({
     name: "",
     image: null as File | null,
@@ -60,11 +61,12 @@ export default function EditBlogCategory() {
       await dispatch(
         updateBlogCategory({ id: categoryId, categoryData: formData }) as any
       ).unwrap();
-      toast.success("Category created successfully! 🎉", {
+      toast.success("Category updated successfully! 🎉", {
         duration: 8000,
         position: "top-right",
       });
       setCategory({ name: "", image: null });
+      navigate("/blog/category/list");
     } catch (err: any) {
       toast.error(err?.message || "Failed to create category.", {
         duration: 8000,

@@ -11,9 +11,10 @@ import {
 import { createBlog, updateBlog } from "../../store/slices/blog";
 import CustomEditor from "../../components/CustomEditor";
 import axiosInstance from "../../services/axiosConfig";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 
 export default function EditBlog() {
+  const navigate = useNavigate();
   const [blog, setBlog] = useState({
     title: "",
     description: "",
@@ -122,7 +123,7 @@ export default function EditBlog() {
         duration: 8000,
         position: "top-right",
       });
-      window.location.href = "/blog/list"; // Redirect to blog list after successful update
+      navigate("/blog/list");
       setBlog({
         title: "",
         description: "",

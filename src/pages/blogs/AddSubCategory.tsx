@@ -9,8 +9,10 @@ import {
   fetchBlogCategories,
 } from "../../store/slices/blogCategorySlice";
 import { createBlogSubcategory } from "../../store/slices/blogSubcategorySlice";
+import { useNavigate } from "react-router";
 
 export default function AddBlogSubCategory() {
+  const navigate = useNavigate();
   const [category, setCategory] = useState({
     name: "",
     mainCategory: "",
@@ -68,6 +70,7 @@ export default function AddBlogSubCategory() {
         position: "top-right",
       });
       setCategory({ name: "", image: null, mainCategory: "" });
+      navigate("/blog/subcategory/list");
     } catch (err: any) {
       toast.error(err?.message || "Failed to create category.", {
         duration: 8000,

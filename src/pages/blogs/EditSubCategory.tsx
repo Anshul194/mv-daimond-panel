@@ -9,7 +9,7 @@ import {
   fetchBlogCategories,
   getBlogCategoryById,
 } from "../../store/slices/blogCategorySlice";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import {
   getBlogSubcategoryById,
   updateBlogSubcategory,
@@ -17,6 +17,7 @@ import {
 
 const imageUrl = import.meta.env.VITE_IMAGE_URL;
 export default function EditBlogSubCategory() {
+  const navigate = useNavigate();
   const [category, setCategory] = useState({
     name: "",
     mainCategory: "",
@@ -71,12 +72,12 @@ export default function EditBlogSubCategory() {
           subcategoryData: formData,
         }) as any
       ).unwrap();
-      toast.success("Category created successfully! 🎉", {
+      toast.success("Category updated successfully! 🎉", {
         duration: 8000,
         position: "top-right",
       });
       setCategory({ name: "", image: null });
-      window.location.href = "/blog/subcategory/list";
+      navigate("/blog/subcategory/list");
     } catch (err: any) {
       toast.error(err?.message || "Failed to create category.", {
         duration: 8000,

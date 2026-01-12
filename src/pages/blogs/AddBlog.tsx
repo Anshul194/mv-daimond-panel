@@ -11,8 +11,10 @@ import {
 import { createBlog } from "../../store/slices/blog";
 import CustomEditor from "../../components/CustomEditor";
 import axiosInstance from "../../services/axiosConfig";
+import { useNavigate } from "react-router";
 
 export default function AddBlog() {
+  const navigate = useNavigate();
   const [blog, setBlog] = useState({
     title: "",
     description: "",
@@ -127,6 +129,7 @@ export default function AddBlog() {
         thumbnailImage: null as File | null,
         coverImage: null as File | null,
       });
+      navigate("/blog/list");
     } catch (err: any) {
       toast.error(err?.message || "Failed to create blog.", {
         duration: 8000,

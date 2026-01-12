@@ -6,6 +6,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { createCustomAttribute } from "../../../store/slices/customAttributes";
 import { fetchCourseCategories } from "../../../store/slices/courseCategorySlice";
 import type { AppDispatch, RootState } from "../../../store/index";
+import { useNavigate } from "react-router";
 
 interface TermInput {
   value: string;
@@ -13,6 +14,7 @@ interface TermInput {
 }
 
 export default function AddCustomAttribute() {
+  const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { loading: attributeLoading } = useSelector(
     (state: RootState) => state.customAttributes
@@ -62,22 +64,46 @@ export default function AddCustomAttribute() {
     e.preventDefault();
     if (!title.trim()) {
       toast.error("Attribute title is required.", {
-        duration: 8000,
+        duration: 4000,
         position: "top-right",
+        style: {
+          background: '#EF4444',
+          color: '#fff',
+          zIndex: 9999,
+          minWidth: '300px',
+          fontSize: '14px',
+          padding: '16px',
+        },
       });
       return;
     }
     if (terms.some((term) => !term.value.trim())) {
       toast.error("All term values are required.", {
-        duration: 8000,
+        duration: 4000,
         position: "top-right",
+        style: {
+          background: '#EF4444',
+          color: '#fff',
+          zIndex: 9999,
+          minWidth: '300px',
+          fontSize: '14px',
+          padding: '16px',
+        },
       });
       return;
     }
     if (terms.some((term) => !term.image)) {
       toast.error("All term images are required.", {
-        duration: 8000,
+        duration: 4000,
         position: "top-right",
+        style: {
+          background: '#EF4444',
+          color: '#fff',
+          zIndex: 9999,
+          minWidth: '300px',
+          fontSize: '14px',
+          padding: '16px',
+        },
       });
       return;
     }
@@ -93,16 +119,32 @@ export default function AddCustomAttribute() {
         })
       ).unwrap();
       toast.success("Custom attribute created successfully! 🎉", {
-        duration: 8000,
+        duration: 4000,
         position: "top-right",
+        style: {
+          background: '#10B981',
+          color: '#fff',
+          zIndex: 9999,
+          fontSize: '14px',
+          padding: '16px',
+        },
       });
       setTitle("");
       setTerms([{ value: "", image: null }]);
       setCategoryId("");
+      navigate("/attributes/customs/list");
     } catch (err: any) {
       toast.error(err?.message || "Failed to create custom attribute.", {
-        duration: 8000,
+        duration: 4000,
         position: "top-right",
+        style: {
+          background: '#EF4444',
+          color: '#fff',
+          zIndex: 9999,
+          minWidth: '300px',
+          fontSize: '14px',
+          padding: '16px',
+        },
       });
     }
   };
@@ -110,13 +152,63 @@ export default function AddCustomAttribute() {
   // Show error toast if category fetch fails
   useEffect(() => {
     if (categoriesError) {
-      toast.error(categoriesError, { duration: 8000, position: "top-right" });
+      toast.error(categoriesError, { 
+        duration: 4000, 
+        position: "top-right",
+        style: {
+          background: '#EF4444',
+          color: '#fff',
+          zIndex: 9999,
+          minWidth: '300px',
+          fontSize: '14px',
+          padding: '16px',
+        },
+      });
     }
   }, [categoriesError]);
 
   return (
     <div>
-      <Toaster position="top-right" />
+      <Toaster 
+        position="top-right"
+        containerStyle={{
+          top: 80,
+          zIndex: 9999,
+        }}
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#10B981',
+            color: '#fff',
+            zIndex: 9999,
+            minWidth: '300px',
+            fontSize: '14px',
+            padding: '16px',
+          },
+          success: {
+            duration: 4000,
+            style: {
+              background: '#10B981',
+              color: '#fff',
+              zIndex: 9999,
+              minWidth: '300px',
+              fontSize: '14px',
+              padding: '16px',
+            },
+          },
+          error: {
+            duration: 4000,
+            style: {
+              background: '#EF4444',
+              color: '#fff',
+              zIndex: 9999,
+              minWidth: '300px',
+              fontSize: '14px',
+              padding: '16px',
+            },
+          },
+        }}
+      />
       <PageMeta
         title="Add Custom Attribute | TailAdmin"
         description="Add a new custom attribute page for TailAdmin"

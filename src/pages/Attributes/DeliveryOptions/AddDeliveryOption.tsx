@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import toast, { Toaster } from "react-hot-toast";
 import { createDeliveryOption } from "../../../store/slices/deliverySlice";
 import type { AppDispatch, RootState } from "../../../store/index";
+import { useNavigate } from "react-router";
 
 // Font Awesome icon options
 const fontAwesomeIcons = [
@@ -65,6 +66,7 @@ const fontAwesomeIcons = [
 ];
 
 export default function AddDeliveryOption() {
+  const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { loading } = useSelector((state: RootState) => state.delivery);
 
@@ -124,6 +126,7 @@ export default function AddDeliveryOption() {
         position: "top-right",
       });
       setOption({ title: "", sub_title: "", icon: "" });
+      navigate("/attributes/delivery-options/list");
     } catch (err: any) {
       toast.error(err?.message || "Failed to create delivery option.", {
         duration: 8000,

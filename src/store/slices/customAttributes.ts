@@ -101,15 +101,42 @@ export const fetchCustomAttributes = createAsyncThunk<
                 `${API_BASE_URL}/api/productattribute?${queryParams.toString()}`
             );
 
-            const data = response.data;
-            if (!data || !data.data) {
-                throw new Error('Invalid response structure');
+            const responseData = response.data;
+            console.log('API Response:', JSON.stringify(responseData, null, 2));
+            
+            if (!responseData) {
+                throw new Error('No response data');
             }
 
+            // Handle different response structures
+            // Structure 1: { success: true, message: "...", data: { data: [...], total: ..., page: ..., limit: ..., totalPages: ... } }
+            // Structure 2: { success: true, data: { data: [...], total: ..., page: ..., limit: ..., totalPages: ... } }
+            let paginationData;
+            let attributesArray = [];
+            
+            if (responseData.success && responseData.data) {
+                paginationData = responseData.data;
+                attributesArray = Array.isArray(paginationData.data) ? paginationData.data : (Array.isArray(paginationData) ? paginationData : []);
+            } else if (Array.isArray(responseData)) {
+                // Direct array response
+                attributesArray = responseData;
+                paginationData = {
+                    total: responseData.length,
+                    page: 1,
+                    limit: responseData.length,
+                    totalPages: 1
+                };
+            } else {
+                throw new Error('Invalid response structure');
+            }
+            
+            console.log('Pagination Data:', paginationData);
+            console.log('Attributes Array:', attributesArray.length, 'items');
+
             // Normalize terms: reconstruct value if missing
-            const attributes = (data.data.data || data.data).map((attr: CustomAttribute) => ({
+            const attributes = attributesArray.map((attr: CustomAttribute) => ({
                 ...attr,
-                terms: attr.terms.map((term: Term) => {
+                terms: (attr.terms || []).map((term: Term) => {
                     if (term.value) return term;
                     // reconstruct value from numeric keys
                     const chars = Object.keys(term)
@@ -120,15 +147,15 @@ export const fetchCustomAttributes = createAsyncThunk<
                     return { ...term, value: chars };
                 }),
             }));
-            console.log('Fetched custom attributes:', data.data.totalPages);
+            console.log('Fetched custom attributes:', paginationData.totalPages, 'Total:', paginationData.total);
 
             return {
                 data: attributes,
                 pagination: {
-                    total: data.data.total || 0,
-                    page: data.data.page || 1,
-                    limit: data.data.limit || limit,
-                    totalPages: data.data.totalPages || Math.ceil((data.data.total || 0) / limit),
+                    total: paginationData.total || 0,
+                    page: paginationData.page || 1,
+                    limit: paginationData.limit || limit,
+                    totalPages: paginationData.totalPages || Math.ceil((paginationData.total || 0) / limit),
                 }
             };
         } catch (err: any) {
@@ -280,13 +307,13 @@ const customAttributesSlice = createSlice({
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(fetchCustomAttributes.fulfilled, (state, action: PayloadAction<Omit<CustomAttributesState, 'loading' | 'error'>>) => {
+            .addCase(fetchCustomAttributes.fulfilled, (state, action) => {
                 state.loading = false;
                 state.data = action.payload.data;
-                state.total = action.payload.total;
-                state.page = action.payload.page;
-                state.limit = action.payload.limit;
-                state.totalPages = action.payload.totalPages;
+                state.total = action.payload.pagination.total;
+                state.page = action.payload.pagination.page;
+                state.limit = action.payload.pagination.limit;
+                state.totalPages = action.payload.pagination.totalPages;
             })
             .addCase(fetchCustomAttributes.rejected, (state, action) => {
                 state.loading = false;

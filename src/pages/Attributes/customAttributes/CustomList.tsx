@@ -66,24 +66,37 @@ const DynamicTermsDisplay: React.FC<DynamicTermsDisplayProps> = ({ terms, maxVis
   const [isExpanded, setIsExpanded] = useState(false);
   const [viewMode, setViewMode] = useState('compact');
   
-  const visibleTerms = isExpanded ? terms : terms?.slice(0, maxVisible);
-  const hiddenCount = terms?.length - maxVisible;
-  const hasMore = terms?.length > maxVisible;
+  // Ensure terms is always an array
+  const safeTerms = Array.isArray(terms) ? terms : [];
+  
+  const visibleTerms = isExpanded ? safeTerms : safeTerms.slice(0, maxVisible);
+  const hiddenCount = Math.max(0, safeTerms.length - maxVisible);
+  const hasMore = safeTerms.length > maxVisible;
 
   const getTermDisplayCount = () => {
-    if (terms?.length <= 3) return terms.length;
-    if (terms.length <= 8) return Math.min(3, maxVisible);
+    if (!safeTerms || safeTerms.length === 0) return 0;
+    if (safeTerms.length <= 3) return safeTerms.length;
+    if (safeTerms.length <= 8) return Math.min(3, maxVisible);
     return Math.min(4, maxVisible);
   };
 
   const displayCount = getTermDisplayCount();
 
+  // Early return if no terms
+  if (!safeTerms || safeTerms.length === 0) {
+    return (
+      <div className="text-sm text-gray-400 dark:text-gray-500 italic">
+        No terms
+      </div>
+    );
+  }
+
   const CompactView = () => (
     <div className="space-y-2">
       <div className="flex flex-wrap gap-1.5 items-center">
-        {visibleTerms?.slice(0, displayCount).map((term, index) => (
+        {visibleTerms.slice(0, displayCount).map((term, index) => (
           <span 
-            key={term._id} 
+            key={term._id || `term-${index}`} 
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 hover:scale-105 ${
               index % 4 === 0 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' :
               index % 4 === 1 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
@@ -97,7 +110,7 @@ const DynamicTermsDisplay: React.FC<DynamicTermsDisplayProps> = ({ terms, maxVis
               index % 4 === 2 ? 'bg-purple-400' :
               'bg-orange-400'
             }`}></div>
-            {term.value}
+            {term.value || 'N/A'}
             {term.image && (
               <img src={`${import.meta.env.VITE_IMAGE_URL}${term.image}`} alt="" className="w-4 h-4 object-cover rounded-full border border-white shadow-sm" />
             )}
@@ -118,13 +131,13 @@ const DynamicTermsDisplay: React.FC<DynamicTermsDisplayProps> = ({ terms, maxVis
       {isExpanded && hasMore && (
         <div className="mt-3 space-y-2">
           <div className="flex flex-wrap gap-1.5">
-            {visibleTerms?.slice(displayCount).map((term) => (
+            {visibleTerms.slice(displayCount).map((term, index) => (
               <span 
-                key={term._id}
+                key={term._id || `term-expanded-${index}`}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-gray-50 text-gray-700 rounded-full hover:bg-gray-100 transition-colors dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
               >
                 <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-                {term.value}
+                {term.value || 'N/A'}
                 {term.image && (
                   <img src={`${import.meta.env.VITE_IMAGE_URL}${term.image}`} alt="" className="w-4 h-4 object-cover rounded-full border border-white shadow-sm" />
                 )}
@@ -401,6 +414,20 @@ const CustomAttributeList = () => {
     (state) => state.customAttributes
   );
 
+  // Debug logging
+  useEffect(() => {
+    console.log('CustomAttributeList State:', {
+      dataLength: data?.length || 0,
+      loading,
+      error,
+      page,
+      limit,
+      total,
+      totalPages,
+      data: data
+    });
+  }, [data, loading, error, page, limit, total, totalPages]);
+
   // Enhanced filter states
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -447,6 +474,7 @@ const CustomAttributeList = () => {
       sort: { [sortConfig.field]: sortConfig.direction === 'desc' ? -1 : 1 },
     };
 
+    console.log('Fetching custom attributes with params:', fetchParams);
     dispatch(fetchCustomAttributes(fetchParams));
   }, [dispatch, currentPage, itemsPerPage, searchTerm, filters, sortConfig]);
 
@@ -470,6 +498,26 @@ const CustomAttributeList = () => {
       };
       dispatch(fetchCustomAttributes(fetchParams));
     }
+  };
+
+  const handleLimitChange = (newLimit: number) => {
+    const fetchParams = {
+      page: 1, // Reset to first page when changing limit
+      limit: newLimit,
+      searchFields: searchTerm ? { title: searchTerm } : {},
+      filters: {
+        ...((filters.dateRange.start || filters.dateRange.end) && {
+          createdAt: {
+            ...(filters.dateRange.start && { $gte: filters.dateRange.start }),
+            ...(filters.dateRange.end && { $lte: filters.dateRange.end }),
+          }
+        }),
+        ...(filters.minTerms && { 'terms.0': { $exists: true } }),
+        ...(filters.lastModifiedBy && { 'lastModifiedBy.email': { $regex: filters.lastModifiedBy, $options: 'i' } }),
+      },
+      sort: { [sortConfig.field]: sortConfig.direction === 'desc' ? -1 : 1 },
+    };
+    dispatch(fetchCustomAttributes(fetchParams));
   };
 
   const handleSort = (field: string) => {
@@ -628,6 +676,22 @@ const handleEditSubmit = async ({
     return (pageNumber - 1) * limitNumber + index + 1;
   };
 
+  // Show loading on initial mount
+  if (loading && (!data || data.length === 0)) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-12">
+            <div className="flex flex-col items-center justify-center space-y-4">
+              <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-gray-600 dark:text-gray-400 font-medium">Loading attributes...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-6">
       <div className="max-w-7xl mx-auto">
@@ -683,15 +747,31 @@ const handleEditSubmit = async ({
                 {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </button>
               
-              {(searchTerm || Object.values(filters).some(f => f && (typeof f === 'object' ? Object.values(f).some(v => v) : f))) && (
-                <button
-                  onClick={clearFilters}
-                  className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  Clear Filters
-                </button>
-              )}
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Show:</span>
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => handleLimitChange(Number(e.target.value))}
+                    className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                </div>
+                
+                {(searchTerm || Object.values(filters).some(f => f && (typeof f === 'object' ? Object.values(f).some(v => v) : f))) && (
+                  <button
+                    onClick={clearFilters}
+                    className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    Clear Filters
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Advanced Filters */}
@@ -807,7 +887,7 @@ const handleEditSubmit = async ({
             </div>
 
             {/* Empty State */}
-            {(!data || data.length === 0) ? (
+            {(!data || !Array.isArray(data) || data.length === 0) ? (
               <div className="p-12 text-center">
                 <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
                   <Tag className="w-8 h-8 text-gray-400" />
@@ -887,7 +967,7 @@ const handleEditSubmit = async ({
                           </td>
                           <td className="px-6 py-4">
                             <DynamicTermsDisplay 
-                              terms={attribute.terms} 
+                              terms={attribute.terms || []} 
                               maxVisible={3}
                               className="max-w-md"
                             />
@@ -942,52 +1022,59 @@ const handleEditSubmit = async ({
                 </div>
 
                 {/* Pagination */}
-                <div className="px-8 py-6 border-t border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-gray-700 dark:text-gray-300">
-                      Showing <span className="font-semibold">{((currentPage - 1) * itemsPerPage) + 1}</span> to{' '}
-                      <span className="font-semibold">{Math.min(currentPage * itemsPerPage, totalItems)}</span> of{' '}
-                      <span className="font-semibold">{totalItems}</span> results
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage <= 1}
-                        className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                      >
-                        <ChevronLeft className="w-5 h-5" />
-                      </button>
-                      
-                      <div className="flex items-center gap-1">
-                        {generatePageNumbers().map((pageNum, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => typeof pageNum === 'number' && handlePageChange(pageNum)}
-                            disabled={pageNum === "..."}
-                            className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${
-                              pageNum === currentPage
-                                ? 'bg-blue-600 text-white shadow-lg'
-                                : pageNum === "..."
-                                ? 'text-gray-400 cursor-default'
-                                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                            }`}
-                          >
-                            {pageNum}
-                          </button>
-                        ))}
+                {totalPagesCount > 1 && (
+                  <div className="px-8 py-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                      <div className="text-sm text-gray-700 dark:text-gray-300">
+                        Showing <span className="font-semibold">{((currentPage - 1) * itemsPerPage) + 1}</span> to{' '}
+                        <span className="font-semibold">{Math.min(currentPage * itemsPerPage, totalItems)}</span> of{' '}
+                        <span className="font-semibold">{totalItems}</span> results
                       </div>
                       
-                      <button
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage >= totalPagesCount}
-                        className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                      >
-                        <ChevronRight className="w-5 h-5" />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage <= 1}
+                          className="p-2 rounded-md border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+                          title="Previous page"
+                        >
+                          <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                        </button>
+                        
+                        <div className="flex items-center gap-1">
+                          {generatePageNumbers().map((pageNum, idx) => (
+                            typeof pageNum === "number" ? (
+                              <button
+                                key={idx}
+                                onClick={() => handlePageChange(pageNum)}
+                                className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${
+                                  pageNum === currentPage
+                                    ? "bg-indigo-500 text-white shadow-md"
+                                    : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600"
+                                }`}
+                              >
+                                {pageNum}
+                              </button>
+                            ) : (
+                              <span key={idx} className="px-2 text-gray-400 dark:text-gray-500">
+                                {pageNum}
+                              </span>
+                            )
+                          ))}
+                        </div>
+                        
+                        <button
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={currentPage >= totalPagesCount}
+                          className="p-2 rounded-md border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+                          title="Next page"
+                        >
+                          <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </>
             )}
           </div>

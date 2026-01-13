@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import NotFound from "./pages/OtherPage/NotFound";
@@ -61,6 +61,9 @@ import BlogList from "./pages/blogs/BlogList";
 import EditBlog from "./pages/blogs/EditeBlog";
 import AddVendor from "./pages/Vendor/AddVendor";
 import VenderList from "./pages/Vendor/VenderList";
+import CustomerList from "./pages/Customer/CustomerList";
+import ProductReviews from "./pages/Customer/ProductReviews";
+import CustomerFeedback from "./pages/Customer/CustomerFeedback";
 
 export default function App() {
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -158,6 +161,12 @@ export default function App() {
             {/* orders */}
             <Route path="/vendor/add" element={<AddVendor />} />
             <Route path="/vendor/list" element={< VenderList/>} />
+
+            {/* Customers */}
+            <Route path="/customers/all" element={<CustomerList />} />
+            <Route path="/customers/reviews" element={<Navigate to="/customers/reviews/products" replace />} />
+            <Route path="/customers/reviews/products" element={<ProductReviews />} />
+            <Route path="/customers/reviews/feedback" element={<CustomerFeedback />} />
 
             {/* Coupons */}
             {/* <Route path="/coupons/all" element={<CouponList />} /> */}

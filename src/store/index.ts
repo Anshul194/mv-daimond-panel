@@ -17,6 +17,8 @@ import blogSubCategoryReducer from "./slices/blogSubcategorySlice";
 import blogReducer from "./slices/blog";
 import vendorReducer from "./slices/vendorslice";
 import dashboardReducer from "./slices/dashboardSlice";
+import customerReducer from "./slices/customerSlice";
+import reviewReducer from "./slices/reviewSlice";
 
 export const store = configureStore({
   reducer: {
@@ -37,6 +39,8 @@ export const store = configureStore({
     blog: blogReducer,
     vendor: vendorReducer,
     dashboard : dashboardReducer,
+    customer: customerReducer,
+    review: reviewReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

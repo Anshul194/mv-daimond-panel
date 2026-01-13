@@ -107,25 +107,37 @@ const UpdateTaxClass = () => {
 
   useEffect(() => {
     const fetchTaxClass = async () => {
+      if (!taxId) return;
+      
       try {
         const res = await dispatch(getTaxById({ taxId }));
 
         console.log("Fetched Tax Class Data:", res);
-        if (res.payload) {
-          setFormData({
-            name: res.payload.data.name || "",
-            isActivated: !!res.payload.data.isActivated,
-          });
+        
+        // Check if the action was fulfilled (not rejected)
+        if (getTaxById.fulfilled.match(res) && res.payload) {
+          // Handle different response structures
+          // API returns: { status: 200, body: { success: true, data: { name, isActivated, ... } } }
+          const taxData = res.payload.body?.data || res.payload.data || res.payload;
+          
+          if (taxData && taxData.name !== undefined) {
+            setFormData({
+              name: taxData.name || "",
+              isActivated: taxData.isActivated === true || taxData.isActivated === "true",
+            });
+          } else {
+            console.error("Tax data not found in response:", res.payload);
+          }
+        } else if (getTaxById.rejected.match(res)) {
+          console.error("Failed to fetch tax class:", res.error);
         }
       } catch (error) {
         console.error("Error fetching tax class:", error);
       }
     };
 
-    if (taxId) {
-      fetchTaxClass();
-    }
-  }, [taxId]); // You can use this effect to fetch existing tax class data if needed
+    fetchTaxClass();
+  }, [taxId, dispatch]); // You can use this effect to fetch existing tax class data if needed
 
   // Popup/modal state for warning
   const [showWarningPopup, setShowWarningPopup] = useState(false);

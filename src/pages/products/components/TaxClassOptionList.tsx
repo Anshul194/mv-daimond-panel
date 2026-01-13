@@ -129,6 +129,22 @@ const TaxOptionsList: React.FC = () => {
   const navigate = useNavigate();
   console.log("Tax Options List Rendered", options);
 
+  // Helper function to format dates safely
+  const formatDate = (dateString: string | Date | undefined | null): string => {
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "N/A";
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch (error) {
+      return "N/A";
+    }
+  };
+
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [taxToEdit, setTaxToEdit] = useState<Tax | null>(null);
   const [taxToDelete, setTaxToDelete] = useState<Tax | null>(null);
@@ -447,7 +463,7 @@ const TaxOptionsList: React.FC = () => {
                     {tax.rate}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                    {new Date(tax.created_at).toLocaleDateString()}
+                    {formatDate(tax.createdAt || tax.created_at)}
                   </td>
                   <td className="px-6 py-4 text-right space-x-2">
                     <button

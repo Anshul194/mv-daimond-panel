@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Save, AlertCircle, Check, X, AlertTriangle } from "lucide-react";
 import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router";
 import { createTax } from "../../../store/slices/taxClass";
 
 const AddTaxClass = () => {
@@ -14,6 +15,7 @@ const AddTaxClass = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showActivationPopup, setShowActivationPopup] = useState(false);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -73,13 +75,11 @@ const AddTaxClass = () => {
       await dispatch(createTax(formData));
 
       setShowSuccess(true);
-      setFormData({
-        name: "",
-        isActivated: false
-      });
+      
+      // Redirect to list page after 1.5 seconds
       setTimeout(() => {
-        setShowSuccess(false);
-      }, 2000);
+        navigate("/taxes/all");
+      }, 1500);
     } catch (error) {
       console.error("Error creating tax class:", error);
     } finally {

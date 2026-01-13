@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Save, AlertCircle, Check } from "lucide-react";
 import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router";
 import { createTaxClassOption } from "../../../store/slices/taxClassOption";
 import { useAppSelector } from "../../../hooks/redux";
 import { fetchTaxes } from "../../../store/slices/taxClass";
@@ -24,6 +25,7 @@ const AddTaxOption = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   // Mock data - replace with actual API calls
   const [taxClasses, setTaxClasses] = useState([]);
@@ -42,24 +44,47 @@ const AddTaxOption = () => {
     if (!taxes || taxes.length === 0) {
       dispatch(fetchTaxes());
     }
+  }, [dispatch, taxes]);
+
+  useEffect(() => {
+    if (!formData.country_id) {
+      setStates([]);
+      return;
+    }
+    
     const getStates = async () => {
-      const response = await axiosInstance.get(`/api/state`, {
-        params: { countryId: formData.country_id },
-      });
-      const data = await response.data;
-      console.log("States data:", data);
-      setStates(data);
+      try {
+        const response = await axiosInstance.get(`/api/state`, {
+          params: { countryId: formData.country_id },
+        });
+        const data = await response.data;
+        console.log("States data:", data);
+        setStates(data);
+      } catch (error) {
+        console.error("Error fetching states:", error);
+        setStates([]);
+      }
     };
     getStates();
-  }, []);
+  }, [formData.country_id]);
   useEffect(() => {
+    if (!formData.state_id) {
+      setCities([]);
+      return;
+    }
+    
     const getCities = async () => {
-      const response = await axiosInstance.get(`/api/city`, {
-        params: { stateId: formData.state_id },
-      });
-      const data = await response.data;
-      console.log("Cities data:", data);
-      setCities(data);
+      try {
+        const response = await axiosInstance.get(`/api/city`, {
+          params: { stateId: formData.state_id },
+        });
+        const data = await response.data;
+        console.log("Cities data:", data);
+        setCities(data);
+      } catch (error) {
+        console.error("Error fetching cities:", error);
+        setCities([]);
+      }
     };
     getCities();
   }, [formData.state_id]);
@@ -141,21 +166,11 @@ const AddTaxOption = () => {
       await dispatch(createTaxClassOption(submitData));
 
       setShowSuccess(true);
-      setFormData({
-        class_id: "",
-        tax_name: "",
-        country_id: "",
-        state_id: "",
-        city_id: "",
-        postal_code: "",
-        priority: "",
-        is_compound: false,
-        is_shipping: false,
-        rate: "",
-      });
+      
+      // Redirect to list page after 1.5 seconds
       setTimeout(() => {
-        setShowSuccess(false);
-      }, 2000);
+        navigate("/taxes/options/all");
+      }, 1500);
     } catch (error) {
       console.error("Error creating tax option:", error);
     } finally {

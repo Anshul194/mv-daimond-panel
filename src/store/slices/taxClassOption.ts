@@ -99,6 +99,31 @@ export const fetchTaxClassOptions = createAsyncThunk<
     } = params || {};
 
     const queryParams = new URLSearchParams();
+    
+    // Add pagination
+    queryParams.append("page", String(page));
+    queryParams.append("limit", String(limit));
+    
+    // Add filters
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        queryParams.append(key, String(value));
+      }
+    });
+    
+    // Add search fields
+    if (searchFields && Object.keys(searchFields).length > 0) {
+      const searchValues = Object.values(searchFields).filter(v => v).join(" ");
+      if (searchValues) {
+        queryParams.append("search", searchValues);
+      }
+    }
+    
+    // Add sort parameters (backend expects sortBy and sortOrder)
+    const sortKey = Object.keys(sort)[0] || "createdAt";
+    const sortValue = sort[sortKey] || "desc";
+    queryParams.append("sortBy", sortKey);
+    queryParams.append("sortOrder", sortValue === "desc" ? "desc" : "asc");
 
     const response = await axiosInstance.get(
       `${API_BASE_URL}/api/tax-class-option?${queryParams.toString()}`

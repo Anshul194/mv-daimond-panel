@@ -35,7 +35,7 @@ import {
 interface Term {
   _id: string;
   value?: string;
-  image: null ;
+  image?: string | null;
   [key: string]: any;
 }
 
@@ -55,6 +55,10 @@ interface CustomAttribute {
   };
 }
 
+
+
+
+
 // Enhanced Terms Display Component
 interface DynamicTermsDisplayProps {
   terms: Term[];
@@ -65,10 +69,10 @@ interface DynamicTermsDisplayProps {
 const DynamicTermsDisplay: React.FC<DynamicTermsDisplayProps> = ({ terms, maxVisible = 4, className = "" }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [viewMode, setViewMode] = useState('compact');
-  
+
   // Ensure terms is always an array
   const safeTerms = Array.isArray(terms) ? terms : [];
-  
+
   const visibleTerms = isExpanded ? safeTerms : safeTerms.slice(0, maxVisible);
   const hiddenCount = Math.max(0, safeTerms.length - maxVisible);
   const hasMore = safeTerms.length > maxVisible;
@@ -95,28 +99,30 @@ const DynamicTermsDisplay: React.FC<DynamicTermsDisplayProps> = ({ terms, maxVis
     <div className="space-y-2">
       <div className="flex flex-wrap gap-1.5 items-center">
         {visibleTerms.slice(0, displayCount).map((term, index) => (
-          <span 
-            key={term._id || `term-${index}`} 
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 hover:scale-105 ${
-              index % 4 === 0 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' :
+          <span
+            key={term._id || `term-${index}`}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 hover:scale-105 ${index % 4 === 0 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' :
               index % 4 === 1 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
-              index % 4 === 2 ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' :
-              'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
-            }`}
+                index % 4 === 2 ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' :
+                  'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
+              }`}
           >
-            <div className={`w-2 h-2 rounded-full ${
-              index % 4 === 0 ? 'bg-blue-400' :
+            <div className={`w-2 h-2 rounded-full ${index % 4 === 0 ? 'bg-blue-400' :
               index % 4 === 1 ? 'bg-green-400' :
-              index % 4 === 2 ? 'bg-purple-400' :
-              'bg-orange-400'
-            }`}></div>
+                index % 4 === 2 ? 'bg-purple-400' :
+                  'bg-orange-400'
+              }`}></div>
             {term.value || 'N/A'}
             {term.image && (
-              <img src={`${import.meta.env.VITE_IMAGE_URL}${term.image}`} alt="" className="w-4 h-4 object-cover rounded-full border border-white shadow-sm" />
+              <TermImage
+                image={term.image}
+                alt=""
+                className="w-4 h-4 object-cover rounded-full border border-white shadow-sm"
+              />
             )}
           </span>
         ))}
-        
+
         {hasMore && !isExpanded && (
           <button
             onClick={() => setIsExpanded(true)}
@@ -127,19 +133,36 @@ const DynamicTermsDisplay: React.FC<DynamicTermsDisplayProps> = ({ terms, maxVis
           </button>
         )}
       </div>
-      
+
       {isExpanded && hasMore && (
         <div className="mt-3 space-y-2">
           <div className="flex flex-wrap gap-1.5">
             {visibleTerms.slice(displayCount).map((term, index) => (
-              <span 
+              <span
                 key={term._id || `term-expanded-${index}`}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-gray-50 text-gray-700 rounded-full hover:bg-gray-100 transition-colors dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
               >
                 <div className="w-2 h-2 rounded-full bg-gray-400"></div>
                 {term.value || 'N/A'}
                 {term.image && (
-                  <img src={`${import.meta.env.VITE_IMAGE_URL}${term.image}`} alt="" className="w-4 h-4 object-cover rounded-full border border-white shadow-sm" />
+                  <img
+                    src={`${(import.meta.env.VITE_IMAGE_URL || '').replace(/\/$/, '')}/${term.image.replace(/^\//, '')}`}
+                    alt=""
+                    className="w-4 h-4 object-cover rounded-full border border-white shadow-sm"
+                    onError={(e) => {
+                      const currentSrc = e.currentTarget.src;
+                      const remoteBase = "https://diamond.nexprism.in";
+                      const adminBase = "https://diamondadmin.nexprism.in";
+
+                      if (!currentSrc.includes(remoteBase) && !currentSrc.includes(adminBase) && term.image) {
+                        e.currentTarget.src = `${remoteBase}/${term.image.replace(/^\//, '')}`;
+                      } else if (currentSrc.includes(remoteBase) && !currentSrc.includes(adminBase)) {
+                        e.currentTarget.src = `${adminBase}/${term.image.replace(/^\//, '')}`;
+                      } else {
+                        e.currentTarget.style.display = 'none';
+                      }
+                    }}
+                  />
                 )}
               </span>
             ))}
@@ -163,6 +186,216 @@ const DynamicTermsDisplay: React.FC<DynamicTermsDisplayProps> = ({ terms, maxVis
   );
 };
 
+interface TermImageProps {
+  image: string | File;
+  alt: string;
+  className?: string;
+}
+
+const TermImage: React.FC<TermImageProps> = ({ image, alt, className }) => {
+  const [currentSrc, setCurrentSrc] = useState<string | null>(null);
+  const [hasError, setHasError] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const retryStageRef = React.useRef(0); // Use ref to track retry stage synchronously
+  const imageRef = React.useRef<HTMLImageElement | null>(null);
+
+  useEffect(() => {
+    if (!image) {
+      setCurrentSrc(null);
+      setHasError(false);
+      retryStageRef.current = 0;
+      return;
+    }
+
+    // Handle File objects
+    if (image instanceof File) {
+      setCurrentSrc(URL.createObjectURL(image));
+      setHasError(false);
+      retryStageRef.current = 0;
+      return;
+    }
+
+    // Handle string paths - trim all whitespace including internal spaces
+    const imagePath = typeof image === 'string' ? image.trim().replace(/\s+/g, '') : '';
+    if (!imagePath) {
+      setCurrentSrc(null);
+      setHasError(false);
+      retryStageRef.current = 0;
+      return;
+    }
+
+    // If it's already a full URL, use it directly
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://') || imagePath.startsWith('data:') || imagePath.startsWith('blob:')) {
+      setCurrentSrc(imagePath);
+      setHasError(false);
+      retryStageRef.current = 0;
+      return;
+    }
+
+    // Build initial URL - try multiple sources
+    // Images are stored on the backend server, so we need to use the backend API URL
+    // Get API base URL from env (same as axios config uses)
+    const apiBaseUrl = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_IMAGE_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const baseUrl = apiBaseUrl.replace(/\/$/, '');
+    let initialUrl: string;
+    
+    // Image path from backend is like "/attribute-images/heartshape.jpg"
+    // Ensure it starts with / for proper URL construction
+    const normalizedPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+    
+    if (baseUrl) {
+      // Use configured base URL (backend server)
+      initialUrl = `${baseUrl}${normalizedPath}`;
+    } else {
+      // Fallback: try relative to current origin (for local development)
+      initialUrl = normalizedPath;
+    }
+    
+    console.log('TermImage: Building initial URL', { 
+      imagePath, 
+      normalizedPath,
+      baseUrl, 
+      initialUrl,
+      VITE_BASE_URL: import.meta.env.VITE_BASE_URL,
+      VITE_IMAGE_URL: import.meta.env.VITE_IMAGE_URL,
+      VITE_API_URL: import.meta.env.VITE_API_URL,
+      origin: window.location.origin,
+      fullImagePath: image
+    });
+    setCurrentSrc(initialUrl);
+    setHasError(false);
+    setHasLoaded(false);
+    retryStageRef.current = 0;
+  }, [image]);
+
+  const handleLoad = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    // Image loaded successfully - prevent any error handlers from firing
+    setHasLoaded(true);
+    setHasError(false);
+    retryStageRef.current = 0; // Reset retry stage on successful load
+    console.log('TermImage: Image loaded successfully', e.currentTarget.src);
+  };
+
+  const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    // Don't trigger error if image has already loaded successfully
+    if (hasLoaded) {
+      console.log('TermImage: Ignoring error - image already loaded successfully');
+      return;
+    }
+
+    // Check if image actually failed to load
+    const img = e.currentTarget;
+    // Only treat as error if image is complete and has no natural dimensions
+    if (!img.complete || (img.complete && img.naturalHeight === 0 && img.naturalWidth === 0)) {
+      // Image failed to load - proceed with retry logic
+      console.log('TermImage: Image failed to load, attempting retry', img.src);
+    } else {
+      // Image might still be loading, don't treat as error yet
+      console.log('TermImage: Image still loading, ignoring error');
+      return;
+    }
+
+    if (image instanceof File || typeof image !== 'string') {
+      console.log('TermImage: Error with File or non-string', image);
+      setHasError(true);
+      return;
+    }
+
+    // Trim and remove all whitespace from image path
+    const imagePath = image.trim().replace(/\s+/g, '');
+    if (!imagePath) {
+      console.log('TermImage: Empty image path');
+      setHasError(true);
+      return;
+    }
+
+    // Extract clean path (normalize, handle full URLs)
+    let normalizedPath = imagePath;
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      // Extract path from full URL
+      try {
+        const url = new URL(imagePath);
+        normalizedPath = url.pathname;
+      } catch {
+        normalizedPath = imagePath.split('/').pop() || imagePath;
+        normalizedPath = normalizedPath.startsWith('/') ? normalizedPath : `/${normalizedPath}`;
+      }
+    } else {
+      // Ensure path starts with /
+      normalizedPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+    }
+
+    const currentStage = retryStageRef.current;
+    const currentSrc = e.currentTarget.src;
+    
+    // Get backend API URL
+    const apiBaseUrl = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_IMAGE_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const baseUrl = apiBaseUrl.replace(/\/$/, '');
+    
+    console.log('TermImage: Error handler', { 
+      imagePath, 
+      normalizedPath, 
+      currentStage, 
+      currentSrc,
+      baseUrl,
+      hasLoaded
+    });
+    
+    // Try different URLs based on retry stage
+    if (currentStage === 0) {
+      // Try with backend API URL (if different from initial)
+      retryStageRef.current = 1;
+      const newSrc = `${baseUrl}${normalizedPath}`;
+      console.log('TermImage: Retry 1 - Backend API', newSrc);
+      e.currentTarget.src = newSrc;
+    } else if (currentStage === 1) {
+      // Try Live Domain
+      retryStageRef.current = 2;
+      const newSrc = `https://diamond.nexprism.in${normalizedPath}`;
+      console.log('TermImage: Retry 2 - Live domain', newSrc);
+      e.currentTarget.src = newSrc;
+    } else if (currentStage === 2) {
+      // Try Admin Domain
+      retryStageRef.current = 3;
+      const newSrc = `https://diamondadmin.nexprism.in${normalizedPath}`;
+      console.log('TermImage: Retry 3 - Admin domain', newSrc);
+      e.currentTarget.src = newSrc;
+    } else {
+      // All retries failed - show placeholder or hide
+      const triedUrls = [
+        currentSrc,
+        `${baseUrl}${normalizedPath}`,
+        `https://diamond.nexprism.in${normalizedPath}`,
+        `https://diamondadmin.nexprism.in${normalizedPath}`
+      ];
+      console.error('TermImage: All retries failed for', imagePath, 'Tried:', triedUrls);
+      setHasError(true);
+      e.currentTarget.style.display = 'none';
+    }
+  };
+
+  if (hasError || !currentSrc) {
+    // Show a placeholder icon or text instead of hiding completely
+    return (
+      <div className={`${className} flex items-center justify-center bg-gray-100 border border-gray-300 rounded`}>
+        <span className="text-xs text-gray-400">No Image</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      ref={imageRef}
+      src={currentSrc}
+      alt={alt}
+      className={className}
+      onError={handleError}
+      onLoad={handleLoad}
+      style={{ display: 'block' }}
+    />
+  );
+};
+
 interface EditModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -180,10 +413,25 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onSubmit, attrib
     if (attribute) {
       setTitle(attribute.title);
       setTerms(
-        attribute?.terms?.map((t) => ({
-          value: t.value ?? "",
-          image: t.image ?? "",
-        }))
+        attribute?.terms?.map((t) => {
+          // Preserve image value as-is if it exists and is a non-empty string
+          // Check multiple possible image field names
+          const imageField = t.image || t.termImage || t.term_image || t.icon || t.iconUrl || t.imageUrl || "";
+          const imageValue = (imageField && typeof imageField === 'string' && imageField.trim() !== '') 
+            ? imageField 
+            : "";
+          console.log('EditModal: Loading term', { 
+            value: t.value, 
+            originalImage: t.image, 
+            imageField, 
+            imageValue,
+            fullTerm: t 
+          });
+          return {
+            value: t.value ?? "",
+            image: imageValue,
+          };
+        })
       );
       setErrors({});
     }
@@ -201,9 +449,18 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onSubmit, attrib
       setErrors({ title: "Title is required" });
       return;
     }
+
+    // Filter out empty terms and validate
+    const validTerms = terms.filter((t) => t.value && t.value.trim());
+
+    if (validTerms.length === 0) {
+      setErrors({ title: "At least one term is required" });
+      return;
+    }
+
     if (attribute) {
-        console.log("Submitting attribute:", { id: attribute._id, title: title.trim(), terms });
-      onSubmit({ id: attribute._id, title: title.trim(), terms });
+      console.log("Submitting attribute:", { id: attribute._id, title: title.trim(), terms: validTerms });
+      onSubmit({ id: attribute._id, title: title.trim(), terms: validTerms });
     }
   };
 
@@ -248,9 +505,8 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onSubmit, attrib
                   setTitle(e.target.value);
                   setErrors({});
                 }}
-                className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 transition-all ${
-                  errors.title ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : "border-gray-300"
-                }`}
+                className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 transition-all ${errors.title ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : "border-gray-300"
+                  }`}
                 placeholder="Enter attribute title"
                 disabled={isUpdating}
               />
@@ -262,45 +518,85 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onSubmit, attrib
               )}
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                Terms ({terms.length})
-              </label>
+              <div className="flex items-center justify-between mb-3">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Terms ({terms.length})
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setTerms([...terms, { value: "", image: "" }])}
+                  disabled={isUpdating}
+                  className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1"
+                >
+                  <Plus className="w-3 h-3" />
+                  Add Term
+                </button>
+              </div>
               <div className="space-y-3 max-h-64 overflow-y-auto">
-                {terms.map((term, idx) => (
-                  <div key={idx} className="flex gap-3 items-center bg-gray-50 dark:bg-gray-900/50 p-3 rounded-xl">
-                    <div className="flex-1">
-                      <input
-                        type="text"
-                        value={term.value}
-                        onChange={(e) => handleTermChange(idx, "value", e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500"
-                        placeholder="Term value"
-                        disabled={isUpdating}
-                      />
-                    </div>
-                   <input
-  type="file"
-  accept="image/*"
-  onChange={(e) => {
-    const file = e.target.files?.[0];
-    handleTermChange(idx, "image", file || "");
-  }}
-  className="text-sm text-gray-500 dark:text-gray-400"
-  disabled={isUpdating}
-/>
-                   {term.image && (
-  <img
-    src={
-      term.image instanceof File 
-        ? URL.createObjectURL(term.image)
-        : `${import.meta.env.VITE_IMAGE_URL}${term.image}`
-    }
-    alt=""
-    className="w-10 h-10 object-cover rounded-lg border-2 border-white shadow-sm"
-  />
-)}
+                {terms.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <p className="text-sm">No terms added yet. Click "Add Term" to add one.</p>
                   </div>
-                ))}
+                ) : (
+                  terms.map((term, idx) => (
+                    <div key={idx} className="flex gap-3 items-center bg-gray-50 dark:bg-gray-900/50 p-3 rounded-xl">
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          value={term.value}
+                          onChange={(e) => handleTermChange(idx, "value", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500"
+                          placeholder="Term value (e.g., Round, Cushion)"
+                          disabled={isUpdating}
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="relative">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                handleTermChange(idx, "image", file);
+                              }
+                            }}
+                            className="hidden"
+                            id={`term-image-${idx}`}
+                            disabled={isUpdating}
+                          />
+                          <label
+                            htmlFor={`term-image-${idx}`}
+                            className="cursor-pointer px-3 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                          >
+                            {term.image ? "Change" : "Upload"}
+                          </label>
+                        </div>
+                        {term.image && (term.image instanceof File || (typeof term.image === 'string' && term.image.trim() !== '')) && (
+                          <div className="relative">
+                            <TermImage
+                              image={term.image}
+                              alt={term.value || "Term image"}
+                              className="w-10 h-10 object-cover rounded-lg border-2 border-white shadow-sm"
+                            />
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newTerms = terms.filter((_, i) => i !== idx);
+                            setTerms(newTerms);
+                          }}
+                          disabled={isUpdating}
+                          className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
+                          title="Remove term"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
             <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -435,7 +731,7 @@ const CustomAttributeList = () => {
   const [attributeToDelete, setAttributeToDelete] = useState<CustomAttribute | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  
+
   // Filter states
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -556,64 +852,64 @@ const CustomAttributeList = () => {
     setIsUpdating(false);
   };
 
- // Fixed handleEditSubmit function
-const handleEditSubmit = async ({
-  id,
-  title,
-  terms,
-}: {
-  id: string;
-  title: string;
-  terms: { value: string; image: string | File }[];
-}) => {
-  
-  setIsUpdating(true);
-  try {
-    // Process all terms, filtering out empty values and handling images correctly
-    const processedTerms = terms
-      .filter((t) => t.value && t.value.trim()) // Only filter out terms without values
-      .map((t) => {
-        // Handle image field properly:
-        // - If image is a File object (new upload), keep it as File
-        // - If image is a string (existing image path), keep it as string  
-        // - If image is empty string or null, set to null
-        let processedImage;
-        if (t.image instanceof File) {
-          // New file upload
-          processedImage = t.image;
-        } else if (typeof t.image === 'string' && t.image.trim() !== '') {
-          // Existing image path
-          processedImage = t.image;
-        } else {
-          // No image or empty string
-          processedImage = null;
-        }
+  // Fixed handleEditSubmit function
+  const handleEditSubmit = async ({
+    id,
+    title,
+    terms,
+  }: {
+    id: string;
+    title: string;
+    terms: { value: string; image: string | File }[];
+  }) => {
 
-        return {
-          value: t.value.trim(),
-          image: processedImage
-        };
-      });
+    setIsUpdating(true);
+    try {
+      // Process all terms, filtering out empty values and handling images correctly
+      const processedTerms = terms
+        .filter((t) => t.value && t.value.trim()) // Only filter out terms without values
+        .map((t) => {
+          // Handle image field properly:
+          // - If image is a File object (new upload), keep it as File
+          // - If image is a string (existing image path), keep it as string  
+          // - If image is empty string or null, set to null
+          let processedImage;
+          if (t.image instanceof File) {
+            // New file upload
+            processedImage = t.image;
+          } else if (typeof t.image === 'string' && t.image.trim() !== '') {
+            // Existing image path
+            processedImage = t.image;
+          } else {
+            // No image or empty string
+            processedImage = null;
+          }
 
-    console.log('Submitting processed terms:', processedTerms);
+          return {
+            value: t.value.trim(),
+            image: processedImage
+          };
+        });
 
-    await dispatch(
-      updateCustomAttribute({
-        id,
-        title: title.trim(),
-        terms: processedTerms,
-      })
-    ).unwrap();
-    
-    toast.success("Attribute updated successfully");
-    closeEditModal();
-    handlePageChange(currentPage);
-  } catch (e) {
-    console.error('Update error:', e);
-    setIsUpdating(false);
-    toast.error("Failed to update attribute");
-  }
-};
+      console.log('Submitting processed terms:', processedTerms);
+
+      await dispatch(
+        updateCustomAttribute({
+          id,
+          title: title.trim(),
+          terms: processedTerms,
+        })
+      ).unwrap();
+
+      toast.success("Attribute updated successfully");
+      closeEditModal();
+      handlePageChange(currentPage);
+    } catch (e) {
+      console.error('Update error:', e);
+      setIsUpdating(false);
+      toast.error("Failed to update attribute");
+    }
+  };
 
   const openDeleteModal = (attr: React.SetStateAction<CustomAttribute | null>) => {
     setAttributeToDelete(attr);
@@ -651,21 +947,21 @@ const handleEditSubmit = async ({
     const maxPages = 5;
     const start = Math.max(1, currentPage - Math.floor(maxPages / 2));
     const end = Math.min(totalPagesCount, start + maxPages - 1);
-    
+
     if (start > 1) {
       pages.push(1);
       if (start > 2) pages.push("...");
     }
-    
+
     for (let i = start; i <= end; i++) {
       pages.push(i);
     }
-    
+
     if (end < totalPagesCount) {
       if (end < totalPagesCount - 1) pages.push("...");
       pages.push(totalPagesCount);
     }
-    
+
     return pages;
   };
 
@@ -721,7 +1017,7 @@ const handleEditSubmit = async ({
               </button>
             </div>
           </div>
-          
+
           {/* Search and Filter Controls */}
           <div className="mt-6 space-y-4">
             {/* Search Bar */}
@@ -746,7 +1042,7 @@ const handleEditSubmit = async ({
                 Filters
                 {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </button>
-              
+
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-700 dark:text-gray-300">Show:</span>
@@ -761,7 +1057,7 @@ const handleEditSubmit = async ({
                     <option value={50}>50</option>
                   </select>
                 </div>
-                
+
                 {(searchTerm || Object.values(filters).some(f => f && (typeof f === 'object' ? Object.values(f).some(v => v) : f))) && (
                   <button
                     onClick={clearFilters}
@@ -787,12 +1083,12 @@ const handleEditSubmit = async ({
                       type="date"
                       value={filters.dateRange.start}
                       onChange={(e) => handleFilterChange('dateRange', { ...filters.dateRange, start: e.target.value })}
-// Continuing from the cut-off point in the filters section:
+                      // Continuing from the cut-off point in the filters section:
 
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Created To
@@ -966,8 +1262,8 @@ const handleEditSubmit = async ({
                             </div>
                           </td>
                           <td className="px-6 py-4">
-                            <DynamicTermsDisplay 
-                              terms={attribute.terms || []} 
+                            <DynamicTermsDisplay
+                              terms={attribute.terms || []}
                               maxVisible={3}
                               className="max-w-md"
                             />
@@ -1030,7 +1326,7 @@ const handleEditSubmit = async ({
                         <span className="font-semibold">{Math.min(currentPage * itemsPerPage, totalItems)}</span> of{' '}
                         <span className="font-semibold">{totalItems}</span> results
                       </div>
-                      
+
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handlePageChange(currentPage - 1)}
@@ -1040,18 +1336,17 @@ const handleEditSubmit = async ({
                         >
                           <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                         </button>
-                        
+
                         <div className="flex items-center gap-1">
                           {generatePageNumbers().map((pageNum, idx) => (
                             typeof pageNum === "number" ? (
                               <button
                                 key={idx}
                                 onClick={() => handlePageChange(pageNum)}
-                                className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${
-                                  pageNum === currentPage
-                                    ? "bg-indigo-500 text-white shadow-md"
-                                    : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600"
-                                }`}
+                                className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${pageNum === currentPage
+                                  ? "bg-indigo-500 text-white shadow-md"
+                                  : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600"
+                                  }`}
                               >
                                 {pageNum}
                               </button>
@@ -1062,7 +1357,7 @@ const handleEditSubmit = async ({
                             )
                           ))}
                         </div>
-                        
+
                         <button
                           onClick={() => handlePageChange(currentPage + 1)}
                           disabled={currentPage >= totalPagesCount}

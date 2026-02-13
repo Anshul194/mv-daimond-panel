@@ -33,6 +33,7 @@ const InventorySection: React.FC<InventorySectionProps> = ({
   const [metalTypeResponse, setMetalTypeResponse] = React.useState<string[]>(
     []
   );
+  const [shapeResponse, setShapeResponse] = React.useState<any[]>([]);
 
   const getData = async () => {
     try {
@@ -49,9 +50,44 @@ const InventorySection: React.FC<InventorySectionProps> = ({
       console.log("Fetched metal types:", metalTypeResponseApi);
       setMetalTypeResponse(metalTypeResponseApi?.data?.data?.terms || []);
 
+      // Fetch Shape attributes
+      try {
+        const shapeResponseApi = await axiosInstance(
+          "/api/productattribute?filters=" + encodeURIComponent(JSON.stringify({ title: "Shape" }))
+        );
+        console.log("Fetched shapes full response:", shapeResponseApi);
+        // Try multiple possible response structures
+        const shapeTerms = shapeResponseApi?.data?.data?.data?.[0]?.terms || 
+                          shapeResponseApi?.data?.body?.data?.data?.[0]?.terms ||
+                          shapeResponseApi?.data?.data?.terms ||
+                          shapeResponseApi?.data?.body?.data?.terms ||
+                          [];
+        console.log("Extracted shapes:", shapeTerms);
+        setShapeResponse(shapeTerms);
+      } catch (error) {
+        console.error("Error fetching shapes:", error);
+        setShapeResponse([]);
+      }
+
+
       const attributeResponse = await axiosInstance("/api/productattribute");
-      setAttributes(attributeResponse.data.data.data);
-      console.log("Fetched attributes:", attributeResponse.data.data.data);
+      const allAttributes = attributeResponse.data?.data?.data || attributeResponse.data?.body?.data?.data || attributeResponse.data?.data || [];
+      setAttributes(allAttributes);
+      console.log("Fetched attributes:", allAttributes);
+      
+      // Fallback: Extract Shape and Carat from all attributes if filtered fetch failed
+      if (shapeResponse.length === 0 && allAttributes.length > 0) {
+        const shapeAttr = allAttributes.find(
+          (attr) => attr.title?.toLowerCase() === "shape" || attr.title?.toLowerCase()?.includes("shape")
+        );
+        if (shapeAttr?.terms && Array.isArray(shapeAttr.terms) && shapeAttr.terms.length > 0) {
+          console.log("Found shapes in all attributes:", shapeAttr.terms);
+          setShapeResponse(shapeAttr.terms);
+        } else {
+          console.log("Shape attribute found but no terms:", shapeAttr);
+        }
+      }
+      
 
       console.log("Fetched colors:", response.data.body.data.result);
       console.log("Fetched sizes:", sizeResponse.data.body.data.result);
@@ -64,12 +100,14 @@ const InventorySection: React.FC<InventorySectionProps> = ({
     getData();
   }, []);
   const addVariant = () => {
-    const newVariants = [
+      const newVariants = [
       ...(formData.variants || []),
       {
         id: Date.now(),
         size: "",
         color: "",
+        shape: "",
+        carat: "",
         price: "",
         stock: "",
         // custom: [],
@@ -230,13 +268,46 @@ const InventorySection: React.FC<InventorySectionProps> = ({
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-colors"
                   >
                     <option value="">Select Metal Type</option>
-                    {metalTypeResponse?.map((color) => (
-                      <option key={color._id} value={color._id}>
-                        {color.value}
+                    {metalTypeResponse?.map((metal) => (
+                      <option key={metal._id} value={metal._id}>
+                        {metal.value}
                       </option>
                     ))}
                   </select>
                 </div>
+                <div className="mb-0">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Shape
+                  </label>
+                  <select
+                    value={variant.shape || ""}
+                    onChange={(e) =>
+                      updateVariant(variant.id, "shape", e.target.value)
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-colors"
+                  >
+                    <option value="">Select Shape</option>
+                    {Array.isArray(shapeResponse) && shapeResponse.length > 0 ? (
+                      shapeResponse.map((shape) => (
+                        <option key={shape._id || shape.id || shape.value} value={shape._id || shape.id || shape.value}>
+                          {shape.value || shape.name || shape}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="" disabled>No shape options available</option>
+                    )}
+                  </select>
+                </div>
+                <InputField
+                  label="Carat"
+                  placeholder="Enter carat value (e.g., 2, 2.5, 3)"
+                  type="text"
+                  value={variant.carat || ""}
+                  onChange={(e) =>
+                    updateVariant(variant.id, "carat", e.target.value)
+                  }
+                  className="mb-0"
+                />
 
                 <InputField
                   label="Additional Price"

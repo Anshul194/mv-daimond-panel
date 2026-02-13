@@ -77,23 +77,11 @@ export default function AddCustomAttribute() {
       });
       return;
     }
-    if (terms.some((term) => !term.value.trim())) {
-      toast.error("All term values are required.", {
-        duration: 4000,
-        position: "top-right",
-        style: {
-          background: '#EF4444',
-          color: '#fff',
-          zIndex: 9999,
-          minWidth: '300px',
-          fontSize: '14px',
-          padding: '16px',
-        },
-      });
-      return;
-    }
-    if (terms.some((term) => !term.image)) {
-      toast.error("All term images are required.", {
+    // Filter out terms with empty values
+    const validTerms = terms.filter((term) => term.value.trim());
+    
+    if (validTerms.length === 0) {
+      toast.error("At least one term value is required.", {
         duration: 4000,
         position: "top-right",
         style: {
@@ -111,10 +99,10 @@ export default function AddCustomAttribute() {
       await dispatch(
         createCustomAttribute({
           title,
-          category_id: categoryId,
-          terms: terms.map((term) => ({
-            value: term.value,
-            image: term.image as File,
+          category_id: categoryId || undefined, // Send undefined if empty
+          terms: validTerms.map((term) => ({
+            value: term.value.trim(),
+            image: term.image || null, // Allow null/undefined for images
           })),
         })
       ).unwrap();
@@ -235,10 +223,10 @@ export default function AddCustomAttribute() {
                 required
               />
             </div>
-            {/* Category Dropdown */}
+            {/* Category Dropdown - Optional */}
             <div>
               <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Course Category
+                Product Category <span className="text-gray-400 text-xs">(Optional)</span>
               </label>
               <select
                 value={categoryId}
@@ -246,7 +234,7 @@ export default function AddCustomAttribute() {
                 className="w-full rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                 disabled={categoriesLoading}
               >
-                <option value="">Select a category</option>
+                <option value="">Select a category (Optional)</option>
                 {categories.map((category) => (
                   <option key={category._id} value={category._id}>
                     {category.name}
@@ -256,6 +244,9 @@ export default function AddCustomAttribute() {
               {categoriesLoading && (
                 <p className="text-sm text-gray-500">Loading categories...</p>
               )}
+              <p className="text-xs text-gray-500 mt-1">
+                Leave empty to create a global attribute (e.g., "Shape", "Metal", "Stone")
+              </p>
             </div>
             {/* Terms */}
             <div>
@@ -274,19 +265,28 @@ export default function AddCustomAttribute() {
                     placeholder="Term value"
                     required
                   />
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) =>
-                      handleTermChange(
-                        idx,
-                        "image",
-                        e.target.files?.[0] || null
-                      )
-                    }
-                    className="flex-1"
-                    required
-                  />
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) =>
+                        handleTermChange(
+                          idx,
+                          "image",
+                          e.target.files?.[0] || null
+                        )
+                      }
+                      className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-700 dark:file:text-gray-300"
+                    />
+                    {term.image && (
+                      <p className="text-xs text-green-600 mt-1">
+                        ✓ Image selected
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-500 mt-1">
+                      Optional: Upload shape icon/image
+                    </p>
+                  </div>
                   {terms.length > 1 && (
                     <button
                       type="button"

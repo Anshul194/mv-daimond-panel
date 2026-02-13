@@ -22,8 +22,6 @@ const initialState: CustomerState = {
   totalPages: 1,
 };
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
-
 // Async thunk for fetching customers
 export const fetchCustomers = createAsyncThunk<
   any,
@@ -32,18 +30,9 @@ export const fetchCustomers = createAsyncThunk<
 >("customer/fetchCustomers", async (params = {}, { rejectWithValue }) => {
   try {
     const { page = 1, limit = 10 } = params || {};
-    // Get token from localStorage
-    const token = localStorage.getItem("accessToken") || "";
-    if (!token) {
-      return rejectWithValue("No access token found");
-    }
+    // Token is automatically added by axios interceptor
     const response = await axiosInstance.get(
-      `${API_BASE_URL}/api/user/all?page=${page}&limit=${limit}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
+      `/api/user/all?page=${page}&limit=${limit}`
     );
     return response.data;
   } catch (err: any) {

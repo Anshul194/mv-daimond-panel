@@ -22,8 +22,6 @@ const initialState: ReviewState = {
   totalPages: 1,
 };
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
-
 // Async thunk for fetching reviews
 export const fetchReviews = createAsyncThunk<
   any,
@@ -47,8 +45,9 @@ export const fetchReviews = createAsyncThunk<
     queryParams.append("searchFields", JSON.stringify({}));
     queryParams.append("sort", JSON.stringify({ createdAt: "desc" }));
 
+    // Token is automatically added by axios interceptor
     const response = await axiosInstance.get(
-      `${API_BASE_URL}/api/review?${queryParams.toString()}`
+      `/api/review?${queryParams.toString()}`
     );
     return response.data;
   } catch (err: any) {

@@ -191,6 +191,12 @@ const ProductForm = () => {
           if (variant.color) {
             formDataToSend.append(`item_color[${idx}]`, variant.color);
           }
+          if (variant.shape) {
+            formDataToSend.append(`item_shape[${idx}]`, variant.shape);
+          }
+          if (variant.carat) {
+            formDataToSend.append(`item_carat[${idx}]`, variant.carat);
+          }
           if (variant.price) {
             formDataToSend.append(
               `item_additional_price[${idx}]`,

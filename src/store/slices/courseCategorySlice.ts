@@ -45,7 +45,7 @@ interface CourseCategoryState {
         totalPages: number;
     };
     searchQuery: string;
- filters: {
+    filters: {
         status: string;
         isDeleted: boolean;
     };
@@ -140,15 +140,15 @@ export const fetchCourseCategories = createAsyncThunk<
         const queryParams = new URLSearchParams();
         queryParams.append('page', page.toString());
         queryParams.append('limit', limit.toString());
-        
+
         if (Object.keys(filters).length > 0) {
             queryParams.append('filters', JSON.stringify(filters));
         }
-        
+
         if (Object.keys(searchFields).length > 0) {
             queryParams.append('searchFields', JSON.stringify(searchFields));
         }
-        
+
         if (Object.keys(sort).length > 0) {
             queryParams.append('sort', JSON.stringify(sort));
         }
@@ -167,13 +167,13 @@ export const fetchCourseCategories = createAsyncThunk<
         );
 
         console.log('Fetched  categories:', response.data);
-        
+
         const data = response.data;
 
         console.log('API Total Documents:', data.body.totalDocuments || data.body.total);
         console.log('API Total Pages:', data.body);
         console.log('API Pagination:', data.body.currentPage || data.body);
-        console.log('API Limit:',data);
+        console.log('API Limit:', data);
 
         return {
             categories: data?.body?.data?.result || [],
@@ -199,7 +199,7 @@ export const fetchsubCategoriesByCategory = createAsyncThunk<
         );
 
         console.log('Fetched subcategories for category:', categoryId, response.data);
-        return response.data?.data || [];
+        return response.data?.body?.data || [];
     } catch (err: any) {
         return rejectWithValue(err.response?.data?.message || err.message);
     }
@@ -267,7 +267,7 @@ export const fetchSubCategories = createAsyncThunk<
         console.log('Fetched subcategories:', data?.body?.data?.results);
         return {
             subCategories: data?.body?.data?.results || [],
-             pagination: {
+            pagination: {
                 total: data.body?.data?.totalDocuments || data.body.total || 0,
                 page: data.body?.data?.currentPage || data.body.page || 1,
                 limit: data.body?.data?.limit || limit,
@@ -287,7 +287,7 @@ export const deleteCourseCategory = createAsyncThunk<
 >('courseCategories/delete', async (categoryId, { rejectWithValue }) => {
     try {
 
-          await axiosInstance.delete(`${API_BASE_URL}/api/category/${categoryId}`,
+        await axiosInstance.delete(`${API_BASE_URL}/api/category/${categoryId}`,
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -319,23 +319,23 @@ export const deleteSubCategory = createAsyncThunk<
 
 
 export const createCourseCategory = createAsyncThunk<
-  CourseCategory,
-  FormData
+    CourseCategory,
+    FormData
 >('courseCategories/create', async (formData, { rejectWithValue }) => {
-  try {
-    const response = await axiosInstance.post(
-      `${API_BASE_URL}/api/category`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
-    );
-    return response.data?.data?.category;
-  } catch (err: any) {
-    return rejectWithValue(err.response?.data?.message || err.message);
-  }
+    try {
+        const response = await axiosInstance.post(
+            `${API_BASE_URL}/api/category`,
+            formData,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            }
+        );
+        return response.data?.data?.category;
+    } catch (err: any) {
+        return rejectWithValue(err.response?.data?.message || err.message);
+    }
 });
 
 
@@ -447,25 +447,25 @@ const courseCategorySlice = createSlice({
                 state.loading = false;
                 state.error = action.payload as string;
             })
-            .addCase(createCourseCategory.pending, (state:any) => {
+            .addCase(createCourseCategory.pending, (state: any) => {
                 state.loading = true;
                 state.error = null;
             }
             )
-            .addCase(createCourseCategory.fulfilled, (state:any, action:any) => {
+            .addCase(createCourseCategory.fulfilled, (state: any, action: any) => {
                 state.loading = false;
                 state.categories.push(action.payload);
             }
             )
-            .addCase(createCourseCategory.rejected, (state:any, action:any) => {
+            .addCase(createCourseCategory.rejected, (state: any, action: any) => {
                 state.loading = false;
                 state.error = action.payload as string;
             })
-            .addCase(createSubCategory.pending, (state:any) => {
+            .addCase(createSubCategory.pending, (state: any) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(createSubCategory.fulfilled, (state:any, action:any) => {
+            .addCase(createSubCategory.fulfilled, (state: any, action: any) => {
                 state.loading = false;
                 // Assuming you want to add the new subcategory to the categories array
                 const categoryIndex = state.categories.findIndex(
@@ -475,45 +475,45 @@ const courseCategorySlice = createSlice({
                     state.categories[categoryIndex].subCategoryCount += 1; // Update subcategory count
                 }
             })
-            .addCase(createSubCategory.rejected, (state:any, action:any) => {
+            .addCase(createSubCategory.rejected, (state: any, action: any) => {
                 state.loading = false;
                 state.error = action.payload as string;
             })
-            .addCase(deleteCourseCategory.pending, (state:any) => {
+            .addCase(deleteCourseCategory.pending, (state: any) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(deleteCourseCategory.fulfilled, (state:any, action:any) => {
+            .addCase(deleteCourseCategory.fulfilled, (state: any, action: any) => {
                 state.loading = false;
                 // Remove the deleted category from the state
                 state.categories = state.categories.filter(
                     (category: CourseCategory) => category._id !== action.payload
                 );
             })
-            .addCase(deleteCourseCategory.rejected, (state:any, action:any) => {
+            .addCase(deleteCourseCategory.rejected, (state: any, action: any) => {
                 state.loading = false;
                 state.error = action.payload as string;
             })
-            .addCase(fetchSubCategories.pending, (state:any) => {
+            .addCase(fetchSubCategories.pending, (state: any) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(fetchSubCategories.fulfilled, (state:any, action:any) => {
+            .addCase(fetchSubCategories.fulfilled, (state: any, action: any) => {
                 state.loading = false;
                 // Assuming you want to add the fetched subcategories to the state
-                state.subCategories  = action.payload.subCategories;
+                state.subCategories = action.payload.subCategories;
                 state.pagination = action.payload.pagination;
             })
-            .addCase(fetchSubCategories.rejected, (state:any, action:any) => {
+            .addCase(fetchSubCategories.rejected, (state: any, action: any) => {
                 state.loading = false;
                 state.error = action.payload as string;
             })
 
-            .addCase(deleteSubCategory.pending, (state:any) => {
+            .addCase(deleteSubCategory.pending, (state: any) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(deleteSubCategory.fulfilled, (state:any, action:any) => {
+            .addCase(deleteSubCategory.fulfilled, (state: any, action: any) => {
                 state.loading = false;
                 const categoryIndex = state.categories.findIndex(
                     (cat: CourseCategory) => cat._id === action.payload.categoryId
@@ -522,15 +522,15 @@ const courseCategorySlice = createSlice({
                     state.categories[categoryIndex].subCategoryCount -= 1;
                 }
             })
-            .addCase(deleteSubCategory.rejected, (state:any, action:any) => {
+            .addCase(deleteSubCategory.rejected, (state: any, action: any) => {
                 state.loading = false;
                 state.error = action.payload as string;
             })
-            .addCase(updateCourseCategory.pending, (state:any) => {
+            .addCase(updateCourseCategory.pending, (state: any) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(updateCourseCategory.fulfilled, (state:any, action:any) => {
+            .addCase(updateCourseCategory.fulfilled, (state: any, action: any) => {
                 state.loading = false;
                 const index = state.categories.findIndex(
                     (category: CourseCategory) => category._id === action.payload._id
@@ -539,15 +539,15 @@ const courseCategorySlice = createSlice({
                     state.categories[index] = action.payload;
                 }
             })
-            .addCase(updateCourseCategory.rejected, (state:any, action:any) => {
+            .addCase(updateCourseCategory.rejected, (state: any, action: any) => {
                 state.loading = false;
                 state.error = action.payload as string;
             })
-            .addCase(fetchCourseCategoryById.pending, (state:any) => {
+            .addCase(fetchCourseCategoryById.pending, (state: any) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(fetchCourseCategoryById.fulfilled, (state:any, action:any) => {
+            .addCase(fetchCourseCategoryById.fulfilled, (state: any, action: any) => {
                 state.loading = false;
                 // Assuming you want to update the state with the fetched category
                 const index = state.categories.findIndex(
@@ -559,15 +559,15 @@ const courseCategorySlice = createSlice({
                     state.categories.push(action.payload);
                 }
             })
-            .addCase(fetchCourseCategoryById.rejected, (state:any, action:any) => {
+            .addCase(fetchCourseCategoryById.rejected, (state: any, action: any) => {
                 state.loading = false;
                 state.error = action.payload as string;
             })
-            .addCase(fetchSubCategoryById.pending, (state:any) => {
+            .addCase(fetchSubCategoryById.pending, (state: any) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(fetchSubCategoryById.fulfilled, (state:any, action:any) => {
+            .addCase(fetchSubCategoryById.fulfilled, (state: any, action: any) => {
                 state.loading = false;
                 // Assuming you want to update the state with the fetched subcategory
                 const index = state.subCategories.findIndex(
@@ -579,15 +579,15 @@ const courseCategorySlice = createSlice({
                     state.subCategories.push(action.payload);
                 }
             })
-            .addCase(fetchSubCategoryById.rejected, (state:any, action:any) => {
+            .addCase(fetchSubCategoryById.rejected, (state: any, action: any) => {
                 state.loading = false;
                 state.error = action.payload as string;
             })
-            .addCase(updateSubCategory.pending, (state:any) => {
+            .addCase(updateSubCategory.pending, (state: any) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(updateSubCategory.fulfilled, (state:any, action:any) => {
+            .addCase(updateSubCategory.fulfilled, (state: any, action: any) => {
                 state.loading = false;
                 const index = state.subCategories.findIndex(
                     (subCategory: SubCategory) => subCategory._id === action.payload._id
@@ -596,30 +596,30 @@ const courseCategorySlice = createSlice({
                     state.subCategories[index] = action.payload;
                 }
             })
-            .addCase(updateSubCategory.rejected, (state:any, action:any) => {
+            .addCase(updateSubCategory.rejected, (state: any, action: any) => {
                 state.loading = false;
                 state.error = action.payload as string;
             })
-            .addCase(fetchsubCategoriesByCategory.pending, (state:any) => {
+            .addCase(fetchsubCategoriesByCategory.pending, (state: any) => {
                 state.loading = true;
                 state.error = null;
             }
             )
-            .addCase(fetchsubCategoriesByCategory.fulfilled, (state:any, action:any) => {
+            .addCase(fetchsubCategoriesByCategory.fulfilled, (state: any, action: any) => {
                 state.loading = false;
                 // Assuming you want to update the subCategories state with the fetched subcategories
                 state.subCategories = action.payload;
             }
             )
-            .addCase(fetchsubCategoriesByCategory.rejected, (state:any, action:any) => {
+            .addCase(fetchsubCategoriesByCategory.rejected, (state: any, action: any) => {
                 state.loading = false;
                 state.error = action.payload as string;
             });
 
-           
 
 
-        
+
+
 
 
 

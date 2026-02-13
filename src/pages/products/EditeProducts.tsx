@@ -102,8 +102,9 @@ const EditProductForm = () => {
     try {
       const response = await axiosInstance(`/api/product/${productId}`);
 
-      const data = response.data;
+      const data = response.data?.body?.data || response.data?.data || response.data;
       console.log("Fetched product data:", data);
+      console.log("Stock status from API:", data?.inventory?.stock_status, data?.stockStatus);
       const variantData = data.inventory?.inventory_details.map((variant) => {
         return {
           size: variant.size || "",
@@ -131,8 +132,8 @@ const EditProductForm = () => {
         sku: data?.inventory?.sku || "",
         stockQuantity: data?.inventory?.stock_count || "",
         lowStockThreshold: data?.inventory?.lowStockThreshold || "5",
-        stockStatus: "in_stock",
-        manageStock: "yes",
+        stockStatus: data?.inventory?.stock_status || data?.stockStatus || "in_stock",
+        manageStock: data?.inventory?.manage_stock || data?.manageStock || "yes",
         images: data.image || [],
         variants: variantData || [],
         attributes: data.attributes || [],
@@ -215,9 +216,8 @@ const EditProductForm = () => {
       if (formData.lowStockThreshold) {
         formDataToSend.append("lowStockThreshold", formData.lowStockThreshold);
       }
-      if (formData.stockStatus) {
-        formDataToSend.append("stockStatus", formData.stockStatus);
-      }
+      // Always send stockStatus, even if it's empty or undefined
+      formDataToSend.append("stockStatus", formData.stockStatus || "in_stock");
       if (formData.manageStock) {
         formDataToSend.append("manageStock", formData.manageStock);
       }
@@ -317,6 +317,7 @@ const EditProductForm = () => {
 
       // Log FormData contents for debugging (optional)
       console.log("FormData contents:");
+      console.log("Current formData.stockStatus:", formData.stockStatus);
       for (let pair of formDataToSend.entries()) {
         console.log(pair[0] + ": " + pair[1]);
       }
@@ -335,33 +336,14 @@ const EditProductForm = () => {
       }
 
       // Dispatch the action
-      await dispatch(
+      const updateResponse = await dispatch(
         updateProduct({ productId: productId, data: formDataToSend })
       ).unwrap();
 
-      // Reset form data after successful submission
-      setFormData({
-        name: "",
-        slug: "",
-        shortDescription: "",
-        description: "",
-        category_id: "",
-        categoryName: "",
-        subcategory_id: "",
-        subcategoryName: "",
-        regularPrice: "",
-        salePrice: "",
-        sku: "",
-        stockQuantity: "",
-        lowStockThreshold: "5",
-        stockStatus: "in_stock",
-        manageStock: "yes",
-        images: [],
-        variants: [],
-        attributes: [],
-        categories: [],
-        tax: "",
-      });
+      console.log("Update response:", updateResponse);
+      
+      // Refetch the updated product data to sync UI with server
+      await getData();
 
       alert("Product updated successfully!");
     } catch (error) {

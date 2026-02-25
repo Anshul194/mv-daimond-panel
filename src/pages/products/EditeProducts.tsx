@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "react-router";
 import { updateProduct, fetchProductAttributes } from "../../store/slices/product";
 import Sidebar from "./components/Sidebar";
 import GeneralInfoSection from "./components/GeneralInfoSection";
@@ -7,6 +8,7 @@ import PriceSection from "./components/PriceSection";
 import ImagesSection from "./components/ImagesSection";
 import InventorySection from "./components/InventorySection";
 import AttributesSection from "./components/AttributesSection";
+import DeliverySection from "./components/DeliverySection";
 import type { AppDispatch, RootState } from "../../store";
 import axiosInstance from "../../services/axiosConfig";
 import PropertiesSection from "./components/Propertys";

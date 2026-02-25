@@ -3,96 +3,118 @@ import { Plus, X, AlertTriangle } from "lucide-react";
 import InputField from "./InputField ";
 import axiosInstance from "../../../services/axiosConfig";
 
-interface Variant {
-  id: number;
-  size: string;
-  color: string;
-  sku: string;
-  price: string;
-  stock: string;
-  image: File | null;
-}
+import { Variant, ProductFormData } from "../types";
 
 interface InventorySectionProps {
-  formData: {
-    variants?: Variant[];
-    lowStockThreshold?: string;
-    manageStock?: string;
-    [key: string]: any;
-  };
+  formData: ProductFormData;
   updateFormData: (field: string, value: any) => void;
 }
 
-const InventorySection: React.FC<InventorySectionProps> = ({
+const AttributesSection: React.FC<InventorySectionProps> = ({
   formData,
   updateFormData,
 }) => {
-  const [colors, setColors] = React.useState<string[]>([]);
-  const [sizes, setSizes] = React.useState<string[]>([]);
-  const [attributes, setAttributes] = React.useState<string[]>([]);
-  const [metalTypeResponse, setMetalTypeResponse] = React.useState<string[]>(
+  const [sizes, setSizes] = React.useState<any[]>([]);
+  const [metalTypeResponse, setMetalTypeResponse] = React.useState<any[]>(
     []
   );
   const [shapeResponse, setShapeResponse] = React.useState<any[]>([]);
+  const [caratResponse, setCaratResponse] = React.useState<any[]>([]);
 
   const getData = async () => {
     try {
-      const response = await axiosInstance("/api/colorcode");
-      setColors(response.data.body.data.results);
-
       const sizeResponse = await axiosInstance("/api/size");
-      setSizes(sizeResponse.data.body.data.result);
+      setSizes(sizeResponse.data.body.data?.result || sizeResponse.data.body.data?.results || []);
 
-      // Fetch metal types using the new API endpoint with query param
-      const metalTypeResponseApi = await axiosInstance(
-        "/api/productattribute?id=686775563de5478c49e61e6c"
-      );
-      console.log("Fetched metal types:", metalTypeResponseApi);
-      setMetalTypeResponse(metalTypeResponseApi?.data?.data?.terms || []);
+      let metalTerms = [];
+      let shapeTerms = [];
 
-      // Fetch Shape attributes
+      // 1. Fetch Metal Types by Title
+      try {
+        const metalResponseApi = await axiosInstance(
+          "/api/productattribute?filters=" + encodeURIComponent(JSON.stringify({ title: "METAL TYPE" }))
+        );
+        const results = metalResponseApi?.data?.data?.data || metalResponseApi?.data?.body?.data || [];
+        const metalAttr = Array.isArray(results) ? results.find((a: any) => (a.title || "").toLowerCase().includes("metal")) : null;
+        metalTerms = metalAttr?.terms || [];
+      } catch (error) {
+        console.error("Error fetching metal types:", error);
+      }
+
+      // 2. Fetch Shapes by Title
       try {
         const shapeResponseApi = await axiosInstance(
           "/api/productattribute?filters=" + encodeURIComponent(JSON.stringify({ title: "Shape" }))
         );
-        console.log("Fetched shapes full response:", shapeResponseApi);
-        // Try multiple possible response structures
-        const shapeTerms = shapeResponseApi?.data?.data?.data?.[0]?.terms || 
-                          shapeResponseApi?.data?.body?.data?.data?.[0]?.terms ||
-                          shapeResponseApi?.data?.data?.terms ||
-                          shapeResponseApi?.data?.body?.data?.terms ||
-                          [];
-        console.log("Extracted shapes:", shapeTerms);
-        setShapeResponse(shapeTerms);
+        const results = shapeResponseApi?.data?.data?.data || shapeResponseApi?.data?.body?.data || [];
+        const shapeAttr = Array.isArray(results) ? results.find((a: any) => (a.title || "").toLowerCase().includes("shape")) : null;
+        shapeTerms = shapeAttr?.terms || [];
       } catch (error) {
         console.error("Error fetching shapes:", error);
-        setShapeResponse([]);
       }
 
-
-      const attributeResponse = await axiosInstance("/api/productattribute");
-      const allAttributes = attributeResponse.data?.data?.data || attributeResponse.data?.body?.data?.data || attributeResponse.data?.data || [];
-      setAttributes(allAttributes);
-      console.log("Fetched attributes:", allAttributes);
-      
-      // Fallback: Extract Shape and Carat from all attributes if filtered fetch failed
-      if (shapeResponse.length === 0 && allAttributes.length > 0) {
-        const shapeAttr = allAttributes.find(
-          (attr) => attr.title?.toLowerCase() === "shape" || attr.title?.toLowerCase()?.includes("shape")
+      // 2.1 Fetch Carats by Title
+      let caratTerms = [];
+      try {
+        const caratResponseApi = await axiosInstance(
+          "/api/productattribute?filters=" + encodeURIComponent(JSON.stringify({ title: "carat" }))
         );
-        if (shapeAttr?.terms && Array.isArray(shapeAttr.terms) && shapeAttr.terms.length > 0) {
-          console.log("Found shapes in all attributes:", shapeAttr.terms);
-          setShapeResponse(shapeAttr.terms);
-        } else {
-          console.log("Shape attribute found but no terms:", shapeAttr);
+        const results = caratResponseApi?.data?.data?.data || caratResponseApi?.data?.body?.data || [];
+        const caratAttr = Array.isArray(results) ? results.find((a: any) => (a.title || "").toLowerCase().includes("carat")) : null;
+        caratTerms = caratAttr?.terms || [];
+      } catch (error) {
+        console.error("Error fetching carats:", error);
+      }
+
+      // 3. Fetch All Attributes for Fallbacks
+      const attributeResponse = await axiosInstance("/api/productattribute");
+      const allAttributes = attributeResponse.data?.data?.data ||
+        attributeResponse.data?.body?.data?.data ||
+        attributeResponse.data?.data || [];
+      // setAttributes(allAttributes);
+
+      // 4. Apply Fallbacks if specific fetches failed
+      if (allAttributes.length > 0) {
+        if (shapeTerms.length === 0) {
+          const shapeAttr = allAttributes.find(
+            (attr: any) => attr.title?.toLowerCase() === "shape" || attr.title?.toLowerCase()?.includes("shape")
+          );
+          if (shapeAttr?.terms) shapeTerms = shapeAttr.terms;
+        }
+
+        if (metalTerms.length === 0) {
+          const metalAttr = allAttributes.find(
+            (attr: any) => attr.title?.toLowerCase() === "metal type" ||
+              attr.title?.toLowerCase()?.includes("metal") ||
+              attr.title?.toLowerCase()?.includes("color")
+          );
+          if (metalAttr?.terms) metalTerms = metalAttr.terms;
+        }
+
+        if (caratTerms.length === 0) {
+          const caratAttr = allAttributes.find(
+            (attr: any) => attr.title?.toLowerCase() === "carat" ||
+              attr.title?.toLowerCase()?.includes("carat")
+          );
+          if (caratAttr?.terms) caratTerms = caratAttr.terms;
         }
       }
-      
 
-      console.log("Fetched colors:", response.data.body.data.result);
-      console.log("Fetched sizes:", sizeResponse.data.body.data.result);
+      // 5. Update state once
+      setMetalTypeResponse(metalTerms);
+      setShapeResponse(shapeTerms);
+      setCaratResponse(caratTerms);
+
+      console.log("Attributes loaded successfully:", {
+        metalTerms: metalTerms.length,
+        shapeTerms: shapeTerms.length,
+        caratTerms: caratTerms.length,
+        metalOptions: metalTerms.map((t: any) => t.value),
+        shapeOptions: shapeTerms.map((t: any) => t.value),
+        caratOptions: caratTerms.map((t: any) => t.value)
+      });
     } catch (error) {
-      console.error("Error fetching attributes:", error);
+      console.error("Error in getData:", error);
     }
   };
 
@@ -100,7 +122,8 @@ const InventorySection: React.FC<InventorySectionProps> = ({
     getData();
   }, []);
   const addVariant = () => {
-      const newVariants = [
+    console.log("[DEBUG] addVariant called. Current variants:", formData.variants);
+    const newVariants: Variant[] = [
       ...(formData.variants || []),
       {
         id: Date.now(),
@@ -108,25 +131,27 @@ const InventorySection: React.FC<InventorySectionProps> = ({
         color: "",
         shape: "",
         carat: "",
+        sku: "",
         price: "",
-        stock: "",
-        // custom: [],
-        image: null,
-        additionalPrice: "",
+        stockCount: "0",
         extraCost: "",
+        image: null,
       },
     ];
+    console.log("[DEBUG] New variants array:", newVariants);
     updateFormData("variants", newVariants);
   };
 
-  const removeVariant = (id) => {
+  const removeVariant = (id: string | number) => {
+    if (!formData.variants) return;
     const updatedVariants = formData.variants.filter(
       (variant) => variant.id !== id
     );
     updateFormData("variants", updatedVariants);
   };
 
-  const updateVariant = (id, field, value) => {
+  const updateVariant = (id: string | number, field: string, value: any) => {
+    if (!formData.variants) return;
     const updatedVariants = formData.variants.map((variant) =>
       variant.id === id ? { ...variant, [field]: value } : variant
     );
@@ -147,18 +172,19 @@ const InventorySection: React.FC<InventorySectionProps> = ({
   // };
 
   const getTotalStock = () => {
-    return (formData.variants || []).reduce((total, variant) => {
-      return total + (parseInt(variant.stock) || 0);
+    return (formData.variants || []).reduce((total: number, variant: any) => {
+      return total + (parseInt(variant.stockCount) || 0);
     }, 0);
   };
 
   const getLowStockVariants = () => {
-    const threshold = parseInt(formData.lowStockThreshold) || 5;
+    const threshold = parseInt(formData.lowStockThreshold || "5") || 5;
     return (formData.variants || []).filter(
-      (variant) => parseInt(variant.stock) <= threshold
+      (variant: any) => (parseInt(variant.stockCount) || 0) <= threshold
     );
   };
 
+  console.log("[DEBUG] Rendering AttributesSection. Variants count:", formData.variants?.length || 0);
   return (
     <div className="max-w-6xl p-8">
       <div className="flex items-center justify-between mb-8">
@@ -222,7 +248,7 @@ const InventorySection: React.FC<InventorySectionProps> = ({
       <div className="space-y-6">
         {formData.variants && formData.variants.length > 0 ? (
           formData.variants.map((variant, index) => (
-            <div key={variant.id} className="bg-gray-50 p-6 rounded-lg">
+            <div key={variant.id?.toString() || index} className="bg-gray-50 p-6 rounded-lg">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-medium text-gray-900">
                   Variant #{index + 1}
@@ -269,7 +295,7 @@ const InventorySection: React.FC<InventorySectionProps> = ({
                   >
                     <option value="">Select Metal Type</option>
                     {metalTypeResponse?.map((metal) => (
-                      <option key={metal._id} value={metal._id}>
+                      <option key={metal._id} value={metal.value}>
                         {metal.value}
                       </option>
                     ))}
@@ -287,27 +313,36 @@ const InventorySection: React.FC<InventorySectionProps> = ({
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-colors"
                   >
                     <option value="">Select Shape</option>
-                    {Array.isArray(shapeResponse) && shapeResponse.length > 0 ? (
-                      shapeResponse.map((shape) => (
-                        <option key={shape._id || shape.id || shape.value} value={shape._id || shape.id || shape.value}>
-                          {shape.value || shape.name || shape}
+                    {shapeResponse.map((shape) => (
+                      <option key={shape._id || shape.id || shape.value} value={shape.value || shape.name || shape}>
+                        {shape.value || shape.name || shape}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="mb-0">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Carat
+                  </label>
+                  <select
+                    value={variant.carat || ""}
+                    onChange={(e) =>
+                      updateVariant(variant.id, "carat", e.target.value)
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-colors"
+                  >
+                    <option value="">Select Carat</option>
+                    {Array.isArray(caratResponse) && caratResponse.length > 0 ? (
+                      caratResponse.map((carat) => (
+                        <option key={carat._id || carat.id || carat.value} value={carat.value || carat.name || carat}>
+                          {carat.value || carat.name || carat}
                         </option>
                       ))
                     ) : (
-                      <option value="" disabled>No shape options available</option>
+                      <option value="" disabled>No carat options available</option>
                     )}
                   </select>
                 </div>
-                <InputField
-                  label="Carat"
-                  placeholder="Enter carat value (e.g., 2, 2.5, 3)"
-                  type="text"
-                  value={variant.carat || ""}
-                  onChange={(e) =>
-                    updateVariant(variant.id, "carat", e.target.value)
-                  }
-                  className="mb-0"
-                />
 
                 <InputField
                   label="Additional Price"
@@ -323,7 +358,7 @@ const InventorySection: React.FC<InventorySectionProps> = ({
                   label="Stock Quantity"
                   placeholder="0"
                   type="number"
-                  value={variant.stockCount}
+                  value={variant.stockCount || ""}
                   onChange={(e) =>
                     updateVariant(variant.id, "stockCount", e.target.value)
                   }
@@ -334,7 +369,7 @@ const InventorySection: React.FC<InventorySectionProps> = ({
                   label="Extra Cost"
                   placeholder="0.00"
                   type="number"
-                  value={variant.extraCost}
+                  value={variant.extraCost || ""}
                   onChange={(e) =>
                     updateVariant(variant.id, "extraCost", e.target.value)
                   }
@@ -349,7 +384,7 @@ const InventorySection: React.FC<InventorySectionProps> = ({
                     type="file"
                     accept="image/*"
                     onChange={(e) => {
-                      const file = e.target.files[0];
+                      const file = e.target.files?.[0];
                       if (file) {
                         updateVariant(variant.id, "image", file);
                       }
@@ -522,4 +557,4 @@ const InventorySection: React.FC<InventorySectionProps> = ({
   );
 };
 
-export default InventorySection;
+export default AttributesSection;

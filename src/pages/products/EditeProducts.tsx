@@ -1,17 +1,16 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { createProduct, updateProduct, fetchProductAttributes } from "../../store/slices/product";
+import { updateProduct, fetchProductAttributes } from "../../store/slices/product";
 import Sidebar from "./components/Sidebar";
 import GeneralInfoSection from "./components/GeneralInfoSection";
 import PriceSection from "./components/PriceSection";
 import ImagesSection from "./components/ImagesSection";
 import InventorySection from "./components/InventorySection";
 import AttributesSection from "./components/AttributesSection";
-import type { AppDispatch, RootState } from "../../store"; // <-- import your types
-import DeliverySection from "./components/DeliverySection";
-import { useParams } from "react-router";
+import type { AppDispatch, RootState } from "../../store";
 import axiosInstance from "../../services/axiosConfig";
 import PropertiesSection from "./components/Propertys";
+import { Variant, ImageType, Attribute, ProductFormData } from "./types";
 
 const EditProductForm = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -22,55 +21,19 @@ const EditProductForm = () => {
   );
 
   const [activeSection, setActiveSection] = useState("general");
-  type Attribute = {
-    name: string;
-    value: string;
-  };
-
-  type Variant = {
-    sizeId?: string;
-    colorId?: string;
-    additionalPrice?: string;
-    extraCost?: string;
-    stockCount?: string;
-    attributes?: Attribute[];
-    image?: File;
-  };
-
-  type Image = {
-    file: File;
-    [key: string]: any;
-  };
-
-  type ProductFormData = {
-    category_id: string;
-    subcategory_id: string;
-    name: string;
-    slug: string;
-    shortDescription: string;
-    description: string;
-    regularPrice: string;
-    salePrice: string;
-    sku: string;
-    stockQuantity: string;
-    lowStockThreshold: string;
-    stockStatus: string;
-    manageStock: string;
-    images: Image[];
-    variants: Variant[];
-    attributes: Attribute[];
-    categories: string[];
-  };
+  // Types moved to types.ts
 
   const [formData, setFormData] = useState<ProductFormData>({
+    category_id: "",
+    subcategory_id: "",
     name: "",
     slug: "",
     shortDescription: "",
     description: "",
     regularPrice: "",
     salePrice: "",
-    sku: "",
     gender: "",
+    sku: "",
     stockQuantity: "",
     lowStockThreshold: "5",
     stockStatus: "in_stock",
@@ -82,16 +45,21 @@ const EditProductForm = () => {
     tax: "",
   });
 
-  const [propertys, setProperties] = useState<any[]>({});
+  const [propertys, setProperties] = useState<Record<string, any>>({});
 
-  const updateFormData = useCallback((field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+  const updateFormData = useCallback((field: string, value: any) => {
+    console.log(`[DEBUG] updateFormData: field=${field}`, value);
+    setFormData((prev) => {
+      const newState = {
+        ...prev,
+        [field]: value,
+      };
+      console.log("[DEBUG] New state variants count:", (newState as any).variants?.length);
+      return newState;
+    });
   }, []);
 
-  const updateProperties = useCallback((field, value) => {
+  const updateProperties = useCallback((field: string, value: any) => {
     setProperties((prev) => ({
       ...prev,
       [field]: value,
@@ -100,35 +68,48 @@ const EditProductForm = () => {
 
   const getData = async () => {
     try {
-      const response = await axiosInstance(`/api/product/${productId}`);
+      const response = await axiosInstance(`/api/product/${productId}?t=${Date.now()}`);
 
       const data = response.data?.body?.data || response.data?.data || response.data;
       console.log("Fetched product data:", data);
       console.log("Stock status from API:", data?.inventory?.stock_status, data?.stockStatus);
-      const variantData = data.inventory?.inventory_details.map((variant) => {
+      const variantData = data.inventory?.inventory_details.map((variant: any) => {
+        const shape = variant.attributes?.find((a: any) => a.attribute_name?.toLowerCase() === "shape")?.attribute_value || "";
+        const carat = variant.attributes?.find((a: any) => a.attribute_name?.toLowerCase() === "carat")?.attribute_value || "";
+        console.log(`[DEBUG] Variant ID: ${variant._id}, Shape mapped: ${shape}, Carat mapped: ${carat}`);
         return {
+          id: variant._id || Date.now(),
           size: variant.size || "",
           color: variant.color || "",
-          price: variant.additional_price || "",
-          extraCost: variant.add_cost || "",
-          stockCount: variant.stock_count || "",
-          custom: variant.attributes.map((attr) => ({
-            name: attr.attribute_name || "",
-            value: attr.attribute_value || "",
-          })),
+          shape: shape,
+          carat: carat,
+          price: String(variant.additional_price || "0"),
+          extraCost: String(variant.add_cost || "0"),
+          stockCount: String(variant.stock_count || "0"),
+          custom: (variant.attributes || [])
+            .filter((attr: any) => {
+              const name = (attr.attribute_name || "").toLowerCase();
+              return name !== "shape" && name !== "carat" && !name.includes("metal");
+            })
+            .map((attr: any) => ({
+              name: attr.attribute_name || "",
+              value: attr.attribute_value || "",
+            })),
           image: variant.image || [],
           inventoryDetailsId: variant._id || "",
-        };
+        } as Variant;
       });
 
       setFormData({
+        category_id: data.category_id?._id || data.category_id || "",
+        subcategory_id: data.subCategory_id?._id || data.subCategory_id || "",
         name: data.name || "",
         slug: data.slug || "",
         shortDescription: data.summary || "",
         description: data.description || "",
         regularPrice: data.price || "",
-        gender: data.gender || "",
         salePrice: data.saleprice || "",
+        gender: data.gender || "",
         sku: data?.inventory?.sku || "",
         stockQuantity: data?.inventory?.stock_count || "",
         lowStockThreshold: data?.inventory?.lowStockThreshold || "5",
@@ -137,8 +118,7 @@ const EditProductForm = () => {
         images: data.image || [],
         variants: variantData || [],
         attributes: data.attributes || [],
-        category_id: data.category_id._id,
-        subcategory_id: data.subCategory_id?._id || "",
+        categories: data.categories || [],
         tax: data.taxClass || "",
       });
       console.log("Form data after fetching:", formData);
@@ -160,12 +140,15 @@ const EditProductForm = () => {
 
   useEffect(() => {
     if (productAttributes && Array.isArray(productAttributes)) {
-      productAttributes.forEach((property) => {
+      productAttributes.forEach((property: any) => {
         if (property.title && !property.title.toLowerCase().includes("metal")) {
-          setProperties((prev) => ({
-            ...prev,
-            [property.title]: prev[property.title] ?? "",
-          }));
+          const title = property.title as string;
+          if (propertys[title] === undefined) {
+            setProperties((prev) => ({
+              ...prev,
+              [title]: prev[title] ?? "",
+            }));
+          }
         }
       });
     }
@@ -228,11 +211,11 @@ const EditProductForm = () => {
       //   formDataToSend.append("isTaxable", true);
       // }
 
-      formDataToSend.append("isTaxable", false);
+      formDataToSend.append("isTaxable", "false");
 
       // Product attributes from AttributesSection
       if (formData.attributes && formData.attributes.length > 0) {
-        formData.attributes.forEach((attr, idx) => {
+        formData.attributes.forEach((attr: Attribute, idx: number) => {
           formDataToSend.append(`attributes[${idx}][name]`, attr.name);
           formDataToSend.append(`attributes[${idx}][value]`, attr.value);
         });
@@ -240,31 +223,35 @@ const EditProductForm = () => {
 
       // Variants (if you have variants functionality)
       if (formData.variants && formData.variants.length > 0) {
-        formData.variants.forEach((variant, idx) => {
+        formData.variants.forEach((variant: Variant, idx: number) => {
           if (variant.size) {
             formDataToSend.append(`item_size[${idx}]`, variant.size);
           }
           if (variant.color) {
             formDataToSend.append(`item_color[${idx}]`, variant.color);
           }
-          if (variant.additionalPrice) {
+          if (variant.price) {
             formDataToSend.append(
               `item_additional_price[${idx}]`,
-              variant.additionalPrice
+              variant.price
             );
           }
           if (variant.sku) {
             formDataToSend.append(`item_sku[${idx}]`, variant.sku);
           }
-          if (variant.image) {
-            formDataToSend.append(`item_image[${idx}]`, variant.image);
-          }
+
           console.log("Variant data being sent:", variant);
+          if (variant.shape) {
+            formDataToSend.append(`item_shape[${idx}]`, variant.shape);
+          }
+          if (variant.carat) {
+            formDataToSend.append(`item_carat[${idx}]`, variant.carat);
+          }
           if (variant.extraCost) {
             formDataToSend.append(`item_extra_cost[${idx}]`, variant.extraCost);
           }
           if (variant.stockCount) {
-            formDataToSend.append(`item_stock_count[${idx}]`, variant.stock);
+            formDataToSend.append(`item_stock_count[${idx}]`, variant.stockCount);
           }
           if (variant.inventoryDetailsId) {
             formDataToSend.append(
@@ -273,19 +260,24 @@ const EditProductForm = () => {
             );
           }
 
-          // // Variant attributes
-          // if (variant.custom && variant.custom.length > 0) {
-          //   variant.custom.forEach((attr, attrIdx) => {
-          //     formDataToSend.append(
-          //       `item_attribute_name[${idx}][${attrIdx}]`,
-          //       attr.name
-          //     );
-          //     formDataToSend.append(
-          //       `item_attribute_value[${idx}][${attrIdx}]`,
-          //       attr.value
-          //     );
-          //   });
-          // }
+          // Variant attributes - filter out Shape, Carat, and Metal Type to avoid conflicts
+          if (variant.custom && variant.custom.length > 0) {
+            variant.custom
+              .filter((attr: any) => {
+                const name = (attr.name || "").toLowerCase();
+                return name !== "shape" && name !== "carat" && !name.includes("metal");
+              })
+              .forEach((attr, attrIdx) => {
+                formDataToSend.append(
+                  `item_attribute_name[${idx}][${attrIdx}]`,
+                  attr.name
+                );
+                formDataToSend.append(
+                  `item_attribute_value[${idx}][${attrIdx}]`,
+                  attr.value
+                );
+              });
+          }
 
           // Variant image
           if (variant.image) {
@@ -322,11 +314,11 @@ const EditProductForm = () => {
         console.log(pair[0] + ": " + pair[1]);
       }
 
-      const selectedProperties = {};
+      const selectedProperties: Record<string, any> = {};
 
       Object.keys(propertys).forEach((key) => {
-        if (propertys[key] !== "") {
-          selectedProperties[key] = propertys[key];
+        if ((propertys as any)[key] !== "") {
+          selectedProperties[key] = (propertys as any)[key];
         }
       });
 
@@ -341,7 +333,7 @@ const EditProductForm = () => {
       ).unwrap();
 
       console.log("Update response:", updateResponse);
-      
+
       // Refetch the updated product data to sync UI with server
       await getData();
 
@@ -415,7 +407,6 @@ const EditProductForm = () => {
       <Sidebar
         activeSection={activeSection}
         onSectionChange={setActiveSection}
-        forEdit={true}
       />
 
       <div className="flex-1 overflow-y-auto">

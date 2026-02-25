@@ -1,24 +1,11 @@
 import React from "react";
-import { Plus, X, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import InputField from "./InputField ";
 
-interface Variant {
-  id: number;
-  size: string;
-  color: string;
-  sku: string;
-  price: string;
-  stock: string;
-  image: File | null;
-}
+import { ProductFormData } from "../types";
 
 interface InventorySectionProps {
-  formData: {
-    variants?: Variant[];
-    lowStockThreshold?: string;
-    manageStock?: string;
-    [key: string]: any;
-  };
+  formData: ProductFormData;
   updateFormData: (field: string, value: any) => void;
 }
 
@@ -26,46 +13,10 @@ const InventorySection: React.FC<InventorySectionProps> = ({
   formData,
   updateFormData,
 }) => {
-  const addVariant = () => {
-    const newVariants = [
-      ...(formData.variants || []),
-      {
-        id: Date.now(),
-        size: "",
-        color: "",
-        sku: "",
-        price: "",
-        stock: "",
-        image: null,
-      },
-    ];
-    updateFormData("variants", newVariants);
-  };
-
-  const removeVariant = (id) => {
-    const updatedVariants = formData.variants.filter(
-      (variant) => variant.id !== id
-    );
-    updateFormData("variants", updatedVariants);
-  };
-
-  const updateVariant = (id, field, value) => {
-    const updatedVariants = formData.variants.map((variant) =>
-      variant.id === id ? { ...variant, [field]: value } : variant
-    );
-    updateFormData("variants", updatedVariants);
-  };
-
-  const getTotalStock = () => {
-    return (formData.variants || []).reduce((total, variant) => {
-      return total + (parseInt(variant.stock) || 0);
-    }, 0);
-  };
-
   const getLowStockVariants = () => {
-    const threshold = parseInt(formData.lowStockThreshold) || 5;
+    const threshold = parseInt(formData.lowStockThreshold || "5") || 5;
     return (formData.variants || []).filter(
-      (variant) => parseInt(variant.stock) <= threshold
+      (variant: any) => (parseInt(variant.stockCount) || 0) <= threshold
     );
   };
 

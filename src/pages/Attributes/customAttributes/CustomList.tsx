@@ -238,11 +238,11 @@ const TermImage: React.FC<TermImageProps> = ({ image, alt, className }) => {
     const apiBaseUrl = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_IMAGE_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const baseUrl = apiBaseUrl.replace(/\/$/, '');
     let initialUrl: string;
-    
+
     // Image path from backend is like "/attribute-images/heartshape.jpg"
     // Ensure it starts with / for proper URL construction
     const normalizedPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
-    
+
     if (baseUrl) {
       // Use configured base URL (backend server)
       initialUrl = `${baseUrl}${normalizedPath}`;
@@ -250,11 +250,11 @@ const TermImage: React.FC<TermImageProps> = ({ image, alt, className }) => {
       // Fallback: try relative to current origin (for local development)
       initialUrl = normalizedPath;
     }
-    
-    console.log('TermImage: Building initial URL', { 
-      imagePath, 
+
+    console.log('TermImage: Building initial URL', {
+      imagePath,
       normalizedPath,
-      baseUrl, 
+      baseUrl,
       initialUrl,
       VITE_BASE_URL: import.meta.env.VITE_BASE_URL,
       VITE_IMAGE_URL: import.meta.env.VITE_IMAGE_URL,
@@ -327,20 +327,20 @@ const TermImage: React.FC<TermImageProps> = ({ image, alt, className }) => {
 
     const currentStage = retryStageRef.current;
     const currentSrc = e.currentTarget.src;
-    
+
     // Get backend API URL
     const apiBaseUrl = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_IMAGE_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const baseUrl = apiBaseUrl.replace(/\/$/, '');
-    
-    console.log('TermImage: Error handler', { 
-      imagePath, 
-      normalizedPath, 
-      currentStage, 
+
+    console.log('TermImage: Error handler', {
+      imagePath,
+      normalizedPath,
+      currentStage,
       currentSrc,
       baseUrl,
       hasLoaded
     });
-    
+
     // Try different URLs based on retry stage
     if (currentStage === 0) {
       // Try with backend API URL (if different from initial)
@@ -417,15 +417,15 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onSubmit, attrib
           // Preserve image value as-is if it exists and is a non-empty string
           // Check multiple possible image field names
           const imageField = t.image || t.termImage || t.term_image || t.icon || t.iconUrl || t.imageUrl || "";
-          const imageValue = (imageField && typeof imageField === 'string' && imageField.trim() !== '') 
-            ? imageField 
+          const imageValue = (imageField && typeof imageField === 'string' && imageField.trim() !== '')
+            ? imageField
             : "";
-          console.log('EditModal: Loading term', { 
-            value: t.value, 
-            originalImage: t.image, 
-            imageField, 
+          console.log('EditModal: Loading term', {
+            value: t.value,
+            originalImage: t.image,
+            imageField,
             imageValue,
-            fullTerm: t 
+            fullTerm: t
           });
           return {
             value: t.value ?? "",
@@ -550,50 +550,52 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onSubmit, attrib
                           disabled={isUpdating}
                         />
                       </div>
-                      <div className="flex items-center gap-2">
-                        <div className="relative">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                handleTermChange(idx, "image", file);
-                              }
-                            }}
-                            className="hidden"
-                            id={`term-image-${idx}`}
-                            disabled={isUpdating}
-                          />
-                          <label
-                            htmlFor={`term-image-${idx}`}
-                            className="cursor-pointer px-3 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
-                          >
-                            {term.image ? "Change" : "Upload"}
-                          </label>
-                        </div>
-                        {term.image && (term.image instanceof File || (typeof term.image === 'string' && term.image.trim() !== '')) && (
+                      {title.toLowerCase() !== "carat" && (
+                        <div className="flex items-center gap-2">
                           <div className="relative">
-                            <TermImage
-                              image={term.image}
-                              alt={term.value || "Term image"}
-                              className="w-10 h-10 object-cover rounded-lg border-2 border-white shadow-sm"
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  handleTermChange(idx, "image", file);
+                                }
+                              }}
+                              className="hidden"
+                              id={`term-image-${idx}`}
+                              disabled={isUpdating}
                             />
+                            <label
+                              htmlFor={`term-image-${idx}`}
+                              className="cursor-pointer px-3 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                            >
+                              {term.image ? "Change" : "Upload"}
+                            </label>
                           </div>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const newTerms = terms.filter((_, i) => i !== idx);
-                            setTerms(newTerms);
-                          }}
-                          disabled={isUpdating}
-                          className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
-                          title="Remove term"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                          {term.image && (term.image instanceof File || (typeof term.image === 'string' && term.image.trim() !== '')) && (
+                            <div className="relative">
+                              <TermImage
+                                image={term.image}
+                                alt={term.value || "Term image"}
+                                className="w-10 h-10 object-cover rounded-lg border-2 border-white shadow-sm"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newTerms = terms.filter((_, i) => i !== idx);
+                          setTerms(newTerms);
+                        }}
+                        disabled={isUpdating}
+                        className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
+                        title="Remove term"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   ))
                 )}

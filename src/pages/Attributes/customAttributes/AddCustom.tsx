@@ -265,28 +265,30 @@ export default function AddCustomAttribute() {
                     placeholder="Term value"
                     required
                   />
-                  <div className="flex-1">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) =>
-                        handleTermChange(
-                          idx,
-                          "image",
-                          e.target.files?.[0] || null
-                        )
-                      }
-                      className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-700 dark:file:text-gray-300"
-                    />
-                    {term.image && (
-                      <p className="text-xs text-green-600 mt-1">
-                        ✓ Image selected
+                  {title.toLowerCase() !== "carat" && (
+                    <div className="flex-1">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) =>
+                          handleTermChange(
+                            idx,
+                            "image",
+                            e.target.files?.[0] || null
+                          )
+                        }
+                        className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-700 dark:file:text-gray-300"
+                      />
+                      {term.image && (
+                        <p className="text-xs text-green-600 mt-1">
+                          ✓ Image selected
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-500 mt-1">
+                        Optional: Upload shape icon/image
                       </p>
-                    )}
-                    <p className="text-xs text-gray-500 mt-1">
-                      Optional: Upload shape icon/image
-                    </p>
-                  </div>
+                    </div>
+                  )}
                   {terms.length > 1 && (
                     <button
                       type="button"

@@ -215,7 +215,9 @@ const ProductForm = () => {
           if (variant.extraCost) {
             formDataToSend.append(`item_extra_cost[${idx}]`, variant.extraCost);
           }
-          if (variant.stock) {
+          if (variant.stockCount) {
+            formDataToSend.append(`item_stock_count[${idx}]`, variant.stockCount);
+          } else if (variant.stock) {
             formDataToSend.append(`item_stock_count[${idx}]`, variant.stock);
           }
 

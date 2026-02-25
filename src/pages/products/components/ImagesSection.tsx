@@ -2,18 +2,10 @@ import React, { useState, useCallback } from "react";
 import { Upload, X, Star } from "lucide-react";
 
 const baseUrl = import.meta.env.VITE_IMAGE_URL;
-interface ImageType {
-  file: File;
-  preview: string;
-  id: string;
-  isFeatured: boolean;
-}
+import { ImageType, ProductFormData } from "../types";
 
 interface ImagesSectionProps {
-  formData: {
-    images: ImageType[];
-    [key: string]: any;
-  };
+  formData: ProductFormData;
   updateFormData: (field: string, value: any) => void;
 }
 
@@ -24,8 +16,9 @@ const ImagesSection: React.FC<ImagesSectionProps> = ({
   const [dragActive, setDragActive] = useState(false);
 
   const handleFiles = useCallback(
-    (files) => {
-      const newImages = Array.from(files).map((file) => ({
+    (files: FileList | null) => {
+      if (!files) return;
+      const newImages = Array.from(files).map((file: File) => ({
         file,
         preview: URL.createObjectURL(file),
         id: Math.random().toString(36).substr(2, 9),
@@ -37,7 +30,7 @@ const ImagesSection: React.FC<ImagesSectionProps> = ({
   );
 
   const removeImage = useCallback(
-    (imageId) => {
+    (imageId: string | number) => {
       const updatedImages = formData.images.filter((img) => img.id !== imageId);
       updateFormData("images", updatedImages);
     },
@@ -45,7 +38,7 @@ const ImagesSection: React.FC<ImagesSectionProps> = ({
   );
 
   const setFeaturedImage = useCallback(
-    (imageId) => {
+    (imageId: string | number) => {
       const updatedImages = formData.images.map((img) => ({
         ...img,
         isFeatured: img.id === imageId,
@@ -55,7 +48,7 @@ const ImagesSection: React.FC<ImagesSectionProps> = ({
     [formData.images, updateFormData]
   );
 
-  const handleDrag = useCallback((e) => {
+  const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") {
@@ -66,7 +59,7 @@ const ImagesSection: React.FC<ImagesSectionProps> = ({
   }, []);
 
   const handleDrop = useCallback(
-    (e) => {
+    (e: React.DragEvent) => {
       e.preventDefault();
       e.stopPropagation();
       setDragActive(false);
@@ -90,11 +83,10 @@ const ImagesSection: React.FC<ImagesSectionProps> = ({
       </div>
 
       <div
-        className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-          dragActive
-            ? "border-emerald-500 bg-emerald-50"
-            : "border-gray-300 hover:border-gray-400"
-        }`}
+        className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${dragActive
+          ? "border-emerald-500 bg-emerald-50"
+          : "border-gray-300 hover:border-gray-400"
+          }`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
@@ -143,11 +135,10 @@ const ImagesSection: React.FC<ImagesSectionProps> = ({
                   <div className="absolute top-2 right-2 flex gap-2">
                     <button
                       onClick={() => setFeaturedImage(image.id)}
-                      className={`p-1 rounded-full transition-opacity ${
-                        image.isFeatured
-                          ? "bg-yellow-500 text-white opacity-100"
-                          : "bg-white text-gray-600 opacity-0 group-hover:opacity-100"
-                      }`}
+                      className={`p-1 rounded-full transition-opacity ${image.isFeatured
+                        ? "bg-yellow-500 text-white opacity-100"
+                        : "bg-white text-gray-600 opacity-0 group-hover:opacity-100"
+                        }`}
                       title="Set as featured image"
                     >
                       <Star className="w-4 h-4" />

@@ -17,5 +17,11 @@ export default defineConfig({
   ],
   server: {
     allowedHosts: ["diamondadmin.nexprism.in"],
+    proxy: {
+      "/api": {
+        target: "http://localhost:3000",
+        changeOrigin: true,
+      },
+    },
   },
 });

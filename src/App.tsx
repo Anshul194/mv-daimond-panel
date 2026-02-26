@@ -65,6 +65,8 @@ import CustomerList from "./pages/Customer/CustomerList";
 import ProductReviews from "./pages/Customer/ProductReviews";
 import CustomerFeedback from "./pages/Customer/CustomerFeedback";
 import FaqList from "./pages/Faqs/FaqList";
+import BannerList from "./pages/Banners/BannerList";
+import StoryList from "./pages/Story/StoryList";
 
 export default function App() {
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -169,6 +171,8 @@ export default function App() {
             <Route path="/customers/reviews/products" element={<ProductReviews />} />
             <Route path="/customers/reviews/feedback" element={<CustomerFeedback />} />
             <Route path="/faqs/all" element={<FaqList />} />
+            <Route path="/banners/all" element={<BannerList />} />
+            <Route path="/story/all" element={<StoryList />} />
 
             {/* Coupons */}
             {/* <Route path="/coupons/all" element={<CouponList />} /> */}

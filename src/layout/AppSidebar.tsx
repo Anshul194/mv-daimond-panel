@@ -354,6 +354,16 @@ const navItems: NavItem[] = [
     path: "/faqs/all",
   },
   {
+    name: "Banner Management",
+    icon: <BoxCubeIcon />,
+    path: "/banners/all",
+  },
+  {
+    name: "Story Management",
+    icon: <PageIcon />,
+    path: "/story/all",
+  },
+  {
     name: "vendor",
     icon: <ListIcon />,
     subItems: [
@@ -541,9 +551,9 @@ const AppSidebar: React.FC = () => {
               <button
                 onClick={() => handleSubmenuToggle(subMenuKey)}
                 className={`menu-dropdown-item cursor-pointer w-full text-left ${openSubmenu.includes(subMenuKey) ||
-                    hasActiveSubItem(subItem.subItems || [])
-                    ? "menu-dropdown-item-active"
-                    : "menu-dropdown-item-inactive"
+                  hasActiveSubItem(subItem.subItems || [])
+                  ? "menu-dropdown-item-active"
+                  : "menu-dropdown-item-inactive"
                   }`}
               >
                 <span className="flex items-center justify-between w-full">
@@ -552,9 +562,9 @@ const AppSidebar: React.FC = () => {
                     {subItem.new && (
                       <span
                         className={`menu-dropdown-badge ${openSubmenu.includes(subMenuKey) ||
-                            hasActiveSubItem(subItem.subItems || [])
-                            ? "menu-dropdown-badge-active"
-                            : "menu-dropdown-badge-inactive"
+                          hasActiveSubItem(subItem.subItems || [])
+                          ? "menu-dropdown-badge-active"
+                          : "menu-dropdown-badge-inactive"
                           }`}
                       >
                         new
@@ -563,9 +573,9 @@ const AppSidebar: React.FC = () => {
                     {subItem.pro && (
                       <span
                         className={`menu-dropdown-badge ${openSubmenu.includes(subMenuKey) ||
-                            hasActiveSubItem(subItem.subItems || [])
-                            ? "menu-dropdown-badge-active"
-                            : "menu-dropdown-badge-inactive"
+                          hasActiveSubItem(subItem.subItems || [])
+                          ? "menu-dropdown-badge-active"
+                          : "menu-dropdown-badge-inactive"
                           }`}
                       >
                         pro
@@ -598,8 +608,8 @@ const AppSidebar: React.FC = () => {
             <Link
               to={subItem.path}
               className={`menu-dropdown-item ${isActive(subItem.path)
-                  ? "menu-dropdown-item-active"
-                  : "menu-dropdown-item-inactive"
+                ? "menu-dropdown-item-active"
+                : "menu-dropdown-item-inactive"
                 }`}
             >
               {subItem.name}
@@ -607,8 +617,8 @@ const AppSidebar: React.FC = () => {
                 {subItem.new && (
                   <span
                     className={`menu-dropdown-badge ${isActive(subItem.path)
-                        ? "menu-dropdown-badge-active"
-                        : "menu-dropdown-badge-inactive"
+                      ? "menu-dropdown-badge-active"
+                      : "menu-dropdown-badge-inactive"
                       }`}
                   >
                     new
@@ -617,8 +627,8 @@ const AppSidebar: React.FC = () => {
                 {subItem.pro && (
                   <span
                     className={`menu-dropdown-badge ${isActive(subItem.path)
-                        ? "menu-dropdown-badge-active"
-                        : "menu-dropdown-badge-inactive"
+                      ? "menu-dropdown-badge-active"
+                      : "menu-dropdown-badge-inactive"
                       }`}
                   >
                     pro
@@ -643,9 +653,9 @@ const AppSidebar: React.FC = () => {
               <button
                 onClick={() => handleSubmenuToggle(menuKey)}
                 className={`menu-item group ${openSubmenu.includes(menuKey) ||
-                    hasActiveSubItem(nav.subItems)
-                    ? "menu-item-active"
-                    : "menu-item-inactive"
+                  hasActiveSubItem(nav.subItems)
+                  ? "menu-item-active"
+                  : "menu-item-inactive"
                   } cursor-pointer ${!isExpanded && !isHovered
                     ? "lg:justify-center"
                     : "lg:justify-start"
@@ -653,9 +663,9 @@ const AppSidebar: React.FC = () => {
               >
                 <span
                   className={`menu-item-icon-size ${openSubmenu.includes(menuKey) ||
-                      hasActiveSubItem(nav.subItems)
-                      ? "menu-item-icon-active"
-                      : "menu-item-icon-inactive"
+                    hasActiveSubItem(nav.subItems)
+                    ? "menu-item-icon-active"
+                    : "menu-item-icon-inactive"
                     }`}
                 >
                   {nav.icon}
@@ -666,8 +676,8 @@ const AppSidebar: React.FC = () => {
                 {(isExpanded || isHovered || isMobileOpen) && (
                   <ChevronDownIcon
                     className={`ml-auto w-5 h-5 transition-transform duration-200 ${openSubmenu.includes(menuKey)
-                        ? "rotate-180 text-brand-500"
-                        : ""
+                      ? "rotate-180 text-brand-500"
+                      : ""
                       }`}
                   />
                 )}
@@ -677,14 +687,14 @@ const AppSidebar: React.FC = () => {
                 <Link
                   to={nav.path}
                   className={`menu-item group ${isActive(nav.path)
-                      ? "menu-item-active"
-                      : "menu-item-inactive"
+                    ? "menu-item-active"
+                    : "menu-item-inactive"
                     }`}
                 >
                   <span
                     className={`menu-item-icon-size ${isActive(nav.path)
-                        ? "menu-item-icon-active"
-                        : "menu-item-icon-inactive"
+                      ? "menu-item-icon-active"
+                      : "menu-item-icon-inactive"
                       }`}
                   >
                     {nav.icon}
@@ -770,8 +780,8 @@ const AppSidebar: React.FC = () => {
             <div>
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered
-                    ? "lg:justify-center"
-                    : "justify-start"
+                  ? "lg:justify-center"
+                  : "justify-start"
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (

@@ -64,6 +64,7 @@ import VenderList from "./pages/Vendor/VenderList";
 import CustomerList from "./pages/Customer/CustomerList";
 import ProductReviews from "./pages/Customer/ProductReviews";
 import CustomerFeedback from "./pages/Customer/CustomerFeedback";
+import FaqList from "./pages/Faqs/FaqList";
 
 export default function App() {
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -160,13 +161,14 @@ export default function App() {
 
             {/* orders */}
             <Route path="/vendor/add" element={<AddVendor />} />
-            <Route path="/vendor/list" element={< VenderList/>} />
+            <Route path="/vendor/list" element={< VenderList />} />
 
             {/* Customers */}
             <Route path="/customers/all" element={<CustomerList />} />
             <Route path="/customers/reviews" element={<Navigate to="/customers/reviews/products" replace />} />
             <Route path="/customers/reviews/products" element={<ProductReviews />} />
             <Route path="/customers/reviews/feedback" element={<CustomerFeedback />} />
+            <Route path="/faqs/all" element={<FaqList />} />
 
             {/* Coupons */}
             {/* <Route path="/coupons/all" element={<CouponList />} /> */}

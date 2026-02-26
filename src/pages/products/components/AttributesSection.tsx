@@ -126,7 +126,7 @@ const AttributesSection: React.FC<InventorySectionProps> = ({
     const newVariants: Variant[] = [
       ...(formData.variants || []),
       {
-        id: Date.now(),
+        id: `new-${Date.now()}-${(formData.variants || []).length}`,
         size: "",
         color: "",
         shape: "",

@@ -203,6 +203,10 @@ const ProductForm = () => {
               variant.price
             );
           }
+          if (variant.sku) {
+            formDataToSend.append(`item_sku[${idx}]`, variant.sku);
+          }
+
           if (variant.image) {
             formDataToSend.append(`item_image[${idx}]`, variant.image);
           }

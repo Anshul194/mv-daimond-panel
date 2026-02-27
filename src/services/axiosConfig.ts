@@ -5,7 +5,7 @@ const API_BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:3000/';
 
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 86400000 ,
+  timeout: 86400000,
   headers: {
     'Content-Type': 'application/json',
   }
@@ -14,12 +14,17 @@ const axiosInstance: AxiosInstance = axios.create({
 // Request interceptor
 axiosInstance.interceptors.request.use(
   (config: import('axios').InternalAxiosRequestConfig): import('axios').InternalAxiosRequestConfig => {
+    // Remove default application/json header for FormData to allow Axios to set boundary
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+
     const token = localStorage.getItem('accessToken');
-    
+
     if (token && config.headers) {
       config.headers['Authorization'] = `Bearer ${token}`;
       config.headers['x-access-token'] = token;
-      
+
       const refreshToken = localStorage.getItem('refreshToken');
       if (refreshToken) {
         config.headers['x-refresh-token'] = refreshToken;

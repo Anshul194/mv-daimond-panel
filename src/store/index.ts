@@ -22,6 +22,7 @@ import reviewReducer from "./slices/reviewSlice";
 import faqReducer from "./slices/faqSlice";
 import bannerReducer from "./slices/bannerSlice";
 import storyReducer from "./slices/storySlice";
+import collectionReducer from "./slices/collectionSlice";
 
 export const store = configureStore({
   reducer: {
@@ -47,6 +48,7 @@ export const store = configureStore({
     faq: faqReducer,
     banner: bannerReducer,
     stories: storyReducer,
+    collection: collectionReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

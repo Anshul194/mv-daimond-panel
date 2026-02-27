@@ -17,7 +17,7 @@ import {
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
-import { ShoppingCartIcon, Ticket, User, UsersIcon } from "lucide-react";
+import { ShoppingCartIcon, Star, Ticket, User, UsersIcon } from "lucide-react";
 
 type NavSubItem = {
   name: string;
@@ -362,6 +362,16 @@ const navItems: NavItem[] = [
     name: "Story Management",
     icon: <PageIcon />,
     path: "/story/all",
+  },
+  {
+    name: "Collection Management",
+    icon: <GridIcon />,
+    path: "/collections/all",
+  },
+  {
+    name: "Review Management",
+    icon: <Star />,
+    path: "/reviews/all",
   },
   {
     name: "vendor",

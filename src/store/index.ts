@@ -25,6 +25,7 @@ import storyReducer from "./slices/storySlice";
 import collectionReducer from "./slices/collectionSlice";
 import serviceReducer from "./slices/serviceSlice";
 import homePageReducer from "./slices/homePageSlice";
+import instagramReducer from "./slices/instagramSlice";
 
 export const store = configureStore({
   reducer: {
@@ -53,6 +54,7 @@ export const store = configureStore({
     collection: collectionReducer,
     service: serviceReducer,
     homePage: homePageReducer,
+    instagram: instagramReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

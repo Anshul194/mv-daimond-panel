@@ -15,7 +15,7 @@ import {
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
-import { ShoppingCartIcon, Star, Ticket, UsersIcon } from "lucide-react";
+import { ShoppingCartIcon, Star, Ticket, UsersIcon, Instagram } from "lucide-react";
 
 type NavSubItem = {
   name: string;
@@ -380,6 +380,11 @@ const navItems: NavItem[] = [
     name: "Home Page Management",
     icon: <GridIcon />,
     path: "/home-management",
+  },
+  {
+    name: "Instagram Management",
+    icon: <Instagram className="w-5 h-5" />,
+    path: "/instagram-management",
   },
   {
     name: "vendor",

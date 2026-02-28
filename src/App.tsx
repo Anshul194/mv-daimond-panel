@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router";
 import SignIn from "./pages/AuthPages/SignIn";
-import SignUp from "./pages/AuthPages/SignUp";
 import NotFound from "./pages/OtherPage/NotFound";
 import UserProfiles from "./pages/UserProfiles";
 import Videos from "./pages/UiElements/Videos";
@@ -14,7 +13,6 @@ import BarChart from "./pages/Charts/BarChart";
 import Calendar from "./pages/Calendar";
 import BasicTables from "./pages/Tables/BasicTables";
 import FormElements from "./pages/Forms/FormElements";
-import Blank from "./pages/AddCategory";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
@@ -71,6 +69,7 @@ import CollectionList from "./pages/Collections/CollectionList";
 import ReviewList from "./pages/Reviews/ReviewList";
 import ServiceList from "./pages/Services/ServiceList";
 import HomeStatsList from "./pages/HomeStats/HomeStatsList";
+import InstagramManagement from "./pages/Instagram/InstagramManagement";
 
 export default function App() {
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -181,6 +180,7 @@ export default function App() {
             <Route path="/reviews/all" element={<ReviewList />} />
             <Route path="/services/all" element={<ServiceList />} />
             <Route path="/home-management" element={<HomeStatsList />} />
+            <Route path="/instagram-management" element={<InstagramManagement />} />
 
             {/* Coupons */}
             {/* <Route path="/coupons/all" element={<CouponList />} /> */}

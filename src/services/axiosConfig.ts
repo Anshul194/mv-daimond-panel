@@ -14,6 +14,14 @@ const axiosInstance: AxiosInstance = axios.create({
 // Request interceptor
 axiosInstance.interceptors.request.use(
   (config: import('axios').InternalAxiosRequestConfig): import('axios').InternalAxiosRequestConfig => {
+    // Add cache-busting to GET requests
+    if (config.method === 'get') {
+      config.params = {
+        ...config.params,
+        _t: Date.now(),
+      };
+    }
+
     // Remove default application/json header for FormData to allow Axios to set boundary
     if (config.data instanceof FormData) {
       delete config.headers['Content-Type'];

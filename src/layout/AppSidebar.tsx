@@ -4,7 +4,6 @@ import { Link, useLocation } from "react-router";
 // Assume these icons are imported from an icon library
 import {
   BoxCubeIcon,
-  CalenderIcon,
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
@@ -12,12 +11,11 @@ import {
   PageIcon,
   PieChartIcon,
   PlugInIcon,
-  TableIcon,
   UserCircleIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
-import { ShoppingCartIcon, Star, Ticket, User, UsersIcon } from "lucide-react";
+import { ShoppingCartIcon, Star, Ticket, UsersIcon } from "lucide-react";
 
 type NavSubItem = {
   name: string;
@@ -377,6 +375,11 @@ const navItems: NavItem[] = [
     name: "Services Management",
     icon: <GridIcon />,
     path: "/services/all",
+  },
+  {
+    name: "Home Page Management",
+    icon: <GridIcon />,
+    path: "/home-management",
   },
   {
     name: "vendor",

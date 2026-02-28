@@ -70,6 +70,7 @@ import StoryList from "./pages/Story/StoryList";
 import CollectionList from "./pages/Collections/CollectionList";
 import ReviewList from "./pages/Reviews/ReviewList";
 import ServiceList from "./pages/Services/ServiceList";
+import HomeStatsList from "./pages/HomeStats/HomeStatsList";
 
 export default function App() {
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -179,6 +180,7 @@ export default function App() {
             <Route path="/collections/all" element={<CollectionList />} />
             <Route path="/reviews/all" element={<ReviewList />} />
             <Route path="/services/all" element={<ServiceList />} />
+            <Route path="/home-management" element={<HomeStatsList />} />
 
             {/* Coupons */}
             {/* <Route path="/coupons/all" element={<CouponList />} /> */}

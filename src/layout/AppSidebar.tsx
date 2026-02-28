@@ -374,6 +374,11 @@ const navItems: NavItem[] = [
     path: "/reviews/all",
   },
   {
+    name: "Services Management",
+    icon: <GridIcon />,
+    path: "/services/all",
+  },
+  {
     name: "vendor",
     icon: <ListIcon />,
     subItems: [

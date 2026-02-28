@@ -76,6 +76,16 @@ const ImagesSection: React.FC<ImagesSectionProps> = ({
     return fileUrl;
   };
 
+  const getFullImageUrl = (path: string): string => {
+    if (!path) return '';
+    if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) {
+      return path;
+    }
+    const cleanBase = baseUrl?.replace(/\/$/, '') || '';
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    return `${cleanBase}${cleanPath}`;
+  };
+
   return (
     <div className="max-w-4xl p-8">
       <div className="flex items-center justify-between mb-8">
@@ -126,7 +136,7 @@ const ImagesSection: React.FC<ImagesSectionProps> = ({
               <div key={index} className="relative group">
                 <img
                   src={
-                    image?.file ? getUrlFromFile(image?.file) : (image?.existingUrl ? baseUrl + image.existingUrl : baseUrl + image.preview)
+                    image?.file ? getUrlFromFile(image?.file) : (image?.existingUrl ? getFullImageUrl(image.existingUrl) : getFullImageUrl(image.preview))
                   }
                   alt="Product"
                   className="w-full z-99 h-32 object-cover rounded-lg border border-gray-200"

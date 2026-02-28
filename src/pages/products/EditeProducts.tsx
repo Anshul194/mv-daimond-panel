@@ -140,7 +140,12 @@ const EditProductForm = () => {
         lowStockThreshold: data.low_stock_threshold || data.lowStockThreshold || data?.inventory?.lowStockThreshold || "5",
         stockStatus: data.stock_status || data.stockStatus || data?.inventory?.stock_status || "in_stock",
         manageStock: data.manage_stock || data.manageStock || data?.inventory?.manage_stock || "yes",
-        images: data.image || data.images || [],
+        images: (data.image || data.images || []).map((imgUrl: string, idx: number) => ({
+          id: `existing-${idx}-${Date.now()}`,
+          preview: imgUrl,
+          existingUrl: imgUrl,
+          isFeatured: idx === 0,
+        })),
         variants: variantData || [],
         attributes: data.attributes || [],
         categories: data.categories || [],
@@ -295,23 +300,33 @@ const EditProductForm = () => {
 
       // Images from ImagesSection
       if (formData.images && formData.images.length > 0) {
-        // Main/Featured image (first image or the one marked as featured)
-        const featuredImage =
-          formData.images.find((img) => img.isFeatured) || formData.images[0];
-        if (featuredImage?.file) {
-          formDataToSend.append("image", featuredImage.file);
-        }
+        // Main/Featured image handling (handled via images array below)
 
-        // All images (optional - if backend supports multiple images)
-        formData.images.forEach((image, idx) => {
+        let hasExisting = false;
+
+        let newImageIdx = 0;
+
+        // All images
+        formData.images.forEach((image) => {
           if (image.file) {
-            formDataToSend.append(`images[${idx}]`, image.file);
+            formDataToSend.append(`images[${newImageIdx}]`, image.file);
             formDataToSend.append(
-              `images_featured[${idx}]`,
+              `images_featured[${newImageIdx}]`,
               image.isFeatured ? "1" : "0"
             );
+            newImageIdx++;
+          } else if (image.existingUrl) {
+            formDataToSend.append(`existingImages`, image.existingUrl);
+            hasExisting = true;
           }
         });
+
+        if (!hasExisting) {
+          formDataToSend.append('existingImages', '[]');
+        }
+      } else {
+        // All images removed
+        formDataToSend.append('existingImages', '[]');
       }
 
       // Log FormData contents for debugging (optional)

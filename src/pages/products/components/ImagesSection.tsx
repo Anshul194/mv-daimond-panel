@@ -2,7 +2,7 @@ import React, { useState, useCallback } from "react";
 import { Upload, X, Star } from "lucide-react";
 
 const baseUrl = import.meta.env.VITE_IMAGE_URL;
-import { ImageType, ProductFormData } from "../types";
+import { ProductFormData } from "../types";
 
 interface ImagesSectionProps {
   formData: ProductFormData;
@@ -126,7 +126,7 @@ const ImagesSection: React.FC<ImagesSectionProps> = ({
               <div key={index} className="relative group">
                 <img
                   src={
-                    image?.file ? getUrlFromFile(image?.file) : baseUrl + image
+                    image?.file ? getUrlFromFile(image?.file) : (image?.existingUrl ? baseUrl + image.existingUrl : baseUrl + image.preview)
                   }
                   alt="Product"
                   className="w-full z-99 h-32 object-cover rounded-lg border border-gray-200"

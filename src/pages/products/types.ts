@@ -19,6 +19,7 @@ export type ImageType = {
     preview: string;
     id: string | number;
     isFeatured: boolean;
+    existingUrl?: string;
 };
 
 export type Attribute = {

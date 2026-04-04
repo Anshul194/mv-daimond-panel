@@ -43,7 +43,9 @@ export default function AddSize() {
       });
       setSize({ name: "", size_code: "" });
     } catch (err: any) {
-      toast.error(err?.message || "Failed to create size.", {
+      console.error("createSize error:", err);
+      const errMsg = typeof err === 'string' ? err : err?.message || err?.data?.message || err?.body?.message || "Failed to create size.";
+      toast.error(errMsg, {
         duration: 8000,
         position: "top-right",
       });

@@ -16,7 +16,7 @@ import {
   AlertTriangle,
   Save,
 } from "lucide-react";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { deleteOrder, fetchOrders } from "../../../store/slices/order";
 import PageMeta from "../../../components/common/PageMeta";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";

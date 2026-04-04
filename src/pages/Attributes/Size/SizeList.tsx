@@ -80,6 +80,7 @@ const SizeList: React.FC = () => {
             handleCloseModal();
             dispatch(fetchSizes({ page, limit, filters, searchFields: search ? { name: search, size_code: search } : {}, sort: { createdAt: "desc" } }) as any);
         } catch (err: any) {
+            console.error("createSize (modal) error:", err);
             toast.error(typeof err === "string" ? err : "Failed to create size");
             setFormLoading(false);
         }

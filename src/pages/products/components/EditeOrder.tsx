@@ -12,7 +12,7 @@ import {
   Hash,
   DollarSign,
 } from "lucide-react";
-import { useParams } from "react-router";
+import { useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { fetchOrderById } from "../../../store/slices/order";
 import axiosInstance from "../../../services/axiosConfig";

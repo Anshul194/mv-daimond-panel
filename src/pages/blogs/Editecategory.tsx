@@ -9,7 +9,7 @@ import {
   getBlogCategoryById,
   updateBlogCategory,
 } from "../../store/slices/blogCategorySlice";
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate } from "react-router-dom";
 const imageUrl = import.meta.env.VITE_IMAGE_URL;
 export default function EditBlogCategory() {
   const navigate = useNavigate();

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Save, ArrowLeft, AlertCircle, Check } from "lucide-react";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { createCoupon } from "../../../store/slices/Coupon";
 import toast, { Toaster } from "react-hot-toast";
 

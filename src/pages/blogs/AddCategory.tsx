@@ -5,7 +5,7 @@ import toast, { Toaster } from "react-hot-toast";
 import PageMeta from "../../components/common/PageMeta";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import { createBlogCategory } from "../../store/slices/blogCategorySlice";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 
 export default function AddBlogCategory() {
   const navigate = useNavigate();

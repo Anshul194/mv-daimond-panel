@@ -174,11 +174,13 @@ export const updateDeliveryOption = createAsyncThunk<
 // Async thunk to create a delivery option
 export const createDeliveryOption = createAsyncThunk<
     DeliveryOption,
-    { icon: File; title: string; sub_title: string }
+    any
 >('delivery/createOption', async (data, { rejectWithValue }) => {
     try {
         const formData = new FormData();
-        formData.append('icon', data.icon);
+        // Accept either File or string for icon
+        if (data.icon instanceof File) formData.append('icon', data.icon);
+        else formData.append('icon', data.icon || "");
         formData.append('title', data.title);
         formData.append('sub_title', data.sub_title);
 
@@ -187,7 +189,9 @@ export const createDeliveryOption = createAsyncThunk<
                 'Content-Type': 'multipart/form-data',
             },
         });
-        return response.data;
+        const resp = response?.data || {};
+        const payload = resp?.body?.data || resp?.data || resp?.body || resp;
+        return payload;
     } catch (err: any) {
         return rejectWithValue(err.response?.data?.message || err.message);
     }

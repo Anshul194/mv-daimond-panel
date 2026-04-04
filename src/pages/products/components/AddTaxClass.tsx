@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Save, AlertCircle, Check, X, AlertTriangle } from "lucide-react";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { createTax } from "../../../store/slices/taxClass";
 
 const AddTaxClass = () => {

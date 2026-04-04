@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router";
+import { useParams } from "react-router-dom";
 import { updateProduct, fetchProductAttributes } from "../../store/slices/product";
 import Sidebar from "./components/Sidebar";
 import GeneralInfoSection from "./components/GeneralInfoSection";

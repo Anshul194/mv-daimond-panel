@@ -6,7 +6,7 @@ import {
   getTaxById,
   updateTax,
 } from "../../../store/slices/taxClass";
-import { useParams } from "react-router";
+import { useParams } from "react-router-dom";
 
 const UpdateTaxClass = () => {
   const [formData, setFormData] = useState({

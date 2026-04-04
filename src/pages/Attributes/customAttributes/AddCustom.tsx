@@ -6,7 +6,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { createCustomAttribute } from "../../../store/slices/customAttributes";
 import { fetchCourseCategories } from "../../../store/slices/courseCategorySlice";
 import type { AppDispatch, RootState } from "../../../store/index";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 
 interface TermInput {
   value: string;

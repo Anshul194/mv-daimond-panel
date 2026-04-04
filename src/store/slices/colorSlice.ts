@@ -136,7 +136,9 @@ export const createColorCode = createAsyncThunk<
                 }
             }
         );
-        return response.data.body.data;
+        const data = response?.data || {};
+        const payload = data?.body?.data || data?.data || data?.body || data;
+        return payload;
     } catch (error: any) {
         return rejectWithValue(error.response?.data?.message || error.message);
     }
@@ -225,8 +227,10 @@ const colorSlice = createSlice({
             })
             .addCase(createColorCode.fulfilled, (state, action) => {
                 state.loading = false;
-                state.colors.push(action.payload);
-                state.pagination.total += 1;
+                const payload = action.payload;
+                if (!payload) return;
+                state.colors.push(payload);
+                state.pagination.total = (state.pagination.total || 0) + 1;
             })
             .addCase(createColorCode.rejected, (state, action) => {
                 state.loading = false;
@@ -252,10 +256,12 @@ const colorSlice = createSlice({
             })
             .addCase(updateColorCode.fulfilled, (state, action) => {
                 state.loading = false;
+                const payload = action.payload;
+                if (!payload) return;
                 // Fixed to use _id instead of id
-                const index = state.colors.findIndex(color => color._id === action.payload._id);
+                const index = state.colors.findIndex(color => color._id === payload._id);
                 if (index !== -1) {
-                    state.colors[index] = action.payload;
+                    state.colors[index] = payload;
                 }
             })
             .addCase(updateColorCode.rejected, (state, action) => {
@@ -268,14 +274,16 @@ const colorSlice = createSlice({
             })
             .addCase(fetchColorCodeById.fulfilled, (state, action) => {
                 state.loading = false;
+                const payload = action.payload;
+                if (!payload) return;
                 // Fixed to use _id instead of id
-                const index = state.colors.findIndex(color => color._id === action.payload._id);
+                const index = state.colors.findIndex(color => color._id === payload._id);
                 if (index !== -1) {
-                    state.colors[index] = action.payload;
+                    state.colors[index] = payload;
                 } else {
-                    state.colors.push(action.payload);
+                    state.colors.push(payload);
                 }
-                state.selectedColor = action.payload;
+                state.selectedColor = payload;
             })
             .addCase(fetchColorCodeById.rejected, (state, action) => {
                 state.loading = false;

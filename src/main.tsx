@@ -48,7 +48,15 @@ export function AppWithToaster() {
   );
 }
 
-createRoot(document.getElementById("root")!).render(
+const container = document.getElementById("root")!;
+const _win = window as any;
+let _root = _win.__REACT_ROOT__;
+if (!_root) {
+  _root = createRoot(container);
+  _win.__REACT_ROOT__ = _root;
+}
+
+_root.render(
   <StrictMode>
     <Provider store={store}>
       <ThemeProvider>
@@ -57,5 +65,5 @@ createRoot(document.getElementById("root")!).render(
         </AppWrapper>
       </ThemeProvider>
     </Provider>
-  </StrictMode>,
+  </StrictMode>
 );

@@ -9,7 +9,7 @@ import {
   ChevronRight,
   RotateCcw,
 } from "lucide-react";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import {
   fetchOrders,
   setOrderSearchQuery,

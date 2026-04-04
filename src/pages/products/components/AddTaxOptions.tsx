@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Save, AlertCircle, Check } from "lucide-react";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { createTaxClassOption } from "../../../store/slices/taxClassOption";
 import { useAppSelector } from "../../../hooks/redux";
 import { fetchTaxes } from "../../../store/slices/taxClass";

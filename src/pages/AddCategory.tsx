@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { createCourseCategory } from "../store/slices/courseCategorySlice";
 import type { AppDispatch, RootState } from "../store";
 import toast, { Toaster } from "react-hot-toast";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 
 export default function AddCategory() {
   const navigate = useNavigate();

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { Dropdown } from "../ui/dropdown/Dropdown";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logout } from "../../store/slices/authslice";
 

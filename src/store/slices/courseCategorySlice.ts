@@ -91,12 +91,7 @@ interface SubCategory {
 // 2. Add the async thunk for creating a subcategory
 export const createSubCategory = createAsyncThunk<
     SubCategory,
-    {
-        name: string;
-        slug: string;
-        categoryId: string;
-        status: string;
-    }
+    any
 >('subCategories/create', async (subCategoryData, { rejectWithValue }) => {
     try {
         const response = await axiosInstance.post(
@@ -108,7 +103,14 @@ export const createSubCategory = createAsyncThunk<
                 },
             }
         );
-        return response.data?.data?.subCategory;
+        const data = response.data || {};
+        const payload =
+            data?.body?.data ||
+            data?.data?.subCategory ||
+            data?.data ||
+            data?.body ||
+            data;
+        return payload;
     } catch (err: any) {
         return rejectWithValue(err.response?.data?.message || err.message);
     }
@@ -467,12 +469,16 @@ const courseCategorySlice = createSlice({
             })
             .addCase(createSubCategory.fulfilled, (state: any, action: any) => {
                 state.loading = false;
-                // Assuming you want to add the new subcategory to the categories array
-                const categoryIndex = state.categories.findIndex(
-                    (cat: CourseCategory) => cat._id === action.payload.categoryId
-                );
-                if (categoryIndex !== -1) {
-                    state.categories[categoryIndex].subCategoryCount += 1; // Update subcategory count
+                const payload = action.payload;
+                if (!payload) return;
+                const categoryId = payload.categoryId || payload.category || payload.category?._id || payload.categoryId;
+                if (categoryId) {
+                    const categoryIndex = state.categories.findIndex(
+                        (cat: CourseCategory) => cat._id === categoryId
+                    );
+                    if (categoryIndex !== -1) {
+                        state.categories[categoryIndex].subCategoryCount = (state.categories[categoryIndex].subCategoryCount || 0) + 1;
+                    }
                 }
             })
             .addCase(createSubCategory.rejected, (state: any, action: any) => {

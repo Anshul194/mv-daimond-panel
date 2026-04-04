@@ -2,12 +2,14 @@ import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import PageMeta from "../../../components/common/PageMeta";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import { createColorCode } from "../../../store/slices/colorSlice";
 import type { AppDispatch, RootState } from "../../../store/index";
 
 export default function AddColor() {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const { loading } = useSelector((state: RootState) => state.color);
 
   const [color, setColor] = useState({
@@ -44,8 +46,12 @@ export default function AddColor() {
         position: "top-right",
       });
       setColor({ name: "", colorCode: "#000000" });
+      console.log("Color created, navigating to list...");
+      setTimeout(() => navigate("/attributes/colors/list", { replace: true }), 700);
     } catch (err: any) {
-      toast.error(err?.message || "Failed to create color.", {
+      console.error("createColorCode error:", err);
+      const errMsg = typeof err === 'string' ? err : err?.message || err?.data?.message || err?.body?.message || "Failed to create color.";
+      toast.error(errMsg, {
         duration: 8000,
         position: "top-right",
       });

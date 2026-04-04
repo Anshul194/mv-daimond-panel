@@ -319,7 +319,18 @@ const ColorList: React.FC = () => {
         onFormChange: (field: string, value: string) => void;
     }> = ({ isOpen, onClose, onSubmit, color, isEditing, form, onFormChange }) => {
         if (!isOpen || !color) return null;
-        
+        const [localName, setLocalName] = useState(form.name);
+
+        useEffect(() => {
+            setLocalName(form.name);
+        }, [form.name]);
+
+        const handleNameBlur = () => {
+            if (localName !== form.name) {
+                onFormChange('name', localName);
+            }
+        };
+
         return (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-transparent backdrop-blur-sm">
                 <div className="bg-transparent backdrop-blur-sm dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-md mx-4 border border-gray-200 dark:border-gray-700">
@@ -343,8 +354,9 @@ const ColorList: React.FC = () => {
                             </label>
                             <input
                                 type="text"
-                                value={form.name}
-                                onChange={(e) => onFormChange('name', e.target.value)}
+                                value={localName}
+                                onChange={(e) => setLocalName(e.target.value)}
+                                onBlur={handleNameBlur}
                                 placeholder="Enter color name"
                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
                                 required

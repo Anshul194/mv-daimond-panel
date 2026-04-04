@@ -8,7 +8,7 @@ import {
   fetchCourseCategories,
 } from "../store/slices/courseCategorySlice";
 import type { AppDispatch, RootState } from "../store";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 
 export default function AddSubCategory() {
   const navigate = useNavigate();
@@ -78,8 +78,11 @@ export default function AddSubCategory() {
     }
 
     try {
-      await dispatch(createSubCategory(formData as any)).unwrap();
-      toast.success("Subcategory created successfully! 🎉", {
+      const res: any = await dispatch(createSubCategory(formData as any)).unwrap();
+      const successMessage =
+        res?.body?.message || res?.message || res?.data?.message ||
+        (res?.data?.name ? `${res.data.name} created successfully! 🎉` : "Subcategory created successfully! 🎉");
+      toast.success(successMessage, {
         duration: 8000,
         position: "top-right",
       });
@@ -90,9 +93,12 @@ export default function AddSubCategory() {
         categoryId: "",
         image: null,
       });
-      navigate("/attributes/subcategories/");
+      console.log("Subcategory created, navigating to list...");
+      setTimeout(() => navigate("/attributes/subcategories/", { replace: true }), 700);
     } catch (err: any) {
-      toast.error(err?.message || "Failed to create subcategory.", {
+      console.error("createSubCategory error:", err);
+      const errMsg = typeof err === 'string' ? err : err?.message || err?.data?.message || err?.body?.message || "Failed to create subcategory.";
+      toast.error(errMsg, {
         duration: 8000,
         position: "top-right",
       });

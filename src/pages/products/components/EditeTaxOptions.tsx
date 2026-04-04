@@ -9,7 +9,7 @@ import {
 import { useAppSelector } from "../../../hooks/redux";
 import { fetchTaxes } from "../../../store/slices/taxClass";
 import axiosInstance from "../../../services/axiosConfig";
-import { useParams } from "react-router";
+import { useParams } from "react-router-dom";
 
 const EditTaxOption = () => {
   const [formData, setFormData] = useState({

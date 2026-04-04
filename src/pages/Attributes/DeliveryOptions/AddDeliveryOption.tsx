@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import toast, { Toaster } from "react-hot-toast";
 import { createDeliveryOption } from "../../../store/slices/deliverySlice";
 import type { AppDispatch, RootState } from "../../../store/index";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 
 // Font Awesome icon options
 const fontAwesomeIcons = [
@@ -126,7 +126,8 @@ export default function AddDeliveryOption() {
         position: "top-right",
       });
       setOption({ title: "", sub_title: "", icon: "" });
-      navigate("/attributes/delivery-options/list");
+      console.log("Delivery option created, navigating to list...");
+      setTimeout(() => navigate("/attributes/delivery-options/list", { replace: true }), 700);
     } catch (err: any) {
       toast.error(err?.message || "Failed to create delivery option.", {
         duration: 8000,

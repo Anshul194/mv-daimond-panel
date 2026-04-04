@@ -9,7 +9,7 @@ import {
   fetchBlogCategories,
 } from "../../store/slices/blogCategorySlice";
 import { createBlogSubcategory } from "../../store/slices/blogSubcategorySlice";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 
 export default function AddBlogSubCategory() {
   const navigate = useNavigate();

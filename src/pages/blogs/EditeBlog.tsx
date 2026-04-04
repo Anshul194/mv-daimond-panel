@@ -11,7 +11,7 @@ import {
 import { createBlog, updateBlog } from "../../store/slices/blog";
 import CustomEditor from "../../components/CustomEditor";
 import axiosInstance from "../../services/axiosConfig";
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate } from "react-router-dom";
 
 export default function EditBlog() {
   const navigate = useNavigate();

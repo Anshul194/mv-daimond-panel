@@ -27,7 +27,7 @@ import { deleteBlogCategory } from "../../store/slices/blogCategorySlice";
 import { useDispatch, useSelector } from "react-redux";
 import PageMeta from "../../components/common/PageMeta";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import {
   deleteBlogSubcategory,
   fetchBlogSubcategories,

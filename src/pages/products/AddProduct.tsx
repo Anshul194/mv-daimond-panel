@@ -10,6 +10,8 @@ import AttributesSection from "./components/AttributesSection";
 import type { AppDispatch, RootState } from "../../store"; // <-- import your types
 import DeliverySection from "./components/DeliverySection";
 import PropertiesSection from "./components/Propertys";
+import { useNavigate } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast";
 
 const ProductForm = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -56,6 +58,7 @@ const ProductForm = () => {
     variants: Variant[];
     attributes: Attribute[];
     categories: string[];
+    featured?: string;
   };
 
   const [formData, setFormData] = useState<ProductFormData>({
@@ -76,6 +79,7 @@ const ProductForm = () => {
     attributes: [],
     categories: [],
     tax: "",
+    featured: "false",
   });
 
   const [propertys, setProperties] = useState<any[]>({});
@@ -93,6 +97,8 @@ const ProductForm = () => {
       [field]: value,
     }));
   }, []);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (formData.category_id) {
@@ -171,7 +177,10 @@ const ProductForm = () => {
       // if (formData.tax && formData.tax !== "") {
       //   formDataToSend.append("isTaxable", true);
       // }
-      formDataToSend.append("isTaxable", false);
+      formDataToSend.append("isTaxable", "false");
+
+      // Featured flag
+      formDataToSend.append("featured", formData.featured ? String(formData.featured) : "false");
 
       // Product attributes from AttributesSection
       if (formData.attributes && formData.attributes.length > 0) {
@@ -287,7 +296,12 @@ const ProductForm = () => {
       }
 
       // Dispatch the action
-      await dispatch(createProduct(formDataToSend)).unwrap();
+      const res: any = await dispatch(createProduct(formDataToSend) as any).unwrap();
+
+      // Show success message from API if present
+      const successMessage =
+        res?.body?.message || res?.message || res?.data?.message || (res?.data?.name ? `${res.data.name} created successfully!` : "Product created successfully!");
+      toast.success(successMessage, { duration: 8000, position: "top-right" });
 
       // Reset form data after successful submission
       setFormData({
@@ -311,12 +325,15 @@ const ProductForm = () => {
         attributes: [],
         categories: [],
         tax: "",
+        featured: "false",
       });
 
-      alert("Product created successfully!");
+      console.log("Product created, navigating to list...");
+      setTimeout(() => navigate("/products/all", { replace: true }), 700);
     } catch (error) {
       console.error("Failed to create product:", error);
-      alert("Failed to create product. Please try again.");
+      const errMsg = typeof error === 'string' ? error : error?.message || error?.data?.message || "Failed to create product. Please try again.";
+      toast.error(errMsg, { duration: 8000, position: "top-right" });
     }
   };
 

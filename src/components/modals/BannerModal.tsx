@@ -10,6 +10,12 @@ interface BannerModalProps {
 }
 
 const BannerModal: React.FC<BannerModalProps> = ({ isOpen, onClose, onConfirm, banner, isProcessing }) => {
+    const getFullUrl = (url: string) => {
+        if (!url) return "";
+        if (url.startsWith("http") || url.startsWith("data:") || url.startsWith("blob:")) return url;
+        const base = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
+        return base.replace(/\/$/, "") + (url.startsWith("/") ? url : `/${url}`);
+    };
     const [formData, setFormData] = useState({
         title: "",
         subtitle: "",
@@ -134,7 +140,7 @@ const BannerModal: React.FC<BannerModalProps> = ({ isOpen, onClose, onConfirm, b
                         <div>
                             <label className="block text-sm mb-1">Left Background Image *</label>
                             <div className="flex flex-col gap-2">
-                                {imagePreview && <img src={imagePreview} className="w-full h-32 object-cover rounded border" alt="preview" />}
+                                {imagePreview && <img src={getFullUrl(imagePreview)} className="w-full h-32 object-cover rounded border" alt="preview" />}
                                 <div className="relative">
                                     <input type="file" onChange={(e) => handleFileChange(e, 'image')} className="hidden" id="banner-image" accept="image/*" />
                                     <label htmlFor="banner-image" className="flex items-center justify-center gap-2 w-full p-2 border border-dashed rounded cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -147,7 +153,7 @@ const BannerModal: React.FC<BannerModalProps> = ({ isOpen, onClose, onConfirm, b
                         <div>
                             <label className="block text-sm mb-1">Right Background Image</label>
                             <div className="flex flex-col gap-2">
-                                {rightImagePreview && <img src={rightImagePreview} className="w-full h-32 object-cover rounded border" alt="preview" />}
+                                {rightImagePreview && <img src={getFullUrl(rightImagePreview)} className="w-full h-32 object-cover rounded border" alt="preview" />}
                                 <div className="relative">
                                     <input type="file" onChange={(e) => handleFileChange(e, 'rightImage')} className="hidden" id="right-banner-image" accept="image/*" />
                                     <label htmlFor="right-banner-image" className="flex items-center justify-center gap-2 w-full p-2 border border-dashed rounded cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">

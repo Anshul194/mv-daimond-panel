@@ -47,5 +47,6 @@ export type ProductFormData = {
     attributes: Attribute[];
     categories: string[];
     tax: string;
+    featured?: string;
     [key: string]: any;
 };

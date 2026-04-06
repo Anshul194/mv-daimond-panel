@@ -8,6 +8,12 @@ import toast from "react-hot-toast";
 import BannerModal from "../../components/modals/BannerModal";
 
 const BannerList: React.FC = () => {
+    const getFullUrl = (url: string) => {
+        if (!url) return "";
+        if (url.startsWith("http") || url.startsWith("data:") || url.startsWith("blob:")) return url;
+        const base = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
+        return base.replace(/\/$/, "") + (url.startsWith("/") ? url : `/${url}`);
+    };
     const dispatch = useAppDispatch();
     const { banners, loading, success } = useAppSelector((state) => state.banner);
 
@@ -92,7 +98,7 @@ const BannerList: React.FC = () => {
                             {banners.map((banner) => (
                                 <tr key={banner._id}>
                                     <td className="px-6 py-4">
-                                        <img src={banner.image} alt={banner.title} className="w-20 h-10 object-cover rounded" />
+                                        <img src={getFullUrl(banner.image)} alt={banner.title} className="w-20 h-10 object-cover rounded" />
                                     </td>
                                     <td className="px-6 py-4 text-sm">{banner.title}</td>
                                     <td className="px-6 py-4">

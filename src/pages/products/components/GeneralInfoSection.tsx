@@ -76,6 +76,18 @@ const GeneralInfoSection: React.FC<GeneralInfoSectionProps> = ({
             <option value="both">Both</option>
           </select>
         </div>
+        <div className="mb-6 flex items-center space-x-3">
+          <input
+            id="featured"
+            type="checkbox"
+            checked={String(formData.featured) === "true"}
+            onChange={(e) => updateFormData("featured", e.target.checked ? "true" : "false")}
+            className="h-4 w-4 text-emerald-600 border-gray-300 rounded"
+          />
+          <label htmlFor="featured" className="text-sm font-medium text-gray-700">
+            Featured
+          </label>
+        </div>
         <InputField
           label="Name"
           placeholder="Write product Name..."

@@ -45,6 +45,7 @@ const EditProductForm = () => {
     attributes: [],
     categories: [],
     tax: "",
+    featured: "false",
   });
 
   const [propertys, setProperties] = useState<Record<string, any>>({});
@@ -243,6 +244,9 @@ const EditProductForm = () => {
       // }
 
       formDataToSend.append("isTaxable", "false");
+
+      // Featured flag
+      formDataToSend.append("featured", formData.featured || "false");
 
       // Product attributes from AttributesSection
       if (formData.attributes && formData.attributes.length > 0) {

@@ -159,7 +159,7 @@ export default function EditBlog() {
           coverImage: blogData.coverImage || null, // Reset to null for new upload
         });
       } catch (error) {
-        console.error("Error fetching blog data:", error);
+        console.log("Error fetching blog data:", error);
         toast.error("Failed to fetch blog data.", {
           duration: 8000,
           position: "top-right",
@@ -182,7 +182,7 @@ export default function EditBlog() {
         );
         setSubCategory(response.data.data);
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        console.log("Error fetching categories:", error);
         toast.error("Failed to fetch categories.", {
           duration: 8000,
           position: "top-right",
@@ -191,6 +191,20 @@ export default function EditBlog() {
     };
     getData();
   }, [blog.blogCategory]);
+
+  // computed image URLs for previewing existing images
+  const imageBaseRaw = import.meta.env.VITE_IMAGE_URL || "";
+  const imageBase = imageBaseRaw.replace(/\/$/, "");
+  const thumbnailSrc = blog.thumbnailImage
+    ? typeof blog.thumbnailImage === "string"
+      ? `${imageBase}${blog.thumbnailImage.startsWith("/") ? blog.thumbnailImage : `/${blog.thumbnailImage}`}`
+      : URL.createObjectURL(blog.thumbnailImage)
+    : null;
+  const coverSrc = blog.coverImage
+    ? typeof blog.coverImage === "string"
+      ? `${imageBase}${blog.coverImage.startsWith("/") ? blog.coverImage : `/${blog.coverImage}`}`
+      : URL.createObjectURL(blog.coverImage)
+    : null;
   return (
     <div>
       <Toaster position="top-right" />
@@ -311,16 +325,11 @@ export default function EditBlog() {
                 onChange={(e) => handleImageChange(e, false)}
                 className="w-full rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white"
               />
-              {blog.thumbnailImage &&
-                typeof blog.thumbnailImage !== "string" && (
-                  <div className="mt-2">
-                    <img
-                      src={URL.createObjectURL(blog.thumbnailImage)}
-                      alt="Blog Preview"
-                      className="max-w-xs h-auto rounded"
-                    />
-                  </div>
-                )}
+              {thumbnailSrc && (
+                <div className="mt-2">
+                  <img src={thumbnailSrc} alt="Blog Thumbnail" className="max-w-xs h-auto rounded" />
+                </div>
+              )}
             </div>
 
             <div>
@@ -333,13 +342,9 @@ export default function EditBlog() {
                 onChange={(e) => handleImageChange(e, true)}
                 className="w-full rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white"
               />
-              {blog.coverImage && typeof blog.coverImage !== "string" && (
+              {coverSrc && (
                 <div className="mt-2">
-                  <img
-                    src={URL.createObjectURL(blog.coverImage)}
-                    alt="Blog Preview"
-                    className="max-w-xs h-auto rounded"
-                  />
+                  <img src={coverSrc} alt="Blog Cover" className="max-w-xs h-auto rounded" />
                 </div>
               )}
             </div>

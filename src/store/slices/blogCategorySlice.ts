@@ -105,17 +105,24 @@ export const fetchBlogCategories = createAsyncThunk<
     const res = await axiosInstance.get(
       `${API_BASE_URL}/api/blog-category?${queryParams.toString()}`
     );
-    const data = res.data.body.data;
-    console.log("Fetched blog categories:", data);
+    const data = res.data?.body?.data || res.data?.data || res.data;
+    // Normalize different backend shapes:
+    // - { body: { data: { result: [...], pagination: {...} } } }
+    // - { body: { data: { data: [...] , pagination: {...} } } }
+    // - { data: [...] }
+    console.log("Fetched blog categories raw response:", data);
+
+    const items = (data && (data.result || data.data)) || (Array.isArray(data) ? data : []);
+    const paginationSource = data?.pagination || data?.pagination?.data || {};
+
     return {
-      categories: data?.result || [],
+      categories: items || [],
       pagination: {
-        total: data?.totalItems || 0,
+        total: paginationSource.totalItems || data?.totalItems || items.length || 0,
         page: data?.page || 1,
         limit: data?.limit || limit,
         totalPages:
-          data?.pagination?.totalPages ||
-          Math.ceil((data?.pagination?.totalItems || 0) / limit),
+          paginationSource.totalPages || Math.ceil((paginationSource.totalItems || items.length || 0) / limit),
       },
     };
   } catch (err: any) {

@@ -1,8 +1,9 @@
 import React, { useEffect } from "react";
 import InputField from "./InputField ";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useAppSelector } from "../../../hooks/redux";
 import { fetchTaxes } from "../../../store/slices/taxClass";
+import type { AppDispatch } from "../../../store";
 
 interface PriceSectionProps {
   formData: {
@@ -21,9 +22,8 @@ const PriceSection: React.FC<PriceSectionProps> = ({
   formData,
   updateFormData,
 }) => {
-  const { taxes, loading, error, pagination, searchQuery, filters } =
-    useAppSelector((state) => state.taxClass);
-  const dispatch = useDispatch();
+  const { taxes } = useAppSelector((state) => state.taxClass);
+  const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     if (taxes.length === 0) {

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { createProduct, fetchProductAttributes } from "../../store/slices/product";
 import Sidebar from "./components/Sidebar";
@@ -11,8 +11,8 @@ import type { AppDispatch, RootState } from "../../store"; // <-- import your ty
 import DeliverySection from "./components/DeliverySection";
 import PropertiesSection from "./components/Propertys";
 import { useNavigate } from "react-router-dom";
-import toast, { Toaster } from "react-hot-toast";
-import { Variant, ProductFormData, Attribute, ImageType } from "./types";
+import toast from "react-hot-toast";
+import { Variant, ProductFormData } from "./types";
 
 const ProductForm = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -244,6 +244,7 @@ const ProductForm = () => {
         name: "",
         slug: "",
         shortDescription: "",
+        gender: "",
         description: "",
         category_id: "",
         categoryName: "",

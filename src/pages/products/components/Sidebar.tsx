@@ -3,6 +3,7 @@ import React from "react";
 interface SidebarProps {
   activeSection: string;
   onSectionChange: (sectionId: string) => void;
+  forEdit?: boolean;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({

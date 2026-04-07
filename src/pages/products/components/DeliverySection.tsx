@@ -2,23 +2,10 @@ import React from "react";
 import { Plus, X, AlertTriangle } from "lucide-react";
 import InputField from "./InputField ";
 
-interface Variant {
-  id: number;
-  size: string;
-  color: string;
-  sku: string;
-  price: string;
-  stock: string;
-  image: File | null;
-}
+import { Variant, ProductFormData } from "../types";
 
 interface InventorySectionProps {
-  formData: {
-    variants?: Variant[];
-    lowStockThreshold?: string;
-    manageStock?: string;
-    [key: string]: any;
-  };
+  formData: ProductFormData;
   updateFormData: (field: string, value: any) => void;
 }
 
@@ -58,14 +45,14 @@ const DeliverySection: React.FC<InventorySectionProps> = ({
 
   const getTotalStock = () => {
     return (formData.variants || []).reduce((total, variant) => {
-      return total + (parseInt(variant.stock) || 0);
+      return total + (parseInt(variant.stockCount || "0") || 0);
     }, 0);
   };
 
   const getLowStockVariants = () => {
-    const threshold = parseInt(formData.lowStockThreshold) || 5;
+    const threshold = parseInt(formData.lowStockThreshold || "5") || 5;
     return (formData.variants || []).filter(
-      (variant) => parseInt(variant.stock) <= threshold
+      (variant) => (parseInt(variant.stockCount || "0") || 0) <= threshold
     );
   };
 

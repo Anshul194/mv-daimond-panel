@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { updateProduct, fetchProductAttributes } from "../../store/slices/product";
@@ -12,13 +12,13 @@ import DeliverySection from "./components/DeliverySection";
 import type { AppDispatch, RootState } from "../../store";
 import axiosInstance from "../../services/axiosConfig";
 import PropertiesSection from "./components/Propertys";
-import { Variant, ImageType, Attribute, ProductFormData } from "./types";
+import { Variant, ProductFormData, Attribute } from "./types";
 
 const EditProductForm = () => {
   const dispatch = useDispatch<AppDispatch>();
   const params = useParams();
   const productId = params.id; // Assuming the product ID is passed as a URL parameter
-  const { loading, error, success, productAttributes, productAttributesLoading } = useSelector(
+  const { loading, error, success, productAttributes } = useSelector(
     (state: RootState) => state.product
   );
 
@@ -364,7 +364,7 @@ const EditProductForm = () => {
 
       // Dispatch the action
       const updateResponse = await dispatch(
-        updateProduct({ productId: productId, data: formDataToSend })
+        updateProduct({ productId: productId || "", data: formDataToSend })
       ).unwrap();
 
       console.log("Update response:", updateResponse);
@@ -405,7 +405,7 @@ const EditProductForm = () => {
           <PropertiesSection
             formData={formData}
             propertys={propertys}
-            productAttributes={productAttributes}
+            productAttributes={productAttributes || []}
             updateFormData={updateProperties}
           />
         );

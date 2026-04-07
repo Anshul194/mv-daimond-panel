@@ -3,12 +3,13 @@ import React from "react";
 interface InputFieldProps {
   label: string;
   placeholder?: string;
-  value: string;
+  value: string | number;
   onChange: React.ChangeEventHandler<HTMLInputElement>;
   type?: string;
   required?: boolean;
   className?: string;
   disabled?: boolean;
+  id?: string;
 }
 
 const InputField: React.FC<InputFieldProps> = ({

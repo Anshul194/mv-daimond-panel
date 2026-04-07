@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Package,
   User,
@@ -16,12 +16,13 @@ import { useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { fetchOrderById } from "../../../store/slices/order";
 import axiosInstance from "../../../services/axiosConfig";
+import type { AppDispatch } from "../../../store";
 
 const OrderDetailsPage = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [orderData, setOrderData] = useState<any>(null);
   const params = useParams();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const [loading, setLoading] = useState(false);
   const orderId = params.id; // Assuming the URL is like /orders/:orderId
   const [nextStep, setNextStep] = useState("");
@@ -41,14 +42,13 @@ const OrderDetailsPage = () => {
     }
 
     try {
-      const response = await dispatch(fetchOrderById({ orderId }));
+      const response = (await dispatch(fetchOrderById({ orderId }))) as any;
       console.log("Fetching order details for ID:", orderId);
       console.log("Order details response:", response.payload);
-      setOrderData(response.payload?.data);
+      setOrderData(response.payload?.body?.data || response.payload?.data);
 
-      const currentStatusIndex = steps.indexOf(
-        (response.payload as { order_status: string }).order_status
-      );
+      const status = response.payload?.body?.data?.order_status || response.payload?.data?.order_status || "";
+      const currentStatusIndex = steps.indexOf(status);
       if (currentStatusIndex !== -1 && currentStatusIndex < steps.length - 1) {
         setNextStep(steps[currentStatusIndex + 1]);
       }

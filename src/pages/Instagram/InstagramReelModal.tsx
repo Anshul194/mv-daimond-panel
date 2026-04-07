@@ -22,6 +22,8 @@ const InstagramReelModal: React.FC<InstagramReelModalProps> = ({
         order: 0,
         status: "active",
     });
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [previewSrc, setPreviewSrc] = useState<string>("");
 
     useEffect(() => {
         if (reel) {
@@ -31,6 +33,16 @@ const InstagramReelModal: React.FC<InstagramReelModalProps> = ({
                 order: reel.order || 0,
                 status: reel.status || "active",
             });
+            // show existing server image when editing
+            const base = (import.meta as any).env.VITE_IMAGE_URL || "";
+            if (reel.image && typeof reel.image === "string") {
+                const trimmedBase = base.replace(/\/+$/u, "");
+                const imgPath = reel.image.startsWith("/") ? reel.image : `/${reel.image}`;
+                setPreviewSrc(trimmedBase ? `${trimmedBase}${imgPath}` : imgPath);
+                setImageFile(null);
+            } else {
+                setPreviewSrc("");
+            }
         } else {
             setFormData({
                 image: "",
@@ -38,17 +50,40 @@ const InstagramReelModal: React.FC<InstagramReelModalProps> = ({
                 order: 0,
                 status: "active",
             });
+            setPreviewSrc("");
+            setImageFile(null);
         }
     }, [reel, isOpen]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        setFormData((prev) => ({ ...prev, [name]: name === "order" ? Number(value) : value }));
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files && e.target.files[0];
+        if (file) {
+            setImageFile(file);
+            setPreviewSrc(URL.createObjectURL(file));
+            // clear image text path when user selects a file
+            setFormData((prev) => ({ ...prev, image: "" }));
+        }
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onConfirm(reel?._id, formData);
+        // Build FormData so we can send either an uploaded file or a server path
+        const payload = new FormData();
+        payload.append("reelUrl", formData.reelUrl || "");
+        payload.append("order", String(formData.order || 0));
+        payload.append("status", formData.status || "active");
+        if (imageFile) {
+            payload.append("image", imageFile);
+        } else if (formData.image) {
+            payload.append("image", formData.image);
+        }
+
+        onConfirm(reel?._id, payload);
     };
 
     if (!isOpen) return null;
@@ -76,6 +111,14 @@ const InstagramReelModal: React.FC<InstagramReelModalProps> = ({
                             className="w-full px-4 py-2 border rounded-md dark:bg-gray-900 border-gray-700"
                             placeholder="/images/home-slide-one/one.webp"
                         />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium mb-1">Or upload image</label>
+                        <input type="file" accept="image/*" onChange={handleFileChange} />
+                        {previewSrc ? (
+                            <img src={previewSrc} alt="preview" className="mt-2 max-h-40 object-contain" />
+                        ) : null}
                     </div>
 
                     <div>

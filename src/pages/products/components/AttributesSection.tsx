@@ -20,6 +20,9 @@ const AttributesSection: React.FC<InventorySectionProps> = ({
   );
   const [shapeResponse, setShapeResponse] = React.useState<any[]>([]);
   const [caratResponse, setCaratResponse] = React.useState<any[]>([]);
+  const [settingStyleResponse, setSettingStyleResponse] = React.useState<any[]>([]);
+  const [settingProfileResponse, setSettingProfileResponse] = React.useState<any[]>([]);
+  const [bandTypeResponse, setBandTypeResponse] = React.useState<any[]>([]);
 
   const getData = async () => {
     try {
@@ -100,10 +103,39 @@ const AttributesSection: React.FC<InventorySectionProps> = ({
         }
       }
 
-      // 5. Update state once
+      // 5. Fetch Setting Style & Setting Profile
+      let settingStyleTerms = [];
+      let settingProfileTerms = [];
+      let bandTypeTerms = [];
+      try {
+        // User requested to filter by "Setting" for setting style
+        const styleRes = await axiosInstance("/api/productattribute?filters=" + encodeURIComponent(JSON.stringify({ title: "Setting" })));
+        const styleResults = styleRes?.data?.data?.data || styleRes?.data?.body?.data || [];
+        const styleAttr = Array.isArray(styleResults) ? styleResults.find((a: any) => (a.title || "").toLowerCase().includes("setting")) : null;
+        settingStyleTerms = styleAttr?.terms || [];
+      } catch(e) { console.error("Error fetching style:", e); }
+
+      try {
+        const profileRes = await axiosInstance("/api/productattribute?filters=" + encodeURIComponent(JSON.stringify({ title: "Setting Profile" })));
+        const profileResults = profileRes?.data?.data?.data || profileRes?.data?.body?.data || [];
+        const profileAttr = Array.isArray(profileResults) ? profileResults.find((a: any) => (a.title || "").toLowerCase().includes("setting profile")) : null;
+        settingProfileTerms = profileAttr?.terms || [];
+      } catch(e) { console.error("Error fetching profile:", e); }
+
+      try {
+        const bandRes = await axiosInstance("/api/productattribute?filters=" + encodeURIComponent(JSON.stringify({ title: "Band Type" })));
+        const bandResults = bandRes?.data?.data?.data || bandRes?.data?.body?.data || [];
+        const bandAttr = Array.isArray(bandResults) ? bandResults.find((a: any) => (a.title || "").toLowerCase().includes("band")) : null;
+        bandTypeTerms = bandAttr?.terms || [];
+      } catch(e) { console.error("Error fetching band type:", e); }
+
+      // 6. Update state once
       setMetalTypeResponse(metalTerms);
       setShapeResponse(shapeTerms);
       setCaratResponse(caratTerms);
+      setSettingStyleResponse(settingStyleTerms);
+      setSettingProfileResponse(settingProfileTerms);
+      setBandTypeResponse(bandTypeTerms);
 
       console.log("Attributes loaded successfully:", {
         metalTerms: metalTerms.length,
@@ -129,8 +161,10 @@ const AttributesSection: React.FC<InventorySectionProps> = ({
         id: `new-${Date.now()}-${(formData.variants || []).length}`,
         size: "",
         color: "",
-        shape: "",
         carat: "",
+        settingStyle: "",
+        settingProfile: "",
+        bandType: "",
         sku: "",
         price: "",
         stockCount: "0",
@@ -287,16 +321,20 @@ const AttributesSection: React.FC<InventorySectionProps> = ({
                     Metal Type
                   </label>
                   <select
-                    value={variant.color}
-                    onChange={(e) =>
-                      updateVariant(variant.id, "color", e.target.value)
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-colors"
+                    value={variant.color || ""}
+                    onChange={(e) => updateVariant(variant.id, "color", e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all appearance-none bg-white shadow-sm hover:border-emerald-300"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "right 1rem center",
+                      backgroundSize: "1.25rem"
+                    }}
                   >
                     <option value="">Select Metal Type</option>
-                    {metalTypeResponse?.map((metal) => (
-                      <option key={metal._id} value={metal.value}>
-                        {metal.value}
+                    {metalTypeResponse?.map((m, i) => (
+                      <option key={m._id || i} value={m.value || m.name || m}>
+                        {m.value || m.name || m}
                       </option>
                     ))}
                   </select>
@@ -307,15 +345,19 @@ const AttributesSection: React.FC<InventorySectionProps> = ({
                   </label>
                   <select
                     value={variant.shape || ""}
-                    onChange={(e) =>
-                      updateVariant(variant.id, "shape", e.target.value)
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-colors"
+                    onChange={(e) => updateVariant(variant.id, "shape", e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all appearance-none bg-white shadow-sm hover:border-emerald-300"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "right 1rem center",
+                      backgroundSize: "1.25rem"
+                    }}
                   >
                     <option value="">Select Shape</option>
-                    {shapeResponse.map((shape) => (
-                      <option key={shape._id || shape.id || shape.value} value={shape.value || shape.name || shape}>
-                        {shape.value || shape.name || shape}
+                    {shapeResponse?.map((s, i) => (
+                      <option key={s._id || i} value={s.value || s.name || s}>
+                        {s.value || s.name || s}
                       </option>
                     ))}
                   </select>
@@ -329,18 +371,96 @@ const AttributesSection: React.FC<InventorySectionProps> = ({
                     onChange={(e) =>
                       updateVariant(variant.id, "carat", e.target.value)
                     }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-colors"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all appearance-none bg-white shadow-sm hover:border-emerald-300"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "right 1rem center",
+                      backgroundSize: "1.25rem"
+                    }}
                   >
                     <option value="">Select Carat</option>
                     {Array.isArray(caratResponse) && caratResponse.length > 0 ? (
-                      caratResponse.map((carat) => (
-                        <option key={carat._id || carat.id || carat.value} value={carat.value || carat.name || carat}>
+                      caratResponse.map((carat, i) => (
+                        <option key={carat._id || carat.id || i} value={carat.value || carat.name || carat}>
                           {carat.value || carat.name || carat}
                         </option>
                       ))
                     ) : (
                       <option value="" disabled>No carat options available</option>
                     )}
+                  </select>
+                </div>
+
+                <div className="mb-0">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Setting Style
+                  </label>
+                  <select
+                    value={variant.settingStyle || ""}
+                    onChange={(e) => updateVariant(variant.id, "settingStyle", e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all appearance-none bg-white shadow-sm hover:border-emerald-300"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "right 1rem center",
+                      backgroundSize: "1.25rem"
+                    }}
+                  >
+                    <option value="">Select Setting Style</option>
+                    {settingStyleResponse?.map((s, i) => (
+                      <option key={s._id || i} value={s.value || s.name || s}>
+                        {s.value || s.name || s}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="mb-0">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Setting Profile
+                  </label>
+                  <select
+                    value={variant.settingProfile || ""}
+                    onChange={(e) => updateVariant(variant.id, "settingProfile", e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all appearance-none bg-white shadow-sm hover:border-emerald-300"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "right 1rem center",
+                      backgroundSize: "1.25rem"
+                    }}
+                  >
+                    <option value="">Select Setting Profile</option>
+                    {settingProfileResponse?.map((p, i) => (
+                      <option key={p._id || i} value={p.value || p.name || p}>
+                        {p.value || p.name || p}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="mb-0">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Band Type
+                  </label>
+                  <select
+                    value={variant.bandType || ""}
+                    onChange={(e) => updateVariant(variant.id, "bandType", e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all appearance-none bg-white shadow-sm hover:border-emerald-300"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "right 1rem center",
+                      backgroundSize: "1.25rem"
+                    }}
+                  >
+                    <option value="">Select Band Type</option>
+                    {bandTypeResponse?.map((b, i) => (
+                      <option key={b._id || i} value={b.value || b.name || b}>
+                        {b.value || b.name || b}
+                      </option>
+                    ))}
                   </select>
                 </div>
 

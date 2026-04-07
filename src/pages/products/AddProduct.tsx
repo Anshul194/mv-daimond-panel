@@ -12,6 +12,7 @@ import DeliverySection from "./components/DeliverySection";
 import PropertiesSection from "./components/Propertys";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
+import { Variant, ProductFormData, Attribute, ImageType } from "./types";
 
 const ProductForm = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -20,48 +21,11 @@ const ProductForm = () => {
   );
 
   const [activeSection, setActiveSection] = useState("general");
-  type Attribute = {
-    name: string;
-    value: string;
-  };
 
-  type Variant = {
-    sizeId?: string;
-    colorId?: string;
-    additionalPrice?: string;
-    extraCost?: string;
-    stockCount?: string;
-    attributes?: Attribute[];
-    image?: File;
-  };
-
-  type Image = {
-    file: File;
-    [key: string]: any;
-  };
-
-  type ProductFormData = {
-    category_id: string;
-    subcategory_id: string;
-    name: string;
-    slug: string;
-    shortDescription: string;
-    description: string;
-    regularPrice: string;
-    salePrice: string;
-    sku: string;
-    stockQuantity: string;
-    lowStockThreshold: string;
-    stockStatus: string;
-    manageStock: string;
-    images: Image[];
-    variants: Variant[];
-    attributes: Attribute[];
-    categories: string[];
-    featured?: string;
-  };
 
   const [formData, setFormData] = useState<ProductFormData>({
+    category_id: "",
+    subcategory_id: "",
     name: "",
     slug: "",
     shortDescription: "",
@@ -82,16 +46,16 @@ const ProductForm = () => {
     featured: "false",
   });
 
-  const [propertys, setProperties] = useState<any[]>({});
+  const [propertys, setProperties] = useState<Record<string, any>>({});
 
-  const updateFormData = useCallback((field, value) => {
+  const updateFormData = useCallback((field: string, value: any) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
   }, []);
 
-  const updateProperties = useCallback((field, value) => {
+  const updateProperties = useCallback((field: string, value: any) => {
     setProperties((prev) => ({
       ...prev,
       [field]: value,
@@ -109,7 +73,7 @@ const ProductForm = () => {
   useEffect(() => {
     if (productAttributes && Array.isArray(productAttributes)) {
       productAttributes.forEach((property) => {
-        if (property.title && !property.title.toLowerCase().includes("metal")) {
+        if (property.title) {
           setProperties((prev) => ({
             ...prev,
             [property.title]: prev[property.title] ?? "",
@@ -193,50 +157,22 @@ const ProductForm = () => {
       // Variants (if you have variants functionality)
       if (formData.variants && formData.variants.length > 0) {
         console.log("Adding variants to FormData:", formData.variants);
-        formData.variants.forEach((variant, idx) => {
-          if (variant.size) {
-            formDataToSend.append(`item_size[${idx}]`, variant.size);
-          }
-          if (variant.color) {
-            formDataToSend.append(`item_color[${idx}]`, variant.color);
-          }
-          if (variant.shape) {
-            formDataToSend.append(`item_shape[${idx}]`, variant.shape);
-          }
-          if (variant.carat) {
-            formDataToSend.append(`item_carat[${idx}]`, variant.carat);
-          }
-          if (variant.price) {
-            formDataToSend.append(
-              `item_additional_price[${idx}]`,
-              variant.price
-            );
-          }
-          if (variant.sku) {
-            formDataToSend.append(`item_sku[${idx}]`, variant.sku);
-          }
-
-          if (variant.image) {
-            formDataToSend.append(`item_image[${idx}]`, variant.image);
-          }
-          // if (variant.extraCost) {
-          //   formDataToSend.append(
-          //     `item_additional_price[${idx}]`,
-          //     variant.additionalPrice
-          //   );
-          // }
-          if (variant.extraCost) {
-            formDataToSend.append(`item_extra_cost[${idx}]`, variant.extraCost);
-          }
-          if (variant.stockCount) {
-            formDataToSend.append(`item_stock_count[${idx}]`, variant.stockCount);
-          } else if (variant.stock) {
-            formDataToSend.append(`item_stock_count[${idx}]`, variant.stock);
-          }
+        formData.variants.forEach((variant: Variant, idx) => {
+          formDataToSend.append(`item_size[${idx}]`, variant.size || "");
+          formDataToSend.append(`item_color[${idx}]`, variant.color || "");
+          formDataToSend.append(`item_shape[${idx}]`, variant.shape || "");
+          formDataToSend.append(`item_carat[${idx}]`, variant.carat || "");
+          formDataToSend.append(`item_setting_style[${idx}]`, variant.settingStyle || "");
+          formDataToSend.append(`item_setting_profile[${idx}]`, variant.settingProfile || "");
+          formDataToSend.append(`item_band_type[${idx}]`, variant.bandType || "");
+          formDataToSend.append(`item_additional_price[${idx}]`, variant.price || "0");
+          formDataToSend.append(`item_sku[${idx}]`, variant.sku || "");
+          formDataToSend.append(`item_extra_cost[${idx}]`, variant.extraCost || "0");
+          formDataToSend.append(`item_stock_count[${idx}]`, variant.stockCount || "0");
 
           // Variant attributes
           if (variant.custom && variant.custom.length > 0) {
-            variant.custom.forEach((attr, attrIdx) => {
+            variant.custom.forEach((attr: any, attrIdx: number) => {
               formDataToSend.append(
                 `item_attribute_name[${idx}][${attrIdx}]`,
                 attr.name

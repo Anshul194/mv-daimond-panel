@@ -4,6 +4,9 @@ export interface Variant {
     color: string;
     shape?: string;
     carat?: string;
+    settingStyle?: string;
+    settingProfile?: string;
+    bandType?: string;
     sku: string;
     price: string;
     stockCount: string;

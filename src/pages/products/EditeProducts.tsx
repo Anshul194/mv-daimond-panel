@@ -96,6 +96,9 @@ const EditProductForm = () => {
 
         const shape = variant.shape || getAttrValue("shape");
         const carat = variant.carat || getAttrValue("carat");
+        const settingStyle = variant.settingStyle || getAttrValue("setting style") || getAttrValue("setting");
+        const settingProfile = variant.settingProfile || getAttrValue("setting profile");
+        const bandType = variant.bandType || getAttrValue("band type");
 
 
         const variantId = variant._id || variant.id || variant.inventoryDetailsId;
@@ -107,6 +110,9 @@ const EditProductForm = () => {
           color: variant.color?._id || variant.color || "",
           shape: shape,
           carat: carat,
+          settingStyle: settingStyle,
+          settingProfile: settingProfile,
+          bandType: bandType,
           price: String(variant.price || variant.additional_price || variant.add_price || "0"),
           extraCost: String(variant.extra_cost || variant.add_cost || variant.extraCost || "0"),
           stockCount: String(variant.stock_count || variant.stockCount || variant.stock || "0"),
@@ -172,7 +178,7 @@ const EditProductForm = () => {
   useEffect(() => {
     if (productAttributes && Array.isArray(productAttributes)) {
       productAttributes.forEach((property: any) => {
-        if (property.title && !property.title.toLowerCase().includes("metal")) {
+        if (property.title) {
           const title = property.title as string;
           if (propertys[title] === undefined) {
             setProperties((prev) => ({
@@ -267,6 +273,9 @@ const EditProductForm = () => {
           formDataToSend.append(`item_sku[${idx}]`, variant.sku || "");
           formDataToSend.append(`item_shape[${idx}]`, variant.shape || "");
           formDataToSend.append(`item_carat[${idx}]`, variant.carat || "");
+          formDataToSend.append(`item_setting_style[${idx}]`, variant.settingStyle || "");
+          formDataToSend.append(`item_setting_profile[${idx}]`, variant.settingProfile || "");
+          formDataToSend.append(`item_band_type[${idx}]`, variant.bandType || "");
           formDataToSend.append(`item_extra_cost[${idx}]`, variant.extraCost || "0");
           formDataToSend.append(`item_stock_count[${idx}]`, variant.stockCount || "0");
           formDataToSend.append(`inventoryDetailsId[${idx}]`, variant.inventoryDetailsId || "");

@@ -1,12 +1,14 @@
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import PageMeta from "../../../components/common/PageMeta";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import toast, { Toaster } from "react-hot-toast";
 import { createSize } from "../../../store/slices/sizeSlice";
 import type { AppDispatch, RootState } from "../../../store/index";
 
 export default function AddSize() {
+  const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { loading } = useSelector((state: RootState) => state.size);
 
@@ -42,6 +44,9 @@ export default function AddSize() {
         position: "top-right",
       });
       setSize({ name: "", size_code: "" });
+      setTimeout(() => {
+        navigate("/attributes/size-charts/list");
+      }, 2000);
     } catch (err: any) {
       console.error("createSize error:", err);
       const errMsg = typeof err === 'string' ? err : err?.message || err?.data?.message || err?.body?.message || "Failed to create size.";

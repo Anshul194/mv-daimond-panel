@@ -1,12 +1,14 @@
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import PageMeta from "../../../components/common/PageMeta";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import toast, { Toaster } from "react-hot-toast";
 import { createBrand } from "../../../store/slices/brandslice";
 import type { AppDispatch, RootState } from "../../../store/index";
 
 export default function AddBrand() {
+  const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { loading } = useSelector((state: RootState) => state.brand);
 
@@ -65,6 +67,9 @@ export default function AddBrand() {
         position: "top-right",
       });
       setBrand({ name: "", title: "", description: "", logo: null });
+      setTimeout(() => {
+        navigate("/attributes/brand/list");
+      }, 2000);
     } catch (err: any) {
       console.log("Error creating brand:", err?.message);
       toast.error(err?.message || "Failed to create brand.", {

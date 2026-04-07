@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { registerVendor, resetVendorState } from "../../store/slices/vendorslice";
 import type { RootState, AppDispatch } from "../../store";
@@ -6,6 +7,7 @@ import toast, { Toaster } from "react-hot-toast";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 
 const AddVendor: React.FC = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { loading, error, success } = useSelector((state: RootState) => state.vendor);
 
@@ -19,17 +21,23 @@ const AddVendor: React.FC = () => {
     address: "",
   });
 
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+
   useEffect(() => {
-    if (error) {
+    if (error && hasSubmitted) {
       toast.error(error, { duration: 6000, position: "top-right" });
     }
-    if (success) {
+    if (success && hasSubmitted) {
       toast.success("Vendor registered successfully!", { duration: 6000, position: "top-right" });
+      setTimeout(() => {
+        navigate("/vendor/list");
+      }, 2000);
+      setHasSubmitted(false);
     }
     return () => {
       dispatch(resetVendorState());
     };
-  }, [dispatch, error, success]);
+  }, [dispatch, error, success, navigate, hasSubmitted]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -37,6 +45,7 @@ const AddVendor: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setHasSubmitted(true);
     dispatch(registerVendor(form));
   };
 

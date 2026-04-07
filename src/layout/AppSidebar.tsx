@@ -475,10 +475,22 @@ const AppSidebar: React.FC = () => {
   // Filter navigation items based on user role and memoize the result
   const filteredNavItems = useMemo(() => {
     if (userRole === 'vendor') {
-      // Remove blog section for vendor users
-      // Remove 'Blogs' and the 'Delivery Options' subitem from 'Attributes Management' for vendor users
+      const itemsToHide = [
+        'Blogs',
+        'vendor',
+        'FAQ Management',
+        'Banner Management',
+        'Story Management',
+        'Collection Management',
+        'Review Management',
+        'Services Management',
+        'Home Page Management',
+        'Instagram Management',
+        'Tax Management',
+        'Coupons Management'
+      ];
       return navItems
-        .filter(item => item.name !== 'Blogs' && item.name !== 'vendor')
+        .filter(item => !itemsToHide.includes(item.name))
         .map(item => {
           if (item.name === 'Attributes Management' && item.subItems) {
             return {

@@ -2,6 +2,9 @@ export interface Variant {
     id: string | number;
     size: string;
     color: string;
+    // Optional gemstone attributes
+    stone?: string;
+    stoneColor?: string;
     shape?: string;
     carat?: string;
     settingStyle?: string;

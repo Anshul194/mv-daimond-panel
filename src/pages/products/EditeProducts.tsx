@@ -96,6 +96,32 @@ const EditProductForm = () => {
 
         const shape = variant.shape || getAttrValue("shape");
         const carat = variant.carat || getAttrValue("carat");
+
+        // Robust extractor for stone and stone color from variant-level attributes
+        const extractFromVariantAttrs = (variantObj: any, search: string) => {
+          const candidates = [];
+          if (Array.isArray(variantObj.attributes)) candidates.push(...variantObj.attributes);
+          if (Array.isArray(variantObj.custom)) candidates.push(...variantObj.custom);
+          // also check top-level keys
+          const keysToCheck = [
+            'stone', 'stone_color', 'stone color', 'stone-color', 'stoneColor'
+          ];
+          // search candidates
+          for (const c of candidates) {
+            const name = (c.attribute_name || c.name || c.title || '').toString().toLowerCase();
+            const val = c.attribute_value || c.value || c.term || '';
+            if (!name) continue;
+            if (name.includes(search)) return val || '';
+          }
+          // fallback: check direct variant properties
+          for (const k of keysToCheck) {
+            if ((variantObj as any)[k]) return (variantObj as any)[k];
+          }
+          return '';
+        };
+
+        const stone = variant.stone || extractFromVariantAttrs(variant, 'stone') || getAttrValue('stone');
+        const stoneColor = variant.stoneColor || extractFromVariantAttrs(variant, 'stone color') || extractFromVariantAttrs(variant, 'stone_color') || getAttrValue('stone color') || getAttrValue('stone_color') || '';
         const settingStyle = variant.settingStyle || getAttrValue("setting style") || getAttrValue("setting");
         const settingProfile = variant.settingProfile || getAttrValue("setting profile");
         const bandType = variant.bandType || getAttrValue("band type");
@@ -110,6 +136,8 @@ const EditProductForm = () => {
           color: variant.color?._id || variant.color || "",
           shape: shape,
           carat: carat,
+          stone: stone,
+          stoneColor: stoneColor,
           settingStyle: settingStyle,
           settingProfile: settingProfile,
           bandType: bandType,
@@ -273,6 +301,9 @@ const EditProductForm = () => {
           formDataToSend.append(`item_sku[${idx}]`, variant.sku || "");
           formDataToSend.append(`item_shape[${idx}]`, variant.shape || "");
           formDataToSend.append(`item_carat[${idx}]`, variant.carat || "");
+          // Stone and Stone Color (added to support gemstone attributes)
+          formDataToSend.append(`item_stone[${idx}]`, (variant as any).stone || "");
+          formDataToSend.append(`item_stone_color[${idx}]`, (variant as any).stoneColor || "");
           formDataToSend.append(`item_setting_style[${idx}]`, variant.settingStyle || "");
           formDataToSend.append(`item_setting_profile[${idx}]`, variant.settingProfile || "");
           formDataToSend.append(`item_band_type[${idx}]`, variant.bandType || "");
@@ -343,11 +374,7 @@ const EditProductForm = () => {
       }
 
       // Log FormData contents for debugging (optional)
-      console.log("FormData contents:");
-      console.log("Current formData.stockStatus:", formData.stockStatus);
-      for (let pair of formDataToSend.entries()) {
-        console.log(pair[0] + ": " + pair[1]);
-      }
+      // FormData built below; variants are included when present.
 
       const selectedProperties: Record<string, any> = {};
 

@@ -1,4 +1,5 @@
 import React from "react";
+import AttributeTiles from "./AttributeTiles";
 
 interface PropertiesSectionProps {
   formData: {
@@ -49,24 +50,12 @@ const PropertiesSection: React.FC<PropertiesSectionProps> = ({
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {property.title}
                   </label>
-                  <select
+                  <AttributeTiles
+                    options={property.terms || []}
                     value={propertys[property.title] || ""}
-                    onChange={(e) => updateFormData(property.title, e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all appearance-none bg-white shadow-sm hover:border-emerald-300"
-                    style={{
-                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-                      backgroundRepeat: "no-repeat",
-                      backgroundPosition: "right 1rem center",
-                      backgroundSize: "1.25rem"
-                    }}
-                  >
-                    <option value="">Select {property.title}</option>
-                    {property.terms?.map((term: any, i: number) => (
-                      <option key={term._id || i} value={term.value || term.name || term}>
-                        {term.value || term.name || term}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(v) => updateFormData(property.title, v)}
+                    type={property.title?.toLowerCase()?.includes("metal") ? "metal" : property.title?.toLowerCase()?.includes("shape") ? "shape" : undefined}
+                  />
                 </div>
               );
             })

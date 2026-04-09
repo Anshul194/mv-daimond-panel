@@ -162,6 +162,9 @@ const ProductForm = () => {
           formDataToSend.append(`item_color[${idx}]`, variant.color || "");
           formDataToSend.append(`item_shape[${idx}]`, variant.shape || "");
           formDataToSend.append(`item_carat[${idx}]`, variant.carat || "");
+          // Stone and Stone Color
+          formDataToSend.append(`item_stone[${idx}]`, (variant as any).stone || "");
+          formDataToSend.append(`item_stone_color[${idx}]`, (variant as any).stoneColor || "");
           formDataToSend.append(`item_setting_style[${idx}]`, variant.settingStyle || "");
           formDataToSend.append(`item_setting_profile[${idx}]`, variant.settingProfile || "");
           formDataToSend.append(`item_band_type[${idx}]`, variant.bandType || "");
@@ -226,10 +229,7 @@ const ProductForm = () => {
       }
 
       // Log FormData contents for debugging (optional)
-      console.log("FormData contents:");
-      for (let pair of formDataToSend.entries()) {
-        console.log(pair[0] + ": " + pair[1]);
-      }
+      // FormData built below; variants are included when present.
 
       // Dispatch the action
       const res: any = await dispatch(createProduct(formDataToSend) as any).unwrap();

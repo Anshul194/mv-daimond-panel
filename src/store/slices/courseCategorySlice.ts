@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-import axiosInstance from '../../services/axiosConfig';
+import axiosInstance, { axiosPublic } from '../../services/axiosConfig';
 
 interface CourseCategory {
     image: string;
@@ -164,7 +164,7 @@ export const fetchCourseCategories = createAsyncThunk<
             queryParams: queryParams.toString()
         });
 
-        const response = await axiosInstance.get(
+        const response = await axiosPublic.get(
             `${API_BASE_URL}/api/category?${queryParams.toString()}`
         );
 
@@ -196,7 +196,7 @@ export const fetchsubCategoriesByCategory = createAsyncThunk<
     string
 >('subCategories/fetchByCategory', async (categoryId, { rejectWithValue }) => {
     try {
-        const response = await axiosInstance.get(
+        const response = await axiosPublic.get(
             `${API_BASE_URL}/api/category/subcategory?categoryId=${categoryId}`
         );
 
@@ -260,7 +260,7 @@ export const fetchSubCategories = createAsyncThunk<
             queryParams.append('sort', JSON.stringify(sort));
         }
 
-        const response = await axiosInstance.get(
+        const response = await axiosPublic.get(
             `${API_BASE_URL}/api/SubCategory?${queryParams.toString()}`
         );
 
@@ -371,7 +371,7 @@ export const fetchCourseCategoryById = createAsyncThunk<
     string
 >('courseCategories/fetchById', async (categoryId, { rejectWithValue }) => {
     try {
-        const response = await axiosInstance.get(
+        const response = await axiosPublic.get(
             `${API_BASE_URL}/api/category/${categoryId}`
         );
         return response.data?.body?.data?.category || response.data?.body?.data || response.data?.body;
@@ -385,7 +385,7 @@ export const fetchSubCategoryById = createAsyncThunk<
     string
 >('subCategories/fetchById', async (subCategoryId, { rejectWithValue }) => {
     try {
-        const response = await axiosInstance.get(
+        const response = await axiosPublic.get(
             `${API_BASE_URL}/api/SubCategory/${subCategoryId}`
         );
         return response.data?.body?.data?.subCategory || response.data?.body?.data || response.data?.body;

@@ -11,6 +11,15 @@ const axiosInstance: AxiosInstance = axios.create({
   }
 });
 
+// Public axios instance (no Authorization headers)
+const axiosPublic: AxiosInstance = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 86400000,
+  headers: {
+    'Content-Type': 'application/json',
+  }
+});
+
 // Request interceptor
 axiosInstance.interceptors.request.use(
   (config: import('axios').InternalAxiosRequestConfig): import('axios').InternalAxiosRequestConfig => {
@@ -45,6 +54,25 @@ axiosInstance.interceptors.request.use(
   }
 );
 
+// Public instance: keep same GET cache-busting and FormData handling but do NOT add auth headers
+axiosPublic.interceptors.request.use(
+  (config: import('axios').InternalAxiosRequestConfig): import('axios').InternalAxiosRequestConfig => {
+    if (config.method === 'get') {
+      config.params = {
+        ...config.params,
+        _t: Date.now(),
+      };
+    }
+
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+
+    return config;
+  },
+  (error: AxiosError) => Promise.reject(error)
+);
+
 // Response interceptor
 axiosInstance.interceptors.response.use(
   (response: AxiosResponse) => {
@@ -64,3 +92,4 @@ axiosInstance.interceptors.response.use(
 );
 
 export default axiosInstance;
+export { axiosPublic };

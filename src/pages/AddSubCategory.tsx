@@ -1,6 +1,6 @@
 import PageBreadcrumb from "../components/common/PageBreadCrumb";
 import PageMeta from "../components/common/PageMeta";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import toast, { Toaster } from "react-hot-toast";
 import {
@@ -16,6 +16,30 @@ export default function AddSubCategory() {
   const { categories, loading } = useSelector(
     (state: RootState) => state.courseCategory
   );
+
+  const userRole = useMemo(() => {
+    try {
+      const data = localStorage.getItem('user');
+      if (data) return JSON.parse(data).role;
+    } catch (e) {}
+    return null;
+  }, []);
+
+  if (userRole === 'vendor') {
+    return (
+      <div>
+        <PageMeta title="Not Authorized" description="Access denied" />
+        <PageBreadcrumb pageTitle="Access Denied" />
+        <div className="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-7 xl:px-10 xl:py-12">
+          <div className="mx-auto w-full text-center">
+            <h3 className="mb-4 text-xl font-semibold">Access denied</h3>
+            <p className="text-gray-600 mb-4">You don't have permission to manage subcategories.</p>
+            <a href="/add-product" className="inline-block rounded bg-emerald-500 px-4 py-2 text-white">Create Product</a>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const [subCategory, setSubCategory] = useState({
     name: "",

@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import axiosInstance from "../../services/axiosConfig";
+import axiosInstance, { axiosPublic } from "../../services/axiosConfig";
 
 interface ProductAttribute {
   name: string;
@@ -178,9 +178,23 @@ export const updateProduct = createAsyncThunk<
     );
     return response.data;
   } catch (err: any) {
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to update product"
-    );
+    // Try to extract validation or detailed error messages from API
+    const resp = err.response?.data;
+    if (resp) {
+      // common structure: { body: { message, errors: [...] } }
+      const body = resp.body || resp;
+      if (body) {
+        if (body.message && typeof body.message === 'string') {
+          return rejectWithValue(body.message);
+        }
+        if (Array.isArray(body.errors) && body.errors.length) {
+          const msgs = body.errors.map((e: any) => e.message || JSON.stringify(e)).join('; ');
+          return rejectWithValue(msgs);
+        }
+      }
+      if (resp.message && typeof resp.message === 'string') return rejectWithValue(resp.message);
+    }
+    return rejectWithValue(err.response?.data?.message || err.message || "Failed to update product");
   }
 });
 
@@ -206,6 +220,70 @@ export const deleteproduct = createAsyncThunk<
   }
 });
 
+// Set product approval/status (JSON body)
+export const setProductApproval = createAsyncThunk<
+  any,
+  { productId: string; is_approved: boolean; status: string },
+  { rejectValue: string }
+>("product/setApproval", async ({ productId, is_approved, status }, { rejectWithValue }) => {
+  try {
+    console.log('setProductApproval request', { productId, is_approved, status });
+    // Use authenticated axiosInstance and explicitly pass token from localStorage
+    let token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+    if (!token) {
+      try {
+        const rawUser = localStorage.getItem('user');
+        if (rawUser) {
+          const parsed = JSON.parse(rawUser);
+          token = parsed?.accessToken || parsed?.token || parsed?.authToken || parsed?.auth?.token || parsed?.data?.token || parsed?.user?.token;
+        }
+      } catch (e) {
+        // ignore JSON parse errors
+      }
+    }
+    // If still no token, scan localStorage for a JWT-looking string or nested token fields
+    if (!token) {
+      const jwtRegex = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/;
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key) continue;
+        const val = localStorage.getItem(key);
+        if (!val) continue;
+        if (jwtRegex.test(val)) {
+          token = val;
+          break;
+        }
+        try {
+          const parsed = JSON.parse(val);
+          const candidate = parsed?.accessToken || parsed?.token || parsed?.authToken || parsed?.data?.token || parsed?.user?.token;
+          if (candidate && jwtRegex.test(String(candidate))) {
+            token = String(candidate);
+            break;
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+    }
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+      headers['x-access-token'] = token;
+    }
+    console.log('setProductApproval request', { productId, is_approved, status, usingToken: !!token });
+    const response = await axiosInstance.put(
+      `${API_BASE_URL}/api/product/${productId}`,
+      { is_approved, status },
+      { headers }
+    );
+    console.log('setProductApproval response', response?.data);
+    return response.data;
+  } catch (err: any) {
+    console.error('setProductApproval error', err?.response || err);
+    return rejectWithValue(err.response?.data?.message || "Failed to set product approval");
+  }
+});
+
 // Add Product Attribute Thunk
 export const fetchProductAttributes = createAsyncThunk<
   any,
@@ -213,7 +291,7 @@ export const fetchProductAttributes = createAsyncThunk<
   { rejectValue: string }
 >("product/fetchProductAttributes", async (categoryId, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.get(
+    const response = await axiosPublic.get(
       `/api/productattribute/${categoryId}`
     );
     return response.data.data;

@@ -489,13 +489,36 @@ const AppSidebar: React.FC = () => {
         'Tax Management',
         'Coupons Management'
       ];
+
+      const filterAddsRecursively = (items?: NavSubItem[]) => {
+        if (!items) return items;
+        return items
+          .filter(Boolean)
+          .map((it) => {
+            // remove any direct 'Add *' items, but allow 'Add New Product' for vendors
+            if ((it.name || "").trim().startsWith("Add ")) {
+              if ((it.name || "").trim() === "Add New Product") return it as any;
+              return null as any;
+            }
+            // if nested, filter their children too
+            if (it.subItems) {
+              return {
+                ...it,
+                subItems: filterAddsRecursively(it.subItems),
+              } as NavSubItem;
+            }
+            return it;
+          })
+          .filter(Boolean) as NavSubItem[];
+      };
+
       return navItems
         .filter(item => !itemsToHide.includes(item.name))
         .map(item => {
-          if (item.name === 'Attributes Management' && item.subItems) {
+          if (item.subItems) {
             return {
               ...item,
-              subItems: item.subItems.filter(sub => sub.name !== 'Delivery Options'),
+              subItems: filterAddsRecursively(item.subItems),
             };
           }
           return item;

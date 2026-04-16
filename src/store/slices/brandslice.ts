@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
-import axiosInstance from '../../services/axiosConfig';
+import axiosInstance, { axiosPublic } from '../../services/axiosConfig';
 
 interface BrandState {
     loading: boolean;
@@ -107,7 +107,7 @@ export const fetchBrands = createAsyncThunk<
             queryParams.append('sort', JSON.stringify(sort));
         }
 
-        const response = await axiosInstance.get(
+        const response = await axiosPublic.get(
             `${API_BASE_URL}/api/brands?${queryParams.toString()}`
         );
 
@@ -204,12 +204,8 @@ export const fetchBrandById = createAsyncThunk(
         { rejectWithValue }
     ) => {
         try {
-            const response = await axiosInstance.get(`${API_BASE_URL}/api/brands/${id}`, {
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-            });
-            return response.data;
+                        const response = await axiosPublic.get(`${API_BASE_URL}/api/brands/${id}`);
+                        return response.data;
         } catch (error: any) {
             return rejectWithValue(error.response?.data || error.message);
         }

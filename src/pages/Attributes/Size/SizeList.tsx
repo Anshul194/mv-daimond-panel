@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks/redux";
 import { fetchSizes, createSize, updateSize, deleteSize } from "../../../store/slices/sizeSlice";
 import { Plus, Loader2, Search, ChevronLeft, ChevronRight, RotateCcw, Pencil, Trash2 } from "lucide-react";
@@ -38,6 +38,14 @@ const SizeList: React.FC = () => {
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [deleteId, setDeleteId] = useState<string | null>(null);
     const [deleteLoading, setDeleteLoading] = useState(false);
+
+    const userRole = useMemo(() => {
+        try {
+            const d = localStorage.getItem('user');
+            if (d) return JSON.parse(d).role;
+        } catch (e) {}
+        return null;
+    }, []);
 
     // Fetch sizes
     useEffect(() => {
@@ -151,13 +159,15 @@ const SizeList: React.FC = () => {
         <div>
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-gray-800 dark:text-white/90">Sizes</h1>
-                <button
-                    onClick={handleOpenModal}
-                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-                >
-                    <Plus className="w-4 h-4" />
-                    Add Size
-                </button>
+                {userRole !== 'vendor' && (
+                    <button
+                        onClick={handleOpenModal}
+                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                    >
+                        <Plus className="w-4 h-4" />
+                        Add Size
+                    </button>
+                )}
             </div>
 
             <div className="bg-white shadow p-4 rounded-md mb-6 dark:bg-gray-900 flex flex-col md:flex-row gap-4">
@@ -217,22 +227,26 @@ const SizeList: React.FC = () => {
                                     </td>
                                     <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{size.name}</td>
                                     <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{size.size_code}</td>
-                                    <td className="px-6 py-4 flex gap-2">
-                                        <button
-                                            onClick={() => handleOpenEditModal(size)}
-                                            className="p-2 rounded hover:bg-indigo-100 dark:hover:bg-indigo-900"
-                                            title="Edit"
-                                        >
-                                            <Pencil className="w-4 h-4 text-indigo-600" />
-                                        </button>
-                                        <button
-                                            onClick={() => handleOpenDeleteModal(size._id!)}
-                                            className="p-2 rounded hover:bg-red-100 dark:hover:bg-red-900"
-                                            title="Delete"
-                                        >
-                                            <Trash2 className="w-4 h-4 text-red-600" />
-                                        </button>
-                                    </td>
+                                            <td className="px-6 py-4 flex gap-2">
+                                                {userRole !== 'vendor' && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleOpenEditModal(size)}
+                                                            className="p-2 rounded hover:bg-indigo-100 dark:hover:bg-indigo-900"
+                                                            title="Edit"
+                                                        >
+                                                            <Pencil className="w-4 h-4 text-indigo-600" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleOpenDeleteModal(size._id!)}
+                                                            className="p-2 rounded hover:bg-red-100 dark:hover:bg-red-900"
+                                                            title="Delete"
+                                                        >
+                                                            <Trash2 className="w-4 h-4 text-red-600" />
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </td>
                                 </tr>
                             ))}
                             {sizes.length === 0 && (
@@ -279,7 +293,7 @@ const SizeList: React.FC = () => {
             </div>
 
             {/* Add Modal */}
-            {modalOpen && (
+            {modalOpen && userRole !== 'vendor' && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-6 relative">
                         <button
@@ -340,7 +354,7 @@ const SizeList: React.FC = () => {
             )}
 
             {/* Edit Modal */}
-            {editModalOpen && (
+            {editModalOpen && userRole !== 'vendor' && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-6 relative">
                         <button
@@ -401,7 +415,7 @@ const SizeList: React.FC = () => {
             )}
 
             {/* Delete Modal */}
-            {deleteModalOpen && (
+            {deleteModalOpen && userRole !== 'vendor' && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-sm p-6 relative">
                         <button

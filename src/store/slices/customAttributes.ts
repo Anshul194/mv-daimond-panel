@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
-import axiosInstance from '../../services/axiosConfig';
+import axiosInstance, { axiosPublic } from '../../services/axiosConfig';
 
 interface LastModifiedBy {
     id?: string | null;
@@ -97,7 +97,7 @@ export const fetchCustomAttributes = createAsyncThunk<
                 queryParams.append('sort', JSON.stringify(sort));
             }
 
-            const response = await axiosInstance.get(
+            const response = await axiosPublic.get(
                 `${API_BASE_URL}/api/productattribute?${queryParams.toString()}`
             );
 

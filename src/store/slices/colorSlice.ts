@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-import axiosInstance from '../../services/axiosConfig';
+import axiosInstance, { axiosPublic } from '../../services/axiosConfig';
 
 interface Color {
     _id: string; // Changed from id to _id to match API response
@@ -85,7 +85,7 @@ export const fetchColorCodes = createAsyncThunk<
             queryParams.append('sort', JSON.stringify(sort));
         }
 
-        const response = await axiosInstance.get(
+        const response = await axiosPublic.get(
             `${API_BASE_URL}/api/colorcode?${queryParams.toString()}`
         );
 
@@ -172,7 +172,7 @@ export const fetchColorCodeById = createAsyncThunk<
     { rejectValue: string }
 >('color/fetchColorCodeById', async (id, { rejectWithValue }) => {
     try {
-        const response = await axiosInstance.get(`${API_BASE_URL}/api/colorcode/${id}`);
+        const response = await axiosPublic.get(`${API_BASE_URL}/api/colorcode/${id}`);
         return response?.data?.body?.data;
     } catch (error: any) {
         return rejectWithValue(error.response?.data?.message || error.message);

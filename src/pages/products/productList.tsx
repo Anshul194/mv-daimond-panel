@@ -10,6 +10,7 @@ import {
   setProductSearchQuery,
   setProductFilters,
   resetProductFilters,
+  setProductApproval,
 } from "../../store/slices/product";
 import {
   Pencil,
@@ -25,7 +26,9 @@ import {
   AlertTriangle,
   Save,
 } from "lucide-react";
+// confirmation modal implemented below; no external import
 import { useNavigate } from "react-router-dom";
+import useUserRole from "../../hooks/useUserRole";
 
 interface Product {
   _id: string;
@@ -41,8 +44,20 @@ interface Product {
   };
 }
 
+const buildImageUrl = (raw: string | null | undefined) => {
+  if (!raw) return null;
+  const str = String(raw).trim();
+  if (!str || str === '/' ) return null;
+  if (str.startsWith('http') || str.startsWith('data:')) return str;
+  const base = (import.meta.env.VITE_IMAGE_URL || import.meta.env.VITE_BASE_URL || '').toString();
+  const trimmedBase = base.replace(/\/$/, '');
+  if (!trimmedBase) return str.startsWith('/') ? str : `/${str}`;
+  if (str.startsWith('/')) return `${trimmedBase}${str}`;
+  return `${trimmedBase}/${str}`;
+};
+
 // Edit Modal Component
-const EditModal: React.FC<{
+const ProductEditModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (updatedProduct: Partial<Product>) => void;
@@ -304,6 +319,116 @@ const DeleteModal: React.FC<{
   );
 };
 
+// Approval Confirmation Modal
+const ApprovalModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  product: Product | null;
+  isProcessing: boolean;
+}> = ({ isOpen, onClose, onConfirm, product, isProcessing }) => {
+  if (!isOpen || !product) return null;
+  const activating = product.status !== 'active';
+
+  const getProductImage = (p: any) => {
+    // Prefer top-level images, then inventory images
+    const rawCandidates: any[] = [];
+    if (p.image && Array.isArray(p.image) && p.image.length) rawCandidates.push(p.image[0]);
+    if (p.images && Array.isArray(p.images) && p.images.length) rawCandidates.push(p.images[0]);
+    if (p.image && !Array.isArray(p.image)) rawCandidates.push(p.image);
+    if (p.thumbnail) rawCandidates.push(p.thumbnail);
+    if (p.imageUrl) rawCandidates.push(p.imageUrl);
+    if (p.media && p.media.length) rawCandidates.push(p.media[0]?.url);
+    if (p.photos && p.photos.length) rawCandidates.push(p.photos[0]);
+    // inventory nested images
+    try {
+      const invDetails = p.inventory?.inventory_details;
+      if (Array.isArray(invDetails)) {
+        for (const d of invDetails) {
+          if (d.image && Array.isArray(d.image) && d.image.length) rawCandidates.push(d.image[0]);
+          if (d.image && !Array.isArray(d.image)) rawCandidates.push(d.image);
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    for (const c of rawCandidates) {
+      if (c === null || c === undefined) continue;
+      // skip empty arrays
+      if (Array.isArray(c) && c.length === 0) continue;
+      const url = buildImageUrl(Array.isArray(c) ? c[0] : c);
+      if (url) return url;
+    }
+
+    return `${import.meta.env.BASE_URL || ''}/images/product-placeholder.svg`;
+  };
+
+  const img = getProductImage(product as any);
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div
+        className="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity"
+        onClick={onClose}
+      ></div>
+      <div className="flex min-h-full items-center justify-center p-4">
+        <div className="relative bg-white dark:bg-gray-900 rounded-xl shadow-2xl max-w-lg w-full border border-gray-200 dark:border-gray-800">
+          <div className="flex items-start gap-4 p-6">
+            <div className="w-24 h-24 flex-shrink-0 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+              {img ? (
+                <img src={img} alt={product.name} className="w-full h-full object-cover" />
+              ) : (
+                <div className={`p-3 rounded-lg ${activating ? 'bg-green-50 dark:bg-green-900/10' : 'bg-yellow-50 dark:bg-yellow-900/10'}`}>
+                  {activating ? (
+                    <CheckCircle className="w-7 h-7 text-green-600 dark:text-green-400" />
+                  ) : (
+                    <XCircle className="w-7 h-7 text-yellow-600 dark:text-yellow-400" />
+                  )}
+                </div>
+              )}
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                {activating ? 'Activate this product?' : 'Deactivate this product?'}
+              </h3>
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                {activating
+                  ? 'This will make the product visible and available on the storefront.'
+                  : 'This will make the product unavailable on the storefront and hide it from customers.'}
+              </p>
+              <div className="mt-3 text-sm text-gray-800 dark:text-gray-200">
+                <strong>{product.name}</strong>
+                {product.sku ? <span className="ml-2 text-gray-500">• SKU: {product.sku}</span> : null}
+              </div>
+              <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+                {activating
+                  ? 'Are you sure you want to activate this product? Customers will be able to see and purchase it.'
+                  : 'Are you sure you want to deactivate this product? Orders for this product will be prevented until reactivated.'}
+              </p>
+            </div>
+          </div>
+          <div className="flex justify-end gap-3 p-4 border-t border-gray-100 dark:border-gray-800">
+            <button onClick={onClose} disabled={isProcessing} className="px-4 py-2 rounded-md text-sm font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50">
+              Cancel
+            </button>
+            <button onClick={onConfirm} disabled={isProcessing} className={`px-4 py-2 rounded-md text-sm font-medium text-white flex items-center gap-2 ${activating ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500' : 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500'}`}>
+              {isProcessing ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  {activating ? 'Activating...' : 'Deactivating...'}
+                </>
+              ) : (
+                <>{activating ? 'Yes, activate product' : 'Yes, deactivate product'}</>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ProductList: React.FC = () => {
   const dispatch = useAppDispatch();
   const { products, loading, error, pagination, searchQuery, filters } =
@@ -317,6 +442,14 @@ const ProductList: React.FC = () => {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+
+  const [approvalModalOpen, setApprovalModalOpen] = useState(false);
+  const [approvalTarget, setApprovalTarget] = useState<Product | null>(null);
+  const [approvalAction, setApprovalAction] = useState<'activate' | 'deactivate' | null>(null);
+  const [isApproving, setIsApproving] = useState(false);
+
+  const userRole = useUserRole();
 
   const [searchInput, setSearchInput] = useState(searchQuery);
   const [localFilters, setLocalFilters] = useState<Record<string, any>>({});
@@ -448,9 +581,12 @@ const ProductList: React.FC = () => {
         );
       } catch (error: any) {
         setIsUpdating(false);
-        toast.error("Failed to update product", {
+        const msg =
+          (error && (error.message || error)) ||
+          "Failed to update product";
+        toast.error(String(msg), {
           position: "top-right",
-          duration: 3000,
+          duration: 6000,
           style: { background: "#EF4444", color: "#fff" },
         });
       }
@@ -506,6 +642,31 @@ const ProductList: React.FC = () => {
     }
   };
 
+  const handleConfirmApproval = async () => {
+    if (!approvalTarget || !approvalAction) return;
+    setIsApproving(true);
+    setTogglingId(approvalTarget._id);
+    try {
+      const payload = approvalAction === 'activate' ? { is_approved: true, status: 'active' } : { is_approved: false, status: 'inactive' };
+      console.log('Approval action:', approvalAction, 'productId:', approvalTarget._id, 'payload:', payload);
+      toast.loading(approvalAction === 'activate' ? 'Activating product...' : 'Deactivating product...', { id: 'approval' });
+      const result = await dispatch(setProductApproval({ productId: approvalTarget._id, ...payload }) as any).unwrap();
+      console.log('Approval result:', result);
+      toast.success(approvalAction === 'activate' ? 'Product activated' : 'Product deactivated', { id: 'approval' });
+      dispatch(fetchProducts({ page: pagination.page, limit: pagination.limit, filters: localFilters, sort: { createdAt: 'desc' } }) as any);
+    } catch (err: any) {
+      console.error('Approval error:', err);
+      const msg = err?.message || err?.payload || JSON.stringify(err) || 'Failed to update product';
+      toast.error(msg, { id: 'approval' });
+    } finally {
+      setIsApproving(false);
+      setTogglingId(null);
+      setApprovalModalOpen(false);
+      setApprovalTarget(null);
+      setApprovalAction(null);
+    }
+  };
+
   const generatePageNumbers = () => {
     const pages = [];
     const totalPages = pagination?.totalPages;
@@ -517,6 +678,23 @@ const ProductList: React.FC = () => {
     for (let i = start; i <= end; i++) pages.push(i);
     if (end < totalPages) pages.push("...", totalPages);
     return pages;
+  };
+
+  const getProductImage = (p: any) => {
+    const candidates = [
+      p.image,
+      p.images && p.images.length ? p.images[0] : null,
+      p.thumbnail,
+      p.imageUrl,
+      p.media && p.media.length ? p.media[0]?.url : null,
+      p.photos && p.photos.length ? p.photos[0] : null,
+    ];
+    for (const c of candidates) {
+      if (!c) continue;
+      const url = buildImageUrl(c);
+      if (url) return url;
+    }
+    return `${import.meta.env.BASE_URL || ''}/images/product-placeholder.svg`;
   };
 
   return (
@@ -627,7 +805,24 @@ const ProductList: React.FC = () => {
                     {(pagination.page - 1) * pagination.limit + idx + 1}
                   </td>
                   <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
-                    {prod.name}
+                    <div className="flex items-center gap-3">
+                      <button onClick={() => openEditModal(prod)} className="w-10 h-10 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+                        {(() => {
+                          const img = getProductImage(prod as any);
+                          return img ? (
+                            <img src={img} alt={prod.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400"> 
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm2 3a1 1 0 112 0 1 1 0 01-2 0zm1 7a5 5 0 017 0H7z"/></svg>
+                            </div>
+                          );
+                        })()}
+                      </button>
+                      <div>
+                        <div className="truncate max-w-xs">{prod.name}</div>
+                        {prod.sku && <div className="text-xs text-gray-500">SKU: {prod.sku}</div>}
+                      </div>
+                    </div>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
                     {prod.category_id?.name}
@@ -658,6 +853,35 @@ const ProductList: React.FC = () => {
                     >
                       <Trash2 className="h-5 w-5" />
                     </button>
+                    {userRole !== 'vendor' && (
+                      <>
+                        {prod.status === 'active' ? (
+                          <button
+                            onClick={() => {
+                              setApprovalTarget(prod);
+                              setApprovalAction('deactivate');
+                              setApprovalModalOpen(true);
+                            }}
+                            className="text-yellow-600 hover:text-yellow-800 transition-colors"
+                            title="Deactivate product"
+                          >
+                            <XCircle className="h-5 w-5" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setApprovalTarget(prod);
+                              setApprovalAction('activate');
+                              setApprovalModalOpen(true);
+                            }}
+                            className="text-green-600 hover:text-green-800 transition-colors"
+                            title="Activate product"
+                          >
+                            <CheckCircle className="h-5 w-5" />
+                          </button>
+                        )}
+                      </>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -700,12 +924,19 @@ const ProductList: React.FC = () => {
           </button>
         </div>
       </div>
-      <EditModal
+      <ProductEditModal
         isOpen={editModalOpen}
         onClose={closeEditModal}
         onSubmit={handleEditSubmit}
         product={productToEdit}
         isUpdating={isUpdating}
+      />
+      <ApprovalModal
+        isOpen={approvalModalOpen}
+        onClose={() => setApprovalModalOpen(false)}
+        onConfirm={handleConfirmApproval}
+        product={approvalTarget}
+        isProcessing={isApproving}
       />
       <DeleteModal
         isOpen={deleteModalOpen}

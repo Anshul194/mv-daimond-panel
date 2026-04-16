@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
-import axiosInstance from '../../services/axiosConfig';
+import axiosInstance, { axiosPublic } from '../../services/axiosConfig';
 
 interface Size {
     _id?: string;
@@ -97,7 +97,7 @@ export const fetchSizes = createAsyncThunk<
             queryParams.append('sort', JSON.stringify(sort));
         }
 
-        const response = await axiosInstance.get(
+        const response = await axiosPublic.get(
             `${API_BASE_URL}/api/size?${queryParams.toString()}`
         );
 
@@ -123,7 +123,7 @@ export const fetchSizeById = createAsyncThunk<
     { rejectValue: string }
 >('size/fetchSizeById', async (id, { rejectWithValue }) => {
     try {
-        const response = await axiosInstance.get(
+        const response = await axiosPublic.get(
             `${API_BASE_URL}/api/size/${id}`,
             {
                 headers: {

@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
-import axiosInstance from '../../services/axiosConfig';
+import axiosInstance, { axiosPublic } from '../../services/axiosConfig';
 
 interface DeliveryOption {
     _id: string;
@@ -68,13 +68,8 @@ export const fetchDeliveryOptions = createAsyncThunk<
                 queryParams.append('sort', JSON.stringify(sort));
             }
 
-            const response = await axios.get(
-                `${API_BASE_URL}/api/delivery-options?${queryParams.toString()}`,
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                }
+            const response = await axiosPublic.get(
+                `${API_BASE_URL}/api/delivery-options?${queryParams.toString()}`
             );
 
             const data = response.data;
@@ -108,12 +103,7 @@ export const fetchDeliveryOptionById = createAsyncThunk<
     'delivery/fetchOptionById',
     async (id, { rejectWithValue }) => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/api/delivery-options/${id}`, {
-                headers: {
-                    Authorization: 'Bearer <YOUR_TOKEN_HERE>',
-                },
-                withCredentials: true,
-            });
+            const response = await axiosPublic.get(`${API_BASE_URL}/api/delivery-options/${id}`);
             return response.data;
         } catch (err: any) {
             return rejectWithValue(err.response?.data?.message || err.message);

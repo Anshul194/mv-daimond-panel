@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import toast from "react-hot-toast";
 import { Plus, X, AlertTriangle } from "lucide-react";
 import InputField from "./InputField ";
-import axiosInstance from "../../../services/axiosConfig";
+import axiosInstance, { axiosPublic } from "../../../services/axiosConfig";
 
 import { Variant, ProductFormData } from "../types";
 
@@ -26,7 +26,7 @@ const AttributesSection: React.FC<InventorySectionProps> = ({
 
   const getData = async () => {
     try {
-      const sizeResponse = await axiosInstance("/api/size");
+      const sizeResponse = await axiosPublic("/api/size");
       setSizes(sizeResponse.data.body.data?.result || sizeResponse.data.body.data?.results || []);
 
       let metalTerms = [];
@@ -34,7 +34,7 @@ const AttributesSection: React.FC<InventorySectionProps> = ({
 
       // 1. Fetch Metal Types by Title
       try {
-        const metalResponseApi = await axiosInstance(
+        const metalResponseApi = await axiosPublic(
           "/api/productattribute?filters=" + encodeURIComponent(JSON.stringify({ title: "METAL TYPE" }))
         );
         const results = metalResponseApi?.data?.data?.data || metalResponseApi?.data?.body?.data || [];
@@ -46,7 +46,7 @@ const AttributesSection: React.FC<InventorySectionProps> = ({
 
       // 2. Fetch Shapes by Title
       try {
-        const shapeResponseApi = await axiosInstance(
+        const shapeResponseApi = await axiosPublic(
           "/api/productattribute?filters=" + encodeURIComponent(JSON.stringify({ title: "Shape" }))
         );
         const results = shapeResponseApi?.data?.data?.data || shapeResponseApi?.data?.body?.data || [];
@@ -59,7 +59,7 @@ const AttributesSection: React.FC<InventorySectionProps> = ({
       // 2.1 Fetch Carats by Title
       let caratTerms = [];
       try {
-        const caratResponseApi = await axiosInstance(
+        const caratResponseApi = await axiosPublic(
           "/api/productattribute?filters=" + encodeURIComponent(JSON.stringify({ title: "carat" }))
         );
         const results = caratResponseApi?.data?.data?.data || caratResponseApi?.data?.body?.data || [];
@@ -72,7 +72,7 @@ const AttributesSection: React.FC<InventorySectionProps> = ({
       // 2.2 Fetch Stones by Title
       let stoneTerms = [];
       try {
-        const stoneResponseApi = await axiosInstance(
+        const stoneResponseApi = await axiosPublic(
           "/api/productattribute?filters=" + encodeURIComponent(JSON.stringify({ title: "Stone" }))
         );
         const results = stoneResponseApi?.data?.data?.data || stoneResponseApi?.data?.body?.data || [];
@@ -85,7 +85,7 @@ const AttributesSection: React.FC<InventorySectionProps> = ({
       // 2.3 Fetch Stone Colors by Title
       let stoneColorTerms = [];
       try {
-        const stoneColorResponseApi = await axiosInstance(
+        const stoneColorResponseApi = await axiosPublic(
           "/api/productattribute?filters=" + encodeURIComponent(JSON.stringify({ title: "Stone Color" }))
         );
         const results = stoneColorResponseApi?.data?.data?.data || stoneColorResponseApi?.data?.body?.data || [];
@@ -96,7 +96,7 @@ const AttributesSection: React.FC<InventorySectionProps> = ({
       }
 
       // 3. Fetch All Attributes for Fallbacks
-      const attributeResponse = await axiosInstance("/api/productattribute");
+      const attributeResponse = await axiosPublic("/api/productattribute");
       const allAttributes = attributeResponse.data?.data?.data ||
         attributeResponse.data?.body?.data?.data ||
         attributeResponse.data?.data || [];

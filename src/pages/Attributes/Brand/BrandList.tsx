@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks/redux";
 import {
     fetchBrands,
@@ -275,6 +275,14 @@ const BrandList: React.FC = () => {
         return pages;
     };
 
+    const userRole = useMemo(() => {
+        try {
+            const d = localStorage.getItem('user');
+            if (d) return JSON.parse(d).role;
+        } catch (e) {}
+        return null;
+    }, []);
+
     return (
         <div className="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-7 xl:px-10 xl:py-12">
             <div className="flex justify-between items-center mb-6">
@@ -319,12 +327,14 @@ const BrandList: React.FC = () => {
                         <RotateCcw className="h-4 w-4" />
                         Reset
                     </button>
-                    <button
-                        onClick={handleOpenModal}
-                        className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-                    >
-                        Add Brand
-                    </button>
+                    {userRole !== 'vendor' && (
+                        <button
+                            onClick={handleOpenModal}
+                            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                        >
+                            Add Brand
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -376,18 +386,22 @@ const BrandList: React.FC = () => {
                                 <td className="px-6 py-4 text-sm text-gray-700">{brand.title}</td>
                                 <td className="px-6 py-4 text-sm text-gray-500">{brand.description}</td>
                                 <td className="px-6 py-4 text-right space-x-2">
-                                    <button
-                                        onClick={() => handleOpenEditModal(brand)}
-                                        className="text-blue-500 hover:text-blue-700 transition-colors"
-                                    >
-                                        <Pencil className="h-5 w-5" />
-                                    </button>
-                                    <button
-                                        onClick={() => handleOpenDeleteModal(brand)}
-                                        className="text-red-500 hover:text-red-700 transition-colors"
-                                    >
-                                        <Trash2 className="h-5 w-5" />
-                                    </button>
+                                    {userRole !== 'vendor' && (
+                                        <>
+                                            <button
+                                                onClick={() => handleOpenEditModal(brand)}
+                                                className="text-blue-500 hover:text-blue-700 transition-colors"
+                                            >
+                                                <Pencil className="h-5 w-5" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleOpenDeleteModal(brand)}
+                                                className="text-red-500 hover:text-red-700 transition-colors"
+                                            >
+                                                <Trash2 className="h-5 w-5" />
+                                            </button>
+                                        </>
+                                    )}
                                 </td>
                             </tr>
                         ))}
@@ -440,7 +454,7 @@ const BrandList: React.FC = () => {
             </div>
 
             {/* Add Modal */}
-            {modalOpen && (
+            {modalOpen && userRole !== 'vendor' && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
                     <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative">
                         <button
@@ -508,7 +522,7 @@ const BrandList: React.FC = () => {
             )}
 
             {/* Edit Modal */}
-            {editModalOpen && (
+            {editModalOpen && userRole !== 'vendor' && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
                     <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative">
                         <button
@@ -599,13 +613,15 @@ const BrandList: React.FC = () => {
             )}
 
             {/* Delete Modal */}
-            <BrandDeleteModal
-                isOpen={deleteModalOpen}
-                onClose={handleCloseDeleteModal}
-                onConfirm={handleDelete}
-                brand={brandToDelete}
-                isDeleting={deleteLoading}
-            />
+            {userRole !== 'vendor' && (
+                <BrandDeleteModal
+                    isOpen={deleteModalOpen}
+                    onClose={handleCloseDeleteModal}
+                    onConfirm={handleDelete}
+                    brand={brandToDelete}
+                    isDeleting={deleteLoading}
+                />
+            )}
         </div>
     );
 };

@@ -4,7 +4,7 @@ layer(base);
 
 @import "tailwindcss";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (& .dark *);
 
 @theme {
   --font-*: initial;
@@ -256,30 +256,27 @@ layer(base);
 @utility menu-dropdown-badge-inactive {
   @apply bg-brand-50 group-hover:bg-brand-100 dark:bg-brand-500/15 dark:group-hover:bg-brand-500/20;
 }
-@utility no-scrollbar {
-  /* Chrome, Safari and Opera */
-  &::-webkit-scrollbar {
-    display: none;
-  }
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-}
-@utility custom-scrollbar {
-  &::-webkit-scrollbar {
-    @apply size-1.5;
+@layer utilities {
+  .custom-scrollbar { }
+  .custom-scrollbar::-webkit-scrollbar {
+    width: calc(var(--spacing) * 1.5);
+    height: calc(var(--spacing) * 1.5);
   }
 
-  &::-webkit-scrollbar-track {
-    @apply rounded-full;
+  .custom-scrollbar::-webkit-scrollbar-track {
+    border-radius: 9999px;
   }
 
-  &::-webkit-scrollbar-thumb {
-    @apply bg-gray-200 rounded-full dark:bg-gray-700;
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--color-gray-200);
+    border-radius: 9999px;
+  }
+
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--color-gray-700);
   }
 }
-.dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #344054;
-}
+
 
 @layer utilities {
   /* For Remove Date Icon */
@@ -543,7 +540,7 @@ span.flatpickr-weekday,
 }
 
 .fc .fc-view-harness {
-  @apply max-w-full overflow-x-auto custom-scrollbar;
+  @apply max-w-full overflow-x-auto;
 }
 .fc-dayGridMonth-view.fc-view.fc-daygrid {
   @apply min-w-[718px];

@@ -24,4 +24,26 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor.react';
+            }
+            if (id.includes('redux') || id.includes('@reduxjs') || id.includes('react-redux')) {
+              return 'vendor.redux';
+            }
+            if (id.includes('apexcharts') || id.includes('chart.js') || id.includes('recharts') || id.includes('chart')) {
+              return 'vendor.charts';
+            }
+            if (id.includes('lodash')) return 'vendor.lodash';
+            if (id.includes('axios')) return 'vendor.axios';
+            return 'vendor.other';
+          }
+        },
+      },
+    },
+  },
 });

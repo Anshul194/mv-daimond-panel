@@ -20,7 +20,7 @@ const initialState: SizeState = {
     error: null,
 };
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
+const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // Async thunk to create a new size
 export const createSize = createAsyncThunk<

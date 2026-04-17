@@ -2,7 +2,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axiosInstance from "../../services/axiosConfig";
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
+const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // Dashboard response type
 interface DashboardState {

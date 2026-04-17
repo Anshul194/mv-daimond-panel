@@ -56,7 +56,7 @@ export interface FetchCustomAttributesParams {
     sort?: Record<string, any>;
 }
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
+const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export const fetchCustomAttributes = createAsyncThunk<
     {

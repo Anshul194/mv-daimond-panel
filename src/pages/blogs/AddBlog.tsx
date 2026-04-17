@@ -10,7 +10,7 @@ import {
 } from "../../store/slices/blogCategorySlice";
 import { createBlog } from "../../store/slices/blog";
 import CustomEditor from "../../components/CustomEditor";
-import axiosInstance from "../../services/axiosConfig";
+import axiosInstance, { axiosPublic } from "../../services/axiosConfig";
 import { useNavigate } from "react-router-dom";
 
 export default function AddBlog() {
@@ -147,10 +147,10 @@ export default function AddBlog() {
   useEffect(() => {
     const getData = async () => {
       try {
-        const response = await axiosInstance.get(
-          `/api/blog-subcategory/by-category/${blog.blogCategory}`
+        const response = await axiosPublic.get(
+          `/api/category/subcategory?categoryId=${blog.blogCategory}`
         );
-        setSubCategory(response.data.data);
+        setSubCategory(response.data?.body?.data || response.data?.data || response.data || []);
       } catch (error) {
         console.error("Error fetching categories:", error);
         toast.error("Failed to fetch categories.", {

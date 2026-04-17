@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import axiosInstance from "../../services/axiosConfig";
+import axiosInstance, { axiosPublic } from "../../services/axiosConfig";
 
 // ----------------------
 // ✅ Types
@@ -50,7 +50,7 @@ const initialState: BlogCategoryState = {
   },
 };
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
+const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // ----------------------
 // ✅ Create Category
@@ -102,10 +102,10 @@ export const fetchBlogCategories = createAsyncThunk<
 
     const queryParams = new URLSearchParams();
 
-    const res = await axiosInstance.get(
-      `${API_BASE_URL}/api/blog-category?${queryParams.toString()}`
+    const res = await axiosPublic.get(
+      `${API_BASE_URL}/api/category?${queryParams.toString()}`
     );
-    const data = res.data?.body?.data || res.data?.data || res.data;
+    const data = res.data?.body?.data || res.data?.data || res.data?.body || res.data;
     // Normalize different backend shapes:
     // - { body: { data: { result: [...], pagination: {...} } } }
     // - { body: { data: { data: [...] , pagination: {...} } } }

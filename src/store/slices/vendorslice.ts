@@ -34,7 +34,7 @@ const initialState: VendorState = {
   totalPages: 1,
 };
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
+const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 // Async thunk for vendor signup
 export const registerVendor = createAsyncThunk<
   any,

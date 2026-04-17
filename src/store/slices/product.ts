@@ -44,7 +44,7 @@ const initialState: ProductState = {
   productAttributesError: null,
 };
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
+const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export const createProduct = createAsyncThunk<
   any,
@@ -121,7 +121,7 @@ export const fetchProducts = createAsyncThunk<
     }
 
     const response = await axiosInstance.get(
-      `http://localhost:3000/api/product?${queryParams.toString()}`,
+      `${API_BASE_URL}/api/product?${queryParams.toString()}`,
       {
         headers: {
           "Content-Type": "application/json",
@@ -173,7 +173,7 @@ export const updateProduct = createAsyncThunk<
 >("product/update", async ({ productId, data }, { rejectWithValue }) => {
   try {
     const response = await axiosInstance.put(
-      `http://localhost:3000/api/product/${productId}`,
+      `${API_BASE_URL}/api/product/${productId}`,
       data
     );
     return response.data;
@@ -205,7 +205,7 @@ export const deleteproduct = createAsyncThunk<
 >("brand/delete", async ({ productId, token }, { rejectWithValue }) => {
   try {
     const response = await axiosInstance.delete(
-      `http://localhost:3000/api/product/${productId}`,
+      `${API_BASE_URL}/api/product/${productId}`,
       {
         headers: {
           "Content-Type": "application/json",

@@ -21,7 +21,7 @@ const ServiceModal: React.FC<ServiceModalProps> = ({ isOpen, onClose, onConfirm,
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string>("");
 
-    const BASE_URL = import.meta.env.VITE_IMAGE_URL || "http://localhost:3000";
+    const BASE_URL = import.meta.env.VITE_IMAGE_URL || "https://ardordiamonds.com";
 
     useEffect(() => {
         if (isOpen && service) {

@@ -13,7 +13,7 @@ const BannerModal: React.FC<BannerModalProps> = ({ isOpen, onClose, onConfirm, b
     const getFullUrl = (url: string) => {
         if (!url) return "";
         if (url.startsWith("http") || url.startsWith("data:") || url.startsWith("blob:")) return url;
-        const base = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
+        const base = import.meta.env.VITE_BASE_URL || "https://ardordiamonds.com";
         return base.replace(/\/$/, "") + (url.startsWith("/") ? url : `/${url}`);
     };
     const [formData, setFormData] = useState({

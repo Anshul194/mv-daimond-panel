@@ -7,7 +7,7 @@ import PageMeta from "../../components/common/PageMeta";
 import toast from "react-hot-toast";
 import ServiceModal from "../../components/modals/ServiceModal";
 
-const BASE_URL = import.meta.env.VITE_IMAGE_URL || "http://localhost:3000";
+const BASE_URL = import.meta.env.VITE_IMAGE_URL || "https://ardordiamonds.com";
 
 const ServiceList: React.FC = () => {
     const dispatch = useAppDispatch();

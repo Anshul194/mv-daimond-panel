@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE = process.env.VITE_BASE_URL || process.env.API_BASE_URL || 'http://localhost:3000';
+const BASE = process.env.VITE_BASE_URL || process.env.API_BASE_URL || 'https://ardordiamonds.com';
 const TOKEN = process.env.API_TOKEN || process.env.ACCESS_TOKEN || process.env.AUTH_TOKEN || process.env.VITE_API_TOKEN || null;
 
 const attributes = [

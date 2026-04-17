@@ -19,7 +19,7 @@ export default defineConfig({
     allowedHosts: ["diamondadmin.nexprism.in"],
     proxy: {
       "/api": {
-        target: "http://localhost:3000",
+        target: "https://ardordiamonds.com",
         changeOrigin: true,
       },
     },

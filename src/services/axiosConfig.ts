@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 
 // API base URL
-const API_BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:3000/';
+const API_BASE_URL = import.meta.env.VITE_BASE_URL || 'https://ardordiamonds.com/';
 
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,

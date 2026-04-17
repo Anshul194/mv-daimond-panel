@@ -235,7 +235,7 @@ const TermImage: React.FC<TermImageProps> = ({ image, alt, className }) => {
     // Build initial URL - try multiple sources
     // Images are stored on the backend server, so we need to use the backend API URL
     // Get API base URL from env (same as axios config uses)
-    const apiBaseUrl = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_IMAGE_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const apiBaseUrl = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_IMAGE_URL || import.meta.env.VITE_API_URL || 'https://ardordiamonds.com';
     const baseUrl = apiBaseUrl.replace(/\/$/, '');
     let initialUrl: string;
 
@@ -329,7 +329,7 @@ const TermImage: React.FC<TermImageProps> = ({ image, alt, className }) => {
     const currentSrc = e.currentTarget.src;
 
     // Get backend API URL
-    const apiBaseUrl = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_IMAGE_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const apiBaseUrl = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_IMAGE_URL || import.meta.env.VITE_API_URL || 'https://ardordiamonds.com';
     const baseUrl = apiBaseUrl.replace(/\/$/, '');
 
     console.log('TermImage: Error handler', {

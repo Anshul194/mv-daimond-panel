@@ -5,7 +5,7 @@ This document summarizes the main backend HTTP endpoints used in this project, e
 ---
 
 ## Base URL
-- Default: `http://localhost:3000`
+- Default: `https://ardordiamonds.com`
 - If running in the frontend, the app reads `VITE_BASE_URL` from env.
 
 ---
@@ -23,7 +23,7 @@ This document summarizes the main backend HTTP endpoints used in this project, e
 
 Example curl:
 ```bash
-curl -X POST "http://localhost:3000/api/productattribute" \
+curl -X POST "https://ardordiamonds.com/api/productattribute" \
   -H "Authorization: Bearer AUTH_TOKEN" \
   -F 'title=Style' \
   -F 'category_id=CATEGORY_ID' \
@@ -54,7 +54,7 @@ await axiosInstance.post(`${API_BASE_URL}/api/productattribute`, formData, { hea
 
 Example:
 ```bash
-curl "http://localhost:3000/api/productattribute?page=1&limit=10"
+curl "https://ardordiamonds.com/api/productattribute?page=1&limit=10"
 ```
 
 ---
@@ -79,7 +79,7 @@ curl "http://localhost:3000/api/productattribute?page=1&limit=10"
 
 Example curl:
 ```bash
-curl -X POST "http://localhost:3000/api/product" \
+curl -X POST "https://ardordiamonds.com/api/product" \
   -H "Authorization: Bearer AUTH_TOKEN" \
   -F 'title=My Product' \
   -F 'category=CAT_ID' \
@@ -90,7 +90,7 @@ curl -X POST "http://localhost:3000/api/product" \
 
 Additional example (create a featured product):
 ```bash
-curl -X POST "http://localhost:3000/api/product" \
+curl -X POST "https://ardordiamonds.com/api/product" \
   -F "name=Test Featured Ring" \
   -F "category_id=6854fc895e53f236d75c07af" \
   -F "price=1200" \
@@ -286,7 +286,7 @@ Sample response:
 
 Example create curl:
 ```bash
-curl -X POST "http://localhost:3000/api/brands" \
+curl -X POST "https://ardordiamonds.com/api/brands" \
   -H "Authorization: Bearer AUTH_TOKEN" \
   -F 'name=BrandName' \
   -F 'title=Brand Title' \

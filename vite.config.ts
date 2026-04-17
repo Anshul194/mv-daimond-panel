@@ -16,7 +16,7 @@ export default defineConfig({
     }),
   ],
   server: {
-    allowedHosts: ["diamondadmin.nexprism.in"],
+    allowedHosts: ["diamondadmin.nexprism.in", "panel.ardordiamonds.com"],
     proxy: {
       "/api": {
         target: "https://ardordiamonds.com",

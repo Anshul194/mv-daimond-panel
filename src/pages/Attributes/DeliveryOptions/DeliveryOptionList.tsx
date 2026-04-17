@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../hooks/redux";
 
 import toast from "react-hot-toast";
@@ -292,27 +293,30 @@ return (
 );
 };
 
+
 const DeliveryOptionList: React.FC = () => {
-const dispatch = useAppDispatch();
-const { options, loading, error, pagination } = useAppSelector((state: any) => state.delivery);
+    const dispatch = useAppDispatch();
+    const navigate = useNavigate();
+    const { options, loading, error, pagination } = useAppSelector((state: any) => state.delivery);
 
     const userRole = useUserRole();
 
-const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-const [optionToDelete, setOptionToDelete] = useState<DeliveryOption | null>(null);
-const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [optionToDelete, setOptionToDelete] = useState<DeliveryOption | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
-const [editModalOpen, setEditModalOpen] = useState(false);
-const [optionToEdit, setOptionToEdit] = useState<DeliveryOption | null>(null);
-const [isEditing, setIsEditing] = useState(false);
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [optionToEdit, setOptionToEdit] = useState<DeliveryOption | null>(null);
+    const [isEditing, setIsEditing] = useState(false);
 
-const [createModalOpen, setCreateModalOpen] = useState(false);
-const [isCreating, setIsCreating] = useState(false);
+    // Remove createModalOpen and isCreating if not used elsewhere
+    // const [createModalOpen, setCreateModalOpen] = useState(false);
+    // const [isCreating, setIsCreating] = useState(false);
 
-const [searchInput, setSearchInput] = useState("");
-const [localFilters, setLocalFilters] = useState<Record<string, any>>({});
-const [page, setPage] = useState(1);
-const [limit, setLimit] = useState(10);
+    const [searchInput, setSearchInput] = useState("");
+    const [localFilters, setLocalFilters] = useState<Record<string, any>>({});
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10);
 
 // Fetch delivery options
 useEffect(() => {
@@ -432,15 +436,15 @@ return (
         <div className="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-gray-800 dark:text-white/90">Delivery Options</h1>
-                {userRole !== 'vendor' && (
-                    <button
-                        onClick={openCreateModal}
-                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-                    >
-                        <Plus className="w-4 h-4" />
-                        Add Delivery Option
-                    </button>
-                )}
+                                {userRole !== 'vendor' && (
+                                    <button
+                                        onClick={() => navigate("/attributes/delivery-options/add")}
+                                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                        Add Delivery Option
+                                    </button>
+                                )}
             </div>
             {/* Search & Filter */}
             <div className="bg-white shadow p-4 rounded-md mb-6 dark:bg-gray-900">
@@ -594,17 +598,7 @@ return (
                 isEditing={isEditing}
             />
         )}
-        {/* Create Modal */}
-        {userRole !== 'vendor' && (
-            <EditModal
-                isOpen={createModalOpen}
-                onClose={closeCreateModal}
-                onConfirm={handleCreateSubmit}
-                option={null}
-                isEditing={isCreating}
-                isCreate
-            />
-        )}
+        {/* Create Modal removed: now using navigation to add page */}
     </div>
 );
 };

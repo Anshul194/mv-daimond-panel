@@ -150,9 +150,9 @@ export const updateColorCode = createAsyncThunk<
     { rejectValue: string }
 >('color/updateColorCode', async ({ id, name, colorCode ,status}, { rejectWithValue }) => {
     try {
-        const response = await axiosInstance.put(
+        const response = await axiosPublic.put(
             `${API_BASE_URL}/api/colorcode/${id}`,
-            { name, colorCode ,status }, // Assuming status is always 'active' for updates
+            { name, colorCode ,status },
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -185,7 +185,7 @@ export const deleteColorCode = createAsyncThunk<
     { rejectValue: string }
 >('color/deleteColorCode', async (colorId, { rejectWithValue }) => {
     try {
-        await axiosInstance.delete(`${API_BASE_URL}/api/colorcode/${colorId}`);
+        await axiosPublic.delete(`${API_BASE_URL}/api/colorcode/${colorId}`);
         return colorId;
     } catch (error: any) {
         return rejectWithValue(error.response?.data?.message || error.message);

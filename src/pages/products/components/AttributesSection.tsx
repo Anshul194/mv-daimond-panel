@@ -72,142 +72,48 @@ const AttributesSection: React.FC<InventorySectionProps> = ({
 
   const getData = async () => {
     try {
+      // Fetch sizes (remains a separate endpoint)
       const sizeResponse = await axiosPublic("/api/size");
       setSizes(sizeResponse.data.body.data?.result || sizeResponse.data.body.data?.results || []);
 
-      let metalTerms = [];
-      let shapeTerms = [];
-
-      // 1. Fetch Metal Types by Title
-      try {
-        const metalResponseApi = await axiosPublic(
-          "/api/productattribute?filters=" + encodeURIComponent(JSON.stringify({ title: "METAL TYPE" }))
-        );
-        const results = metalResponseApi?.data?.data?.data || metalResponseApi?.data?.body?.data || [];
-        const metalAttr = Array.isArray(results) ? results.find((a: any) => (a.title || "").toLowerCase().includes("metal")) : null;
-        metalTerms = metalAttr?.terms || [];
-      } catch (error) {
-        console.error("Error fetching metal types:", error);
-      }
-
-      // 2. Fetch Shapes by Title
-      try {
-        const shapeResponseApi = await axiosPublic(
-          "/api/productattribute?filters=" + encodeURIComponent(JSON.stringify({ title: "Shape" }))
-        );
-        const results = shapeResponseApi?.data?.data?.data || shapeResponseApi?.data?.body?.data || [];
-        const shapeAttr = Array.isArray(results) ? results.find((a: any) => (a.title || "").toLowerCase().includes("shape")) : null;
-        shapeTerms = shapeAttr?.terms || [];
-      } catch (error) {
-        console.error("Error fetching shapes:", error);
-      }
-
-      // 2.1 Fetch Carats by Title
-      let caratTerms = [];
-      try {
-        const caratResponseApi = await axiosPublic(
-          "/api/productattribute?filters=" + encodeURIComponent(JSON.stringify({ title: "carat" }))
-        );
-        const results = caratResponseApi?.data?.data?.data || caratResponseApi?.data?.body?.data || [];
-        const caratAttr = Array.isArray(results) ? results.find((a: any) => (a.title || "").toLowerCase().includes("carat")) : null;
-        caratTerms = caratAttr?.terms || [];
-      } catch (error) {
-        console.error("Error fetching carats:", error);
-      }
-
-      // 2.2 Fetch Stones by Title
-      let stoneTerms = [];
-      try {
-        const stoneResponseApi = await axiosPublic(
-          "/api/productattribute?filters=" + encodeURIComponent(JSON.stringify({ title: "Stone" }))
-        );
-        const results = stoneResponseApi?.data?.data?.data || stoneResponseApi?.data?.body?.data || [];
-        const stoneAttr = Array.isArray(results) ? results.find((a: any) => (a.title || "").toLowerCase().includes("stone")) : null;
-        stoneTerms = stoneAttr?.terms || [];
-      } catch (error) {
-        console.error("Error fetching stones:", error);
-      }
-
-      // 2.3 Fetch Stone Colors by Title
-      let stoneColorTerms = [];
-      try {
-        const stoneColorResponseApi = await axiosPublic(
-          "/api/productattribute?filters=" + encodeURIComponent(JSON.stringify({ title: "Stone Color" }))
-        );
-        const results = stoneColorResponseApi?.data?.data?.data || stoneColorResponseApi?.data?.body?.data || [];
-        const stoneColorAttr = Array.isArray(results) ? results.find((a: any) => (a.title || "").toLowerCase().includes("stone") && (a.title || "").toLowerCase().includes("color")) : null;
-        stoneColorTerms = stoneColorAttr?.terms || [];
-      } catch (error) {
-        console.error("Error fetching stone colors:", error);
-      }
-
-      // 3. Fetch All Attributes for Fallbacks
+      // Fetch all product attributes in a single call
       const attributeResponse = await axiosPublic("/api/productattribute");
       const allAttributes = attributeResponse.data?.data?.data ||
         attributeResponse.data?.body?.data?.data ||
         attributeResponse.data?.data || [];
-      // setAttributes(allAttributes);
 
-      // 4. Apply Fallbacks if specific fetches failed
-      if (allAttributes.length > 0) {
-        if (shapeTerms.length === 0) {
-          const shapeAttr = allAttributes.find(
-            (attr: any) => attr.title?.toLowerCase() === "shape" || attr.title?.toLowerCase()?.includes("shape")
-          );
-          if (shapeAttr?.terms) shapeTerms = shapeAttr.terms;
-        }
+      // Extract terms for each attribute type
+      const findTerms = (titleCheck) => {
+        const attr = allAttributes.find((a) => (a.title || "").toLowerCase().includes(titleCheck));
+        return attr?.terms || [];
+      };
 
-        if (metalTerms.length === 0) {
-          const metalAttr = allAttributes.find(
-            (attr: any) => attr.title?.toLowerCase() === "metal type" ||
-              attr.title?.toLowerCase()?.includes("metal") ||
-              attr.title?.toLowerCase()?.includes("color")
-          );
-          if (metalAttr?.terms) metalTerms = metalAttr.terms;
-        }
+      const metalTerms = findTerms("metal");
+      const shapeTerms = findTerms("shape");
+      const caratTerms = findTerms("carat");
+      const stoneTerms = findTerms("stone");
+      // For stone color, ensure both 'stone' and 'color' in title
+      const stoneColorAttr = allAttributes.find((a) => (a.title || "").toLowerCase().includes("stone") && (a.title || "").toLowerCase().includes("color"));
+      const stoneColorTerms = stoneColorAttr?.terms || [];
 
-        if (caratTerms.length === 0) {
-          const caratAttr = allAttributes.find(
-            (attr: any) => attr.title?.toLowerCase() === "carat" ||
-              attr.title?.toLowerCase()?.includes("carat")
-          );
-          if (caratAttr?.terms) caratTerms = caratAttr.terms;
-        }
-
-        if (stoneTerms.length === 0) {
-          const stoneAttr = allAttributes.find(
-            (attr: any) => attr.title?.toLowerCase() === "stone" || attr.title?.toLowerCase()?.includes("stone")
-          );
-          if (stoneAttr?.terms) stoneTerms = stoneAttr.terms;
-        }
-
-        if (stoneColorTerms.length === 0) {
-          const scAttr = allAttributes.find(
-            (attr: any) => (attr.title || "").toLowerCase()?.includes("stone") && (attr.title || "").toLowerCase()?.includes("color")
-          );
-          if (scAttr?.terms) stoneColorTerms = scAttr.terms;
-        }
-      }
-
-      // 5. Update state once
       setMetalTypeResponse(metalTerms);
       setShapeResponse(shapeTerms);
       setCaratResponse(caratTerms);
       setStoneResponse(stoneTerms);
       setStoneColorResponse(stoneColorTerms);
 
-      console.log("Attributes loaded successfully:", {
+      console.log("Attributes loaded successfully (optimized):", {
         metalTerms: metalTerms.length,
         shapeTerms: shapeTerms.length,
         caratTerms: caratTerms.length,
         stoneTerms: stoneTerms.length,
         stoneColorTerms: stoneColorTerms.length,
-        metalOptions: metalTerms.map((t: any) => t.value),
-        shapeOptions: shapeTerms.map((t: any) => t.value),
-        caratOptions: caratTerms.map((t: any) => t.value)
+        metalOptions: metalTerms.map((t) => t.value),
+        shapeOptions: shapeTerms.map((t) => t.value),
+        caratOptions: caratTerms.map((t) => t.value)
       });
     } catch (error) {
-      console.error("Error in getData:", error);
+      console.error("Error in getData (optimized):", error);
     }
   };
 

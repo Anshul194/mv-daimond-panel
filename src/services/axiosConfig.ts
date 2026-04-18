@@ -11,7 +11,9 @@ const axiosInstance: AxiosInstance = axios.create({
   }
 });
 
-// Public axios instance (no Authorization headers)
+
+
+
 const axiosPublic: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 86400000,
@@ -57,6 +59,7 @@ axiosInstance.interceptors.request.use(
 // Public instance: keep same GET cache-busting and FormData handling but do NOT add auth headers
 axiosPublic.interceptors.request.use(
   (config: import('axios').InternalAxiosRequestConfig): import('axios').InternalAxiosRequestConfig => {
+    // Always add cache-busting for GET requests
     if (config.method === 'get') {
       config.params = {
         ...config.params,

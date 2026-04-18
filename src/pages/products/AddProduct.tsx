@@ -101,7 +101,7 @@ const ProductForm = () => {
       // Category and Subcategory from GeneralInfoSection
       formDataToSend.append("category_id", formData.category_id || "");
       formDataToSend.append("subcategory_id", formData.subcategory_id || "");
-      formDataToSend.append("subCategory_id", formData.subcategory_id || ""); // <-- add this line
+      formDataToSend.append("subCategory_id", formData.subcategory_id || "");
 
       // Optional: Include category and subcategory names if needed by backend
       if (formData.categoryName) {
@@ -142,6 +142,12 @@ const ProductForm = () => {
       //   formDataToSend.append("isTaxable", true);
       // }
       formDataToSend.append("isTaxable", "false");
+
+      // If vendor, set status to inactive
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (user && (user.role === 'vendor' || user.type === 'vendor')) {
+        formDataToSend.append('status', 'inactive');
+      }
 
       // Featured flag
       formDataToSend.append("featured", formData.featured ? String(formData.featured) : "false");

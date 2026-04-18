@@ -155,6 +155,10 @@ const EditProductForm = () => {
               value: attr.attribute_value || attr.value || "",
             })),
           image: variant.image || null,
+          ringImages: variant.ring_images || variant.ringImages || [],
+          ringVideo360: variant.ring_video_360 || variant.ringVideo360 || null,
+          modelImage: variant.model_image || variant.modelImage || null,
+          modelVideo: variant.model_video || variant.modelVideo || null,
           // CRITICAL: Ensure inventoryDetailsId is only set if it's a real DB ID (not stable- or new-)
           inventoryDetailsId: (variantId && !variantId.toString().startsWith("new-") && !variantId.toString().startsWith("stable-")) ? variantId : "",
         } as Variant;
@@ -338,6 +342,22 @@ const EditProductForm = () => {
           } else if (typeof variant.image === "string") {
             // If it's a string, it's an existing image URL, backend should handle it if passed
             formDataToSend.append(`item_image[${idx}]`, variant.image);
+          }
+
+          // Extended media fields
+          if (variant.ringImages && variant.ringImages.length > 0) {
+            variant.ringImages.forEach((img, imgIdx) => {
+              if (img) formDataToSend.append(`item_ring_images[${idx}][${imgIdx}]`, img);
+            });
+          }
+          if (variant.ringVideo360) {
+            formDataToSend.append(`item_ring_video_360[${idx}]`, variant.ringVideo360);
+          }
+          if (variant.modelImage) {
+            formDataToSend.append(`item_model_image[${idx}]`, variant.modelImage);
+          }
+          if (variant.modelVideo) {
+            formDataToSend.append(`item_model_video[${idx}]`, variant.modelVideo);
           }
         });
       }

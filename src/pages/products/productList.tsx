@@ -331,37 +331,49 @@ const ApprovalModal: React.FC<{
   const activating = product.status !== 'active';
 
   const getProductImage = (p: any) => {
-    // Prefer top-level images, then inventory images
     const rawCandidates: any[] = [];
+    
+    // Priority 1: Main product's own images array
     if (p.image && Array.isArray(p.image) && p.image.length) rawCandidates.push(p.image[0]);
-    if (p.images && Array.isArray(p.images) && p.images.length) rawCandidates.push(p.images[0]);
+    if (p.images && Array.isArray(p.images) && p.images.length > 0) rawCandidates.push(p.images[0]);
+    
+    // Priority 2: Variant's standard 'image' field (User: "images rary one")
+    try {
+      const invDetails = p.inventory?.inventory_details;
+      if (Array.isArray(invDetails) && invDetails.length > 0) {
+        const vImg = invDetails[0].image;
+        if (vImg) {
+          rawCandidates.push(Array.isArray(vImg) ? vImg[0] : vImg);
+        }
+      }
+    } catch (e) {}
+
+    // Priority 3: Fallbacks
     if (p.image && !Array.isArray(p.image)) rawCandidates.push(p.image);
     if (p.thumbnail) rawCandidates.push(p.thumbnail);
     if (p.imageUrl) rawCandidates.push(p.imageUrl);
     if (p.media && p.media.length) rawCandidates.push(p.media[0]?.url);
     if (p.photos && p.photos.length) rawCandidates.push(p.photos[0]);
-    // inventory nested images
+    
+    // Last Priority: Ring images
     try {
       const invDetails = p.inventory?.inventory_details;
-      if (Array.isArray(invDetails)) {
-        for (const d of invDetails) {
-          if (d.image && Array.isArray(d.image) && d.image.length) rawCandidates.push(d.image[0]);
-          if (d.image && !Array.isArray(d.image)) rawCandidates.push(d.image);
-        }
+      if (Array.isArray(invDetails) && invDetails.length > 0) {
+        if (invDetails[0].ringImages?.[0]) rawCandidates.push(invDetails[0].ringImages[0]);
       }
-    } catch (e) {
-      // ignore
-    }
+    } catch (e) {}
 
     for (const c of rawCandidates) {
-      if (c === null || c === undefined) continue;
-      // skip empty arrays
-      if (Array.isArray(c) && c.length === 0) continue;
-      const url = buildImageUrl(Array.isArray(c) ? c[0] : c);
+      if (c === null || c === undefined || c === "null" || c === "") continue;
+      // Handle nested arrays like [["url"]]
+      const singleValue = Array.isArray(c) ? (Array.isArray(c[0]) ? c[0][0] : c[0]) : c;
+      if (!singleValue || singleValue === "null" || singleValue === "") continue;
+      
+      const url = buildImageUrl(singleValue);
       if (url) return url;
     }
 
-    return `${import.meta.env.BASE_URL || ''}/images/product-placeholder.svg`;
+    return `${import.meta.env.BASE_URL || ""}/images/product-placeholder.svg`;
   };
 
   const img = getProductImage(product as any);
@@ -681,20 +693,49 @@ const ProductList: React.FC = () => {
   };
 
   const getProductImage = (p: any) => {
-    const candidates = [
-      p.image,
-      p.images && p.images.length ? p.images[0] : null,
-      p.thumbnail,
-      p.imageUrl,
-      p.media && p.media.length ? p.media[0]?.url : null,
-      p.photos && p.photos.length ? p.photos[0] : null,
-    ];
-    for (const c of candidates) {
-      if (!c) continue;
-      const url = buildImageUrl(c);
+    const rawCandidates: any[] = [];
+    
+    // Priority 1: Main product's own images array
+    if (p.image && Array.isArray(p.image) && p.image.length) rawCandidates.push(p.image[0]);
+    if (p.images && Array.isArray(p.images) && p.images.length > 0) rawCandidates.push(p.images[0]);
+    
+    // Priority 2: Variant's standard 'image' field (User: "images rary one")
+    try {
+      const invDetails = p.inventory?.inventory_details;
+      if (Array.isArray(invDetails) && invDetails.length > 0) {
+        const vImg = invDetails[0].image;
+        if (vImg) {
+          rawCandidates.push(Array.isArray(vImg) ? vImg[0] : vImg);
+        }
+      }
+    } catch (e) {}
+
+    // Priority 3: Fallbacks
+    if (p.image && !Array.isArray(p.image)) rawCandidates.push(p.image);
+    if (p.thumbnail) rawCandidates.push(p.thumbnail);
+    if (p.imageUrl) rawCandidates.push(p.imageUrl);
+    if (p.media && p.media.length) rawCandidates.push(p.media[0]?.url);
+    if (p.photos && p.photos.length) rawCandidates.push(p.photos[0]);
+    
+    // Last Priority: Ring images
+    try {
+      const invDetails = p.inventory?.inventory_details;
+      if (Array.isArray(invDetails) && invDetails.length > 0) {
+        if (invDetails[0].ringImages?.[0]) rawCandidates.push(invDetails[0].ringImages[0]);
+      }
+    } catch (e) {}
+
+    for (const c of rawCandidates) {
+      if (c === null || c === undefined || c === "null" || c === "") continue;
+      // Handle nested arrays like [["url"]]
+      const singleValue = Array.isArray(c) ? (Array.isArray(c[0]) ? c[0][0] : c[0]) : c;
+      if (!singleValue || singleValue === "null" || singleValue === "") continue;
+      
+      const url = buildImageUrl(singleValue);
       if (url) return url;
     }
-    return `${import.meta.env.BASE_URL || ''}/images/product-placeholder.svg`;
+
+    return `${import.meta.env.BASE_URL || ""}/images/product-placeholder.svg`;
   };
 
   return (

@@ -6,6 +6,52 @@ import axiosInstance, { axiosPublic } from "../../../services/axiosConfig";
 
 import { Variant, ProductFormData } from "../types";
 
+const buildImageUrl = (raw: string | null | undefined) => {
+  if (!raw) return null;
+  const str = String(raw).trim();
+  if (!str || str === "/" || str === "null") return null;
+  if (str.startsWith("http") || str.startsWith("data:")) return str;
+  const base = (import.meta.env.VITE_IMAGE_URL || import.meta.env.VITE_BASE_URL || "").toString();
+  const trimmedBase = base.replace(/\/$/, "");
+  if (!trimmedBase) return str.startsWith("/") ? str : `/${str}`;
+  if (str.startsWith("/")) return `${trimmedBase}${str}`;
+  return `${trimmedBase}/${str}`;
+};
+
+const MediaPreview: React.FC<{ file: File | string | null; type: "image" | "video" }> = ({ file, type }) => {
+  const [url, setUrl] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (!file) {
+      setUrl(null);
+      return;
+    }
+
+    if (typeof file === "string") {
+      setUrl(buildImageUrl(file));
+      return;
+    }
+
+    if (file instanceof Blob || file instanceof File) {
+      const objectUrl = URL.createObjectURL(file);
+      setUrl(objectUrl);
+      return () => URL.revokeObjectURL(objectUrl);
+    }
+  }, [file]);
+
+  if (!url) return null;
+
+  return (
+    <div className="mt-2 w-20 h-20 rounded-lg overflow-hidden border border-gray-200 bg-black flex items-center justify-center group relative">
+      {type === "image" ? (
+        <img src={url} alt="Preview" className="w-full h-full object-cover" />
+      ) : (
+        <video src={url} className="w-full h-full object-cover" controls playsInline muted />
+      )}
+    </div>
+  );
+};
+
 interface InventorySectionProps {
   formData: ProductFormData;
   updateFormData: (field: string, value: any) => void;
@@ -491,7 +537,7 @@ const AttributesSection: React.FC<InventorySectionProps> = ({
 
                 <div className="mb-0">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Variant Image
+                    Variant Image (Main)
                   </label>
                   <input
                     type="file"
@@ -504,6 +550,80 @@ const AttributesSection: React.FC<InventorySectionProps> = ({
                     }}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-colors"
                   />
+                  <MediaPreview file={variant.image} type="image" />
+                </div>
+              </div>
+              <div className="mt-6 border-t border-gray-200 pt-6">
+                <h4 className="text-sm font-medium text-gray-900 mb-4">
+                  Extended Media
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[1, 2, 3, 4].map((num) => (
+                    <div key={`ring-angle-${variant.id}-${num}`} className="mb-0">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Ring Angle {num}
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const newRingImages = [...(variant.ringImages || [])];
+                            newRingImages[num - 1] = file;
+                            updateVariant(variant.id, "ringImages", newRingImages);
+                          }
+                        }}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm transition-colors"
+                      />
+                      <MediaPreview file={variant.ringImages?.[num - 1]} type="image" />
+                    </div>
+                  ))}
+                  <div className="mb-0">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Ring 360 Video
+                    </label>
+                    <input
+                      type="file"
+                      accept="video/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) updateVariant(variant.id, "ringVideo360", file);
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm transition-colors"
+                    />
+                    <MediaPreview file={variant.ringVideo360} type="video" />
+                  </div>
+                  <div className="mb-0">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Model Image
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) updateVariant(variant.id, "modelImage", file);
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm transition-colors"
+                    />
+                    <MediaPreview file={variant.modelImage} type="image" />
+                  </div>
+                  <div className="mb-0">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Model Video
+                    </label>
+                    <input
+                      type="file"
+                      accept="video/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) updateVariant(variant.id, "modelVideo", file);
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm transition-colors"
+                    />
+                    <MediaPreview file={variant.modelVideo} type="video" />
+                  </div>
                 </div>
               </div>
               {/* <div>

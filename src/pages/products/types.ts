@@ -16,6 +16,10 @@ export interface Variant {
     stock?: string;
     extraCost?: string;
     image: File | string | null;
+    ringImages?: (File | string)[];
+    ringVideo360?: File | string | null;
+    modelImage?: File | string | null;
+    modelVideo?: File | string | null;
     custom?: any[];
     inventoryDetailsId?: string;
 }

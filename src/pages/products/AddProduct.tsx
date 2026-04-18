@@ -191,6 +191,21 @@ const ProductForm = () => {
           if (variant.image) {
             formDataToSend.append(`item_image[${idx}]`, variant.image);
           }
+          // Variant extended media
+          if (variant.ringImages && variant.ringImages.length > 0) {
+            variant.ringImages.forEach((img, imgIdx) => {
+              if (img) formDataToSend.append(`item_ring_images[${idx}][${imgIdx}]`, img);
+            });
+          }
+          if (variant.ringVideo360) {
+            formDataToSend.append(`item_ring_video_360[${idx}]`, variant.ringVideo360);
+          }
+          if (variant.modelImage) {
+            formDataToSend.append(`item_model_image[${idx}]`, variant.modelImage);
+          }
+          if (variant.modelVideo) {
+            formDataToSend.append(`item_model_video[${idx}]`, variant.modelVideo);
+          }
         });
       }
 

@@ -190,6 +190,33 @@ const EditProductForm = () => {
         categories: data.categories || [],
         tax: data.taxClass || data.tax || "",
       });
+
+      // Populate properties state from the first variant's attributes
+      if (variantData && variantData.length > 0) {
+        const firstVariant = variantData[0];
+        const newProperties: Record<string, string> = {};
+        
+        // These attributes might be in fixed fields or in the 'custom' array
+        if (firstVariant.shape) newProperties["Shape"] = firstVariant.shape;
+        if (firstVariant.carat) newProperties["Carat"] = firstVariant.carat;
+        if ((firstVariant as any).stone) newProperties["Stone"] = (firstVariant as any).stone;
+        if ((firstVariant as any).stoneColor) newProperties["Stone Color"] = (firstVariant as any).stoneColor;
+        
+        // Map any other custom attributes
+        if (firstVariant.custom) {
+          firstVariant.custom.forEach((attr: any) => {
+            if (attr.name && attr.value) {
+              newProperties[attr.name] = attr.value;
+            }
+          });
+        }
+        
+        setProperties((prev) => ({
+          ...prev,
+          ...newProperties,
+        }));
+      }
+
       console.log("Form data after fetching:", formData);
     } catch (error) {
       console.error("Error fetching product data:", error);

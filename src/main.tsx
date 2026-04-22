@@ -18,7 +18,7 @@ export function AppWithToaster() {
         reverseOrder={false}
         gutter={8}
         containerClassName=""
-        containerStyle={{}}
+        containerStyle={{ zIndex: 100000 }}
         toastOptions={{
           className: '',
           duration: 4000,

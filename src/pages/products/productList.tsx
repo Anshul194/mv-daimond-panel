@@ -11,6 +11,8 @@ import {
   setProductFilters,
   resetProductFilters,
   setProductApproval,
+  setProductPage,
+  setProductLimit,
 } from "../../store/slices/product";
 import {
   Pencil,
@@ -475,20 +477,27 @@ const ProductList: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchInput, searchQuery, dispatch]);
 
+  const lastFetchRef = React.useRef<string>("");
+
   useEffect(() => {
     const activeFilters = {
       ...(localFilters.status ? { status: localFilters.status } : {}),
       ...(localFilters.category ? { category: localFilters.category } : {}),
     };
-    dispatch(
-      fetchProducts({
-        page: pagination?.page,
-        limit: pagination?.limit,
-        filters: activeFilters,
-        searchFields: searchQuery ? { name: searchQuery } : {},
-        sort: { createdAt: "desc" },
-      })
-    );
+    
+    const params = {
+      page: pagination?.page || 1,
+      limit: pagination?.limit || 10,
+      filters: activeFilters,
+      searchFields: searchQuery ? { name: searchQuery } : {},
+      sort: { createdAt: "desc" },
+    };
+
+    const paramsKey = JSON.stringify(params);
+    if (lastFetchRef.current === paramsKey) return;
+    lastFetchRef.current = paramsKey;
+
+    dispatch(fetchProducts(params));
   }, [
     dispatch,
     pagination?.page,
@@ -498,37 +507,11 @@ const ProductList: React.FC = () => {
   ]);
 
   const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && newPage <= pagination.totalPages) {
-      dispatch(
-        fetchProducts({
-          page: newPage,
-          limit: pagination.limit,
-          filters: {
-            ...(localFilters.status ? { status: localFilters.status } : {}),
-            ...(localFilters.category
-              ? { category: localFilters.category }
-              : {}),
-          },
-          searchFields: searchQuery ? { name: searchQuery } : {},
-          sort: { createdAt: "desc" },
-        })
-      );
-    }
+    dispatch(setProductPage(newPage));
   };
 
   const handleLimitChange = (newLimit: number) => {
-    dispatch(
-      fetchProducts({
-        page: 1,
-        limit: newLimit,
-        filters: {
-          ...(localFilters.status ? { status: localFilters.status } : {}),
-          ...(localFilters.category ? { category: localFilters.category } : {}),
-        },
-        searchFields: searchQuery ? { name: searchQuery } : {},
-        sort: { createdAt: "desc" },
-      })
-    );
+    dispatch(setProductLimit(newLimit));
   };
 
   const handleFilterChange = (key: string, value: string) => {

@@ -13,6 +13,7 @@ import type { AppDispatch, RootState } from "../../store";
 import axiosInstance from "../../services/axiosConfig";
 import PropertiesSection from "./components/Propertys";
 import { Variant, ProductFormData, Attribute } from "./types";
+import toast from "react-hot-toast";
 
 const EditProductForm = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -449,11 +450,12 @@ const EditProductForm = () => {
       // Refetch the updated product data to sync UI with server
       await getData();
 
-      alert("Product updated successfully!");
+      toast.success("Product updated successfully!", { duration: 5000, position: "top-right" });
     } catch (error) {
       console.log("Error updating product:", error);
       console.error("Failed to update product:", error);
-      alert("Failed to update product. Please try again.");
+      const errMsg = typeof error === 'string' ? error : (error as any)?.message || "Failed to update product. Please try again.";
+      toast.error(errMsg, { duration: 8000, position: "top-right" });
     }
   };
 

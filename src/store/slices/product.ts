@@ -30,6 +30,12 @@ interface ProductState {
   productAttributes?: any[]; // <-- add this
   productAttributesLoading?: boolean;
   productAttributesError?: string | null;
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }
 
 const initialState: ProductState = {
@@ -42,6 +48,12 @@ const initialState: ProductState = {
   productAttributes: [],
   productAttributesLoading: false,
   productAttributesError: null,
+  pagination: {
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 0,
+  },
 };
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -63,9 +75,21 @@ export const createProduct = createAsyncThunk<
     );
     return response.data;
   } catch (err: any) {
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to create product"
-    );
+    const errorData = err.response?.data;
+    let errorMessage = "Failed to create product";
+    
+    // Check nested structures: body.body.errors or body.errors or errors
+    const innerBody = errorData?.body?.body || errorData?.body || errorData;
+    
+    if (Array.isArray(innerBody?.errors) && innerBody.errors.length > 0) {
+      errorMessage = innerBody.errors[0].message || innerBody.errors[0];
+    } else if (innerBody?.message && innerBody.message !== "Validation error") {
+      errorMessage = innerBody.message;
+    } else if (errorData?.message) {
+      errorMessage = errorData.message;
+    }
+    
+    return rejectWithValue(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage));
   }
 });
 
@@ -178,23 +202,20 @@ export const updateProduct = createAsyncThunk<
     );
     return response.data;
   } catch (err: any) {
-    // Try to extract validation or detailed error messages from API
-    const resp = err.response?.data;
-    if (resp) {
-      // common structure: { body: { message, errors: [...] } }
-      const body = resp.body || resp;
-      if (body) {
-        if (body.message && typeof body.message === 'string') {
-          return rejectWithValue(body.message);
-        }
-        if (Array.isArray(body.errors) && body.errors.length) {
-          const msgs = body.errors.map((e: any) => e.message || JSON.stringify(e)).join('; ');
-          return rejectWithValue(msgs);
-        }
-      }
-      if (resp.message && typeof resp.message === 'string') return rejectWithValue(resp.message);
+    const errorData = err.response?.data;
+    let errorMessage = "Failed to update product";
+    
+    const innerBody = errorData?.body?.body || errorData?.body || errorData;
+    
+    if (Array.isArray(innerBody?.errors) && innerBody.errors.length > 0) {
+      errorMessage = innerBody.errors.map((e: any) => e.message || e).join('; ');
+    } else if (innerBody?.message && innerBody.message !== "Validation error") {
+      errorMessage = innerBody.message;
+    } else if (errorData?.message) {
+      errorMessage = errorData.message;
     }
-    return rejectWithValue(err.response?.data?.message || err.message || "Failed to update product");
+    
+    return rejectWithValue(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage));
   }
 });
 
@@ -214,9 +235,18 @@ export const deleteproduct = createAsyncThunk<
     );
     return response.data;
   } catch (err: any) {
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to delete brand"
-    );
+    const errorData = err.response?.data;
+    let errorMessage = "Failed to delete product";
+    
+    const innerBody = errorData?.body?.body || errorData?.body || errorData;
+    
+    if (Array.isArray(innerBody?.errors) && innerBody.errors.length > 0) {
+      errorMessage = innerBody.errors[0].message || innerBody.errors[0];
+    } else if (innerBody?.message) {
+      errorMessage = innerBody.message;
+    }
+    
+    return rejectWithValue(typeof errorMessage === 'string' ? errorMessage : "Failed to delete product");
   }
 });
 
@@ -308,12 +338,22 @@ const productSlice = createSlice({
   reducers: {
     setProductSearchQuery(state, action: PayloadAction<string>) {
       state.searchQuery = action.payload;
+      state.pagination.page = 1; // Reset to first page on search
     },
     setProductFilters(state, action: PayloadAction<ProductFilters>) {
       state.filters = action.payload;
+      state.pagination.page = 1; // Reset to first page on filter change
     },
     resetProductFilters(state) {
       state.filters = {};
+      state.pagination.page = 1;
+    },
+    setProductPage(state, action: PayloadAction<number>) {
+      state.pagination.page = action.payload;
+    },
+    setProductLimit(state, action: PayloadAction<number>) {
+      state.pagination.limit = action.payload;
+      state.pagination.page = 1; // Reset to first page on limit change
     },
   },
   extraReducers: (builder) => {
@@ -392,8 +432,13 @@ const productSlice = createSlice({
   },
 });
 
-export const { setProductSearchQuery, setProductFilters, resetProductFilters } =
-  productSlice.actions;
+export const {
+  setProductSearchQuery,
+  setProductFilters,
+  resetProductFilters,
+  setProductPage,
+  setProductLimit,
+} = productSlice.actions;
 
 export default productSlice.reducer;
 

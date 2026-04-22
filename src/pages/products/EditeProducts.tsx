@@ -450,7 +450,26 @@ const EditProductForm = () => {
       // Refetch the updated product data to sync UI with server
       await getData();
 
-      toast.success("Product updated successfully!", { duration: 5000, position: "top-right" });
+      // Show success message from API if present
+      const userStr = localStorage.getItem("user");
+      let isVendor = false;
+      if (userStr) {
+        try {
+          const userObj = JSON.parse(userStr);
+          if (userObj && (userObj.role === "vendor" || userObj.type === "vendor")) {
+            isVendor = true;
+          }
+        } catch (e) {
+          console.error("Failed to parse user role for toast message");
+        }
+      }
+
+      let successMessage = "Product updated successfully!";
+      if (isVendor) {
+        successMessage = `${successMessage} It will show on web when admin approves it.`;
+      }
+
+      toast.success(successMessage, { duration: 5000, position: "top-right" });
     } catch (error) {
       console.log("Error updating product:", error);
       console.error("Failed to update product:", error);

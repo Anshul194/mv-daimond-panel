@@ -256,8 +256,26 @@ const ProductForm = () => {
       const res: any = await dispatch(createProduct(formDataToSend) as any).unwrap();
 
       // Show success message from API if present
-      const successMessage =
+      const userStr = localStorage.getItem("user");
+      let isVendor = false;
+      if (userStr) {
+        try {
+          const userObj = JSON.parse(userStr);
+          if (userObj && (userObj.role === "vendor" || userObj.type === "vendor")) {
+            isVendor = true;
+          }
+        } catch (e) {
+          console.error("Failed to parse user role for toast message");
+        }
+      }
+
+      let successMessage =
         res?.body?.message || res?.message || res?.data?.message || (res?.data?.name ? `${res.data.name} created successfully!` : "Product created successfully!");
+        
+      if (isVendor) {
+        successMessage = `${successMessage} It will show on web when admin approves it.`;
+      }
+
       toast.success(successMessage, { duration: 8000, position: "top-right" });
 
       // Reset form data after successful submission

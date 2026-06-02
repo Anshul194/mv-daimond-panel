@@ -1234,9 +1234,9 @@ const CustomAttributeList = () => {
                             )}
                           </button>
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        {/* <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Last Modified
-                        </th>
+                        </th> */}
                         <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Actions
                         </th>
@@ -1280,21 +1280,7 @@ const CustomAttributeList = () => {
                               })}
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 bg-gradient-to-br from-purple-400 to-purple-500 rounded-full flex items-center justify-center text-xs font-semibold text-white">
-                                  {attribute?.lastModifiedBy?.email?.charAt(0)?.toUpperCase() || 'U'}
-                                </div>
-                                <span className="text-xs font-medium">
-                                  {attribute?.lastModifiedBy?.email || 'Unknown'}
-                                </span>
-                              </div>
-                              <div className="text-xs text-gray-400">
-                                {new Date(attribute?.lastModifiedBy?.timestamp).toLocaleDateString()}
-                              </div>
-                            </div>
-                          </td>
+                         
                           <td className="px-6 py-4 whitespace-nowrap text-center">
                             <div className="flex items-center justify-center gap-2">
                               <button

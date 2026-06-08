@@ -67,7 +67,7 @@ const CollectionList: React.FC = () => {
                 <tr key={collection._id} className="hover:bg-gray-50 transition">
                   <td className="px-6 py-4">
                     <img
-                      src={collection.image}
+                      src={`${(import.meta.env.VITE_IMAGE_URL || "").replace(/\/$/, "")}${collection.image.startsWith("/") ? collection.image : `/${collection.image}`}`}
                       alt={collection.name}
                       className="w-12 h-12 object-cover rounded-lg border"
                     />
@@ -75,9 +75,8 @@ const CollectionList: React.FC = () => {
                   <td className="px-6 py-4 font-medium">{collection.name}</td>
                   <td className="px-6 py-4">{collection.order}</td>
                   <td className="px-6 py-4">
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      collection.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
-                    }`}>
+                    <span className={`px-2 py-1 text-xs rounded-full ${collection.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+                      }`}>
                       {collection.status}
                     </span>
                   </td>

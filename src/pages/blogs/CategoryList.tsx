@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import {
-  fetchCourseCategories,
-  setSearchQuery,
-  setFilters,
-  resetFilters,
-  deleteCourseCategory,
-  fetchCourseCategoryById,
-  updateCourseCategory,
-} from "../../store/slices/courseCategorySlice";
+  setBlogCategorySearchQuery,
+  setBlogCategoryFilters,
+  resetBlogCategoryFilters,
+  deleteBlogCategory,
+  fetchBlogCategories,
+  updateBlogCategory,
+} from "../../store/slices/blogCategorySlice";
 import {
   Pencil,
   Trash2,
@@ -23,10 +22,6 @@ import {
 } from "lucide-react";
 
 import toast from "react-hot-toast";
-import {
-  deleteBlogCategory,
-  fetchBlogCategories,
-} from "../../store/slices/blogCategorySlice";
 import { useDispatch, useSelector } from "react-redux";
 import PageMeta from "../../components/common/PageMeta";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
@@ -139,9 +134,9 @@ const DeleteModal: React.FC<{
 };
 
 const BlogCategoryList: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch() as any;
   const { categories, loading, error, pagination, searchQuery, filters } =
-    useSelector((state) => state.blogCategory);
+    useSelector((state: any) => state.blogCategory);
 
   console.log("Blog Category List Rendered : ", categories);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -175,7 +170,7 @@ const BlogCategoryList: React.FC = () => {
     try {
       console.log("Submitting edit for category:", categoryId, formData);
       const update = await dispatch(
-        updateCourseCategory({ categoryId, formData })
+        updateBlogCategory({ id: categoryId, categoryData: formData as any })
       ).unwrap();
 
       console.log("Category updated successfully:", update);
@@ -236,7 +231,7 @@ const BlogCategoryList: React.FC = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (searchInput !== searchQuery) {
-        dispatch(setSearchQuery(searchInput));
+        dispatch(setBlogCategorySearchQuery(searchInput));
       }
     }, 500);
     return () => clearTimeout(timer);
@@ -292,13 +287,13 @@ const BlogCategoryList: React.FC = () => {
   const handleFilterChange = (key: string, value: string) => {
     const updated = { ...localFilters, [key]: value };
     setLocalFilters(updated);
-    dispatch(setFilters(updated));
+    dispatch(setBlogCategoryFilters(updated));
   };
 
   const handleResetFilters = () => {
     setSearchInput("");
     setLocalFilters({});
-    dispatch(resetFilters());
+    dispatch(resetBlogCategoryFilters());
   };
 
   const openDeleteModal = (category: Category) => {
@@ -318,7 +313,7 @@ const BlogCategoryList: React.FC = () => {
       setIsDeleting(true);
       try {
         // Dispatch the delete action
-        await dispatch(deleteBlogCategory(categoryToDelete?._id)).unwrap();
+        await dispatch(deleteBlogCategory({ id: categoryToDelete?._id })).unwrap();
 
         toast.success(
           `Category "${categoryToDelete.name}" deleted successfully`,
@@ -488,9 +483,8 @@ const BlogCategoryList: React.FC = () => {
                       src={
                         cat?.image
                           ? `${import.meta.env.VITE_IMAGE_URL}/${cat.image}`
-                          : `https://placehold.co/40x40?text=${
-                              cat?.name?.charAt(0) || "C"
-                            }`
+                          : `https://placehold.co/40x40?text=${cat?.name?.charAt(0) || "C"
+                          }`
                       }
                       alt={cat?.image ? cat?.name : "No image"}
                       className="w-10 h-10 rounded-full object-cover"
@@ -542,11 +536,10 @@ const BlogCategoryList: React.FC = () => {
               <button
                 key={idx}
                 onClick={() => handlePageChange(page)}
-                className={`px-3 py-1 rounded ${
-                  pagination.page === page
-                    ? "bg-indigo-500 text-white"
-                    : "bg-gray-100 dark:bg-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700"
-                }`}
+                className={`px-3 py-1 rounded ${pagination.page === page
+                  ? "bg-indigo-500 text-white"
+                  : "bg-gray-100 dark:bg-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700"
+                  }`}
               >
                 {page}
               </button>

@@ -90,7 +90,11 @@ const StoryList: React.FC = () => {
                                                     <span className="text-[8px] text-gray-400 uppercase">Video</span>
                                                 </div>
                                             ) : (
-                                                <img src={story.mediaUrl} className="w-full h-full object-cover" alt="" />
+                                                <img
+                                                    src={`${(import.meta.env.VITE_IMAGE_URL || "").replace(/\/$/, "")}${story.mediaUrl.startsWith("/") ? story.mediaUrl : `/${story.mediaUrl}`}`}
+                                                    className="w-full h-full object-cover"
+                                                    alt=""
+                                                />
                                             )}
                                         </div>
                                     </td>

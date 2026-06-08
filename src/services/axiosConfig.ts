@@ -25,14 +25,6 @@ const axiosPublic: AxiosInstance = axios.create({
 // Request interceptor
 axiosInstance.interceptors.request.use(
   (config: import('axios').InternalAxiosRequestConfig): import('axios').InternalAxiosRequestConfig => {
-    // Add cache-busting to GET requests
-    if (config.method === 'get') {
-      config.params = {
-        ...config.params,
-        _t: Date.now(),
-      };
-    }
-
     // Remove default application/json header for FormData to allow Axios to set boundary
     if (config.data instanceof FormData) {
       delete config.headers['Content-Type'];
@@ -59,14 +51,6 @@ axiosInstance.interceptors.request.use(
 // Public instance: keep same GET cache-busting and FormData handling but do NOT add auth headers
 axiosPublic.interceptors.request.use(
   (config: import('axios').InternalAxiosRequestConfig): import('axios').InternalAxiosRequestConfig => {
-    // Always add cache-busting for GET requests
-    if (config.method === 'get') {
-      config.params = {
-        ...config.params,
-        _t: Date.now(),
-      };
-    }
-
     if (config.data instanceof FormData) {
       delete config.headers['Content-Type'];
     }

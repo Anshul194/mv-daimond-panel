@@ -1,5 +1,4 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import axios from 'axios';
 import axiosInstance, { axiosPublic } from '../../services/axiosConfig';
 
 interface BrandState {
@@ -138,14 +137,12 @@ export const updateBrand = createAsyncThunk(
             title,
             description,
             logo, // File object (optional)
-            token,
         }: {
             id: string;
             name: string;
             title: string;
             description: string;
             logo?: File;
-            token: string;
         },
         { rejectWithValue }
     ) => {
@@ -163,7 +160,7 @@ export const updateBrand = createAsyncThunk(
                 formData,
                 {
                     headers: {
-                                     'Content-Type': 'multipart/form-data',
+                        'Content-Type': 'multipart/form-data',
 
                     },
                 }
@@ -181,11 +178,11 @@ export const updateBrand = createAsyncThunk(
 
 export const deleteBrand = createAsyncThunk(
     'brand/deleteBrand',
-    async ({ id, token }: { id: string; token: string }, { rejectWithValue }) => {
+    async ({ id }: { id: string }, { rejectWithValue }) => {
         try {
             await axiosInstance.delete(`${API_BASE_URL}/api/brands/${id}`, {
                 headers: {
-             'Content-Type': 'application/json',
+                    'Content-Type': 'application/json',
                 },
             });
             console.log(`Brand with ID ${id} deleted successfully.`);
@@ -200,12 +197,12 @@ export const deleteBrand = createAsyncThunk(
 export const fetchBrandById = createAsyncThunk(
     'brand/fetchBrandById',
     async (
-        { id, token }: { id: string; token: string },
+        { id }: { id: string },
         { rejectWithValue }
     ) => {
         try {
-                        const response = await axiosPublic.get(`${API_BASE_URL}/api/brands/${id}`);
-                        return response.data;
+            const response = await axiosPublic.get(`${API_BASE_URL}/api/brands/${id}`);
+            return response.data;
         } catch (error: any) {
             return rejectWithValue(error.response?.data || error.message);
         }

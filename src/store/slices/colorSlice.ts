@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
 import axiosInstance, { axiosPublic } from '../../services/axiosConfig';
 
 interface Color {
@@ -102,7 +101,7 @@ export const fetchColorCodes = createAsyncThunk<
         console.log('API Total Documents:', data.body.totalDocuments || data.body.total);
         console.log('API Total Pages:', data.body);
         console.log('API Pagination:', data.body.currentPage || data.body);
-        
+
         return {
             colors: apiData.results || apiData || [],
             pagination: {
@@ -146,13 +145,13 @@ export const createColorCode = createAsyncThunk<
 
 export const updateColorCode = createAsyncThunk<
     Color,
-    { id: string; name: string; colorCode: string ,status?: string},
+    { id: string; name: string; colorCode: string, status?: string },
     { rejectValue: string }
->('color/updateColorCode', async ({ id, name, colorCode ,status}, { rejectWithValue }) => {
+>('color/updateColorCode', async ({ id, name, colorCode, status }, { rejectWithValue }) => {
     try {
-        const response = await axiosPublic.put(
+        const response = await axiosInstance.put(
             `${API_BASE_URL}/api/colorcode/${id}`,
-            { name, colorCode ,status },
+            { name, colorCode, status },
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -185,7 +184,7 @@ export const deleteColorCode = createAsyncThunk<
     { rejectValue: string }
 >('color/deleteColorCode', async (colorId, { rejectWithValue }) => {
     try {
-        await axiosPublic.delete(`${API_BASE_URL}/api/colorcode/${colorId}`);
+        await axiosInstance.delete(`${API_BASE_URL}/api/colorcode/${colorId}`);
         return colorId;
     } catch (error: any) {
         return rejectWithValue(error.response?.data?.message || error.message);

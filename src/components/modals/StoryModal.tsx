@@ -54,8 +54,9 @@ const StoryModal: React.FC<StoryModalProps> = ({ isOpen, onClose, onConfirm, sto
                     setMediaPreview(reader.result as string);
                 };
                 reader.readAsDataURL(file);
-            } else {
-                setMediaPreview(""); // Video preview is complex, just show file name
+            } else if (formData.mediaType === 'video') {
+                const url = URL.createObjectURL(file);
+                setMediaPreview(url);
             }
         }
     };
@@ -101,7 +102,20 @@ const StoryModal: React.FC<StoryModalProps> = ({ isOpen, onClose, onConfirm, sto
                             <div className="flex flex-col gap-2">
                                 {formData.mediaType === 'image' && mediaPreview && (
                                     <div className="w-full h-40 rounded bg-gray-100 overflow-hidden mb-2">
-                                        <img src={mediaPreview} className="w-full h-full object-cover" alt="preview" />
+                                        <img
+                                            src={mediaPreview.startsWith("data:") ? mediaPreview : `${(import.meta.env.VITE_IMAGE_URL || "").replace(/\/$/, "")}${mediaPreview.startsWith("/") ? mediaPreview : `/${mediaPreview}`}`}
+                                            className="w-full h-full object-cover"
+                                            alt="preview"
+                                        />
+                                    </div>
+                                )}
+                                {formData.mediaType === 'video' && mediaPreview && (
+                                    <div className="w-full h-40 rounded bg-gray-100 overflow-hidden mb-2">
+                                        <video
+                                            src={mediaPreview.startsWith("blob:") ? mediaPreview : `${(import.meta.env.VITE_IMAGE_URL || "").replace(/\/$/, "")}${mediaPreview.startsWith("/") ? mediaPreview : `/${mediaPreview}`}`}
+                                            className="w-full h-full object-cover"
+                                            controls
+                                        />
                                     </div>
                                 )}
                                 <div className="relative">

@@ -4,11 +4,8 @@ import { useDispatch, useSelector } from "react-redux";
 import toast, { Toaster } from "react-hot-toast";
 import PageMeta from "../../components/common/PageMeta";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
-import {
-  createBlogCategory,
-  fetchBlogCategories,
-} from "../../store/slices/blogCategorySlice";
-import { createBlog, updateBlog } from "../../store/slices/blog";
+import { fetchBlogCategories } from "../../store/slices/blogCategorySlice";
+import { updateBlog } from "../../store/slices/blog";
 import CustomEditor from "../../components/CustomEditor";
 import axiosInstance, { axiosPublic } from "../../services/axiosConfig";
 import { useParams, useNavigate } from "react-router-dom";
@@ -22,14 +19,14 @@ export default function EditBlog() {
     subCategory: "",
     date: "",
     content: "",
-    thumbnailImage: null as File | null,
-    coverImage: null as File | null,
+    thumbnailImage: null as File | string | null,
+    coverImage: null as File | string | null,
   });
 
-  const dispatch = useDispatch();
-  const loading = useSelector((state: RootState) => state.blog.loading);
-  const { categories } = useSelector((state) => state.blogCategory);
-  const [subCategory, setSubCategory] = useState([]);
+  const dispatch = useDispatch() as any;
+  const loading = useSelector((state: any) => state.blog.loading);
+  const { categories } = useSelector((state: any) => state.blogCategory);
+  const [subCategory, setSubCategory] = useState<any[]>([]);
   const params = useParams();
   const blogId = params.id;
 
@@ -78,13 +75,6 @@ export default function EditBlog() {
       });
       return;
     }
-    if (!blog.subCategory || blog.subCategory === "") {
-      toast.error("Blog sub-category is required.", {
-        duration: 8000,
-        position: "top-right",
-      });
-      return;
-    }
     if (!blog.thumbnailImage && !blog.coverImage) {
       toast.error("At least one image is required.", {
         duration: 8000,
@@ -106,7 +96,9 @@ export default function EditBlog() {
 
     formData.append("description", blog.description);
     formData.append("BlogCategory", blog.blogCategory);
-    formData.append("BlogSubCategory", blog.subCategory);
+    if (blog.subCategory) {
+      formData.append("BlogSubCategory", blog.subCategory);
+    }
     if (blog.thumbnailImage) {
       formData.append("thumbnailImage", blog.thumbnailImage);
     }
@@ -117,7 +109,7 @@ export default function EditBlog() {
     formData.append("date", new Date().toISOString());
     try {
       await dispatch(
-        updateBlog({ id: blogId, blogData: formData }) as any
+        updateBlog({ id: blogId!, blogData: formData }) as any
       ).unwrap();
       toast.success("Blog updated successfully! 🎉", {
         duration: 8000,
@@ -176,17 +168,22 @@ export default function EditBlog() {
 
   useEffect(() => {
     const getData = async () => {
+      if (!blog.blogCategory) {
+        setSubCategory([]);
+        return;
+      }
       try {
         const response = await axiosPublic.get(
-          `/api/category/subcategory?categoryId=${blog.blogCategory}`
+          `/api/blog-subcategory/by-category/${blog.blogCategory}`
         );
-        setSubCategory(response.data?.body?.data || response.data?.data || response.data || []);
+        setSubCategory(
+          response.data?.body?.data ||
+          response.data?.data ||
+          response.data ||
+          []
+        );
       } catch (error) {
         console.log("Error fetching categories:", error);
-        toast.error("Failed to fetch categories.", {
-          duration: 8000,
-          position: "top-right",
-        });
       }
     };
     getData();
@@ -273,7 +270,6 @@ export default function EditBlog() {
                   });
                 }}
                 className="w-full rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-                placeholder="Enter category name"
                 required
               >
                 <option value="">Select a category</option>
@@ -289,7 +285,7 @@ export default function EditBlog() {
 
             <div>
               <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Sub Category <span className="text-red-500">*</span>
+                Sub Category
               </label>
               <select
                 name="subCategory"
@@ -301,8 +297,6 @@ export default function EditBlog() {
                   });
                 }}
                 className="w-full rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-                placeholder="Enter category name"
-                required
               >
                 <option value="">Select a Sub Category</option>
                 {subCategory &&

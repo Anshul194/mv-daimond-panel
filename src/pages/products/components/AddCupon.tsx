@@ -5,27 +5,41 @@ import { useNavigate } from "react-router-dom";
 import { createCoupon } from "../../../store/slices/Coupon";
 import toast, { Toaster } from "react-hot-toast";
 
-const UpdateCouponPage = () => {
-  const [formData, setFormData] = useState({
+interface CouponFormData {
+  code: string;
+  type: string;
+  value: number | string;
+  minOrderAmount: number | string;
+  maxDiscount: number | string;
+  usageLimit: number | string;
+  validFrom: string;
+  validTo: string;
+  isActive: boolean;
+}
+
+const AddCouponPage = () => {
+  const [formData, setFormData] = useState<CouponFormData>({
     code: "",
     type: "flat",
     value: 0,
     minOrderAmount: 0,
-    maxDiscount: null,
-    usageLimit: 0,
+    maxDiscount: 0,
+    usageLimit: 1,
     validFrom: "",
     validTo: "",
     isActive: true,
   });
 
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<any>({});
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch() as any;
   const navigate = useNavigate();
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    // @ts-ignore
+    const checked = e.target.checked;
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
@@ -33,7 +47,7 @@ const UpdateCouponPage = () => {
 
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors((prev) => ({
+      setErrors((prev: any) => ({
         ...prev,
         [name]: "",
       }));
@@ -41,7 +55,7 @@ const UpdateCouponPage = () => {
   };
 
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors: any = {};
 
     if (!formData.code.trim()) {
       newErrors.code = "Coupon code is required";
@@ -49,27 +63,27 @@ const UpdateCouponPage = () => {
 
     if (!formData.value) {
       newErrors.value = "Value is required";
-    } else if (formData.value <= 0) {
+    } else if (Number(formData.value) <= 0) {
       newErrors.value = "Value must be greater than 0";
-    } else if (formData.type === "percentage" && formData.value > 100) {
+    } else if (formData.type === "percentage" && Number(formData.value) > 100) {
       newErrors.value = "Percentage cannot exceed 100%";
     }
 
-    if (formData.minOrderAmount && formData.minOrderAmount < 0) {
+    if (formData.minOrderAmount && Number(formData.minOrderAmount) < 0) {
       newErrors.minOrderAmount = "Minimum order amount cannot be negative";
     }
 
     if (
       formData.type === "percentage" &&
       formData.maxDiscount &&
-      formData.maxDiscount <= 0
+      Number(formData.maxDiscount) <= 0
     ) {
       newErrors.maxDiscount = "Maximum discount must be greater than 0";
     }
 
     if (!formData.usageLimit) {
       newErrors.usageLimit = "Usage limit is required";
-    } else if (formData.usageLimit <= 0) {
+    } else if (Number(formData.usageLimit) <= 0) {
       newErrors.usageLimit = "Usage limit must be greater than 0";
     }
 
@@ -101,8 +115,19 @@ const UpdateCouponPage = () => {
     setIsLoading(true);
 
     try {
+      // Prepare data for backend (ensure numbers are numbers)
+      const submissionData = {
+        ...formData,
+        value: Number(formData.value),
+        minOrderAmount: Number(formData.minOrderAmount),
+        maxDiscount: formData.maxDiscount ? Number(formData.maxDiscount) : 0,
+        usageLimit: Number(formData.usageLimit),
+        validFrom: new Date(formData.validFrom).toISOString(),
+        validTo: new Date(formData.validTo).toISOString(),
+      };
+
       // Create coupon
-      await dispatch(createCoupon(formData)).unwrap();
+      await dispatch(createCoupon(submissionData)).unwrap();
 
       // Show success message
       setShowSuccess(true);
@@ -157,7 +182,7 @@ const UpdateCouponPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <Toaster 
+      <Toaster
         position="top-right"
         containerStyle={{
           top: 80,
@@ -237,11 +262,10 @@ const UpdateCouponPage = () => {
                     name="code"
                     value={formData.code}
                     onChange={handleInputChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                      errors.code
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-300"
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.code
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-300"
+                      }`}
                     placeholder="Enter coupon code"
                   />
                   {errors.code && (
@@ -298,11 +322,10 @@ const UpdateCouponPage = () => {
                       min="0"
                       max={formData.type === "percentage" ? "100" : undefined}
                       step={formData.type === "percentage" ? "0.01" : "1"}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                        errors.value
-                          ? "border-red-300 bg-red-50"
-                          : "border-gray-300"
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.value
+                        ? "border-red-300 bg-red-50"
+                        : "border-gray-300"
+                        }`}
                       placeholder={formData.type === "flat" ? "0" : "0"}
                     />
                     {formData.type === "percentage" && (
@@ -334,11 +357,10 @@ const UpdateCouponPage = () => {
                     onChange={handleInputChange}
                     min="0"
                     step="1"
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                      errors.minOrderAmount
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-300"
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.minOrderAmount
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-300"
+                      }`}
                     placeholder="0"
                   />
                   {errors.minOrderAmount && (
@@ -365,11 +387,10 @@ const UpdateCouponPage = () => {
                       onChange={handleInputChange}
                       min="0"
                       step="1"
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                        errors.maxDiscount
-                          ? "border-red-300 bg-red-50"
-                          : "border-gray-300"
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.maxDiscount
+                        ? "border-red-300 bg-red-50"
+                        : "border-gray-300"
+                        }`}
                       placeholder="Optional"
                     />
                     {errors.maxDiscount && (
@@ -404,11 +425,10 @@ const UpdateCouponPage = () => {
                     onChange={handleInputChange}
                     min="1"
                     step="1"
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                      errors.usageLimit
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-300"
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.usageLimit
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-300"
+                      }`}
                     placeholder="1"
                   />
                   {errors.usageLimit && (
@@ -460,11 +480,10 @@ const UpdateCouponPage = () => {
                     name="validFrom"
                     value={formData.validFrom}
                     onChange={handleInputChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                      errors.validFrom
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-300"
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.validFrom
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-300"
+                      }`}
                   />
                   {errors.validFrom && (
                     <p className="mt-2 text-sm text-red-600 flex items-center">
@@ -487,11 +506,10 @@ const UpdateCouponPage = () => {
                     name="validTo"
                     value={formData.validTo}
                     onChange={handleInputChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                      errors.validTo
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-300"
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.validTo
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-300"
+                      }`}
                   />
                   {errors.validTo && (
                     <p className="mt-2 text-sm text-red-600 flex items-center">
@@ -549,4 +567,4 @@ const UpdateCouponPage = () => {
   );
 };
 
-export default UpdateCouponPage;
+export default AddCouponPage;

@@ -87,7 +87,7 @@ const CollectionModal: React.FC<CollectionModalProps> = ({
               <X className="w-6 h-6" />
             </button>
           </div>
-          
+
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Collection Name *</label>
@@ -101,13 +101,17 @@ const CollectionModal: React.FC<CollectionModalProps> = ({
                 placeholder="e.g. READY-TO-SHIP"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Display Image *</label>
               <div className="space-y-3">
                 {preview && (
                   <div className="relative group">
-                    <img src={preview} alt="Preview" className="w-full h-40 object-cover rounded-lg border border-gray-200 dark:border-gray-600" />
+                    <img
+                      src={preview?.startsWith("blob:") ? preview : `${(import.meta.env.VITE_IMAGE_URL || "").replace(/\/$/, "")}${preview?.startsWith("/") ? preview : `/${preview}`}`}
+                      alt="Preview"
+                      className="w-full h-40 object-cover rounded-lg border border-gray-200 dark:border-gray-600"
+                    />
                   </div>
                 )}
                 <div className="relative">
@@ -119,8 +123,8 @@ const CollectionModal: React.FC<CollectionModalProps> = ({
                     accept="image/*"
                     required={!collection}
                   />
-                  <label 
-                    htmlFor="collection-image" 
+                  <label
+                    htmlFor="collection-image"
                     className="flex items-center justify-center gap-2 w-full p-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     <Upload className="w-5 h-5 text-gray-400" />
@@ -158,15 +162,15 @@ const CollectionModal: React.FC<CollectionModalProps> = ({
             </div>
 
             <div className="flex justify-end gap-3 pt-4">
-              <button 
-                type="button" 
-                onClick={onClose} 
+              <button
+                type="button"
+                onClick={onClose}
                 className="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 Cancel
               </button>
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm"
               >
                 {collection ? "Update Collection" : "Save Collection"}

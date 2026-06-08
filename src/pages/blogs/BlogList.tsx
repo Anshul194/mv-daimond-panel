@@ -1,18 +1,12 @@
 import React, { useEffect, useState } from "react";
 import {
-  fetchCourseCategories,
   setSearchQuery,
   setFilters,
   resetFilters,
-  deleteCourseCategory,
-  fetchCourseCategoryById,
-  updateCourseCategory,
 } from "../../store/slices/courseCategorySlice";
 import {
   Pencil,
   Trash2,
-  CheckCircle,
-  XCircle,
   Search,
   Filter,
   ChevronLeft,
@@ -24,7 +18,6 @@ import {
 
 import toast from "react-hot-toast";
 import {
-  deleteBlogCategory,
   fetchBlogCategories,
 } from "../../store/slices/blogCategorySlice";
 import { useDispatch, useSelector } from "react-redux";
@@ -72,7 +65,7 @@ const DeleteModal: React.FC<{
                 <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Delete Category
+                Delete Blog
               </h3>
             </div>
             <button
@@ -86,21 +79,12 @@ const DeleteModal: React.FC<{
           {/* Content */}
           <div className="p-6">
             <p className="text-gray-600 dark:text-gray-300 mb-4">
-              Are you sure you want to delete the category{" "}
+              Are you sure you want to delete the blog{" "}
               <strong className="text-gray-900 dark:text-white">
-                "{category.name}"
+                "{category.name || (category as any).title}"
               </strong>
               ?
             </p>
-            {category.subCategoryCount > 0 && (
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-3 mb-4">
-                <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                  <strong>Warning:</strong> This category has{" "}
-                  {category.subCategoryCount} subcategory(ies). Deleting this
-                  category may affect related subcategories.
-                </p>
-              </div>
-            )}
             <p className="text-sm text-gray-500 dark:text-gray-400">
               This action cannot be undone.
             </p>
@@ -135,22 +119,22 @@ const DeleteModal: React.FC<{
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 
 const BlogList: React.FC = () => {
   const dispatch = useDispatch();
   const {
-    blogs: categories,
+    blogs: blogs,
     loading,
     error,
     pagination,
     searchQuery,
     filters,
-  } = useSelector((state) => state.blog);
+  } = useSelector((state: any) => state.blog);
 
-  console.log("Blog Category List Rendered : ", categories);
+  console.log("Blog List Rendered : ", blogs);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(
     null
@@ -160,63 +144,6 @@ const BlogList: React.FC = () => {
   const [searchInput, setSearchInput] = useState(searchQuery);
   const [localFilters, setLocalFilters] = useState<Record<string, any>>({});
 
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [categoryToEdit, setCategoryToEdit] = useState<Category | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-
-  const openEditModal = (category: Category) => {
-    console.log("Opening edit modal for category:", category);
-    setCategoryToEdit(category);
-    setEditModalOpen(true);
-  };
-
-  const closeEditModal = () => {
-    setCategoryToEdit(null);
-    setEditModalOpen(false);
-    setIsEditing(false);
-  };
-
-  // Fixed handleEditSubmit function
-  const handleEditSubmit = async (categoryId: string, formData: FormData) => {
-    setIsEditing(true);
-    try {
-      console.log("Submitting edit for category:", categoryId, formData);
-      const update = await dispatch(
-        updateCourseCategory({ categoryId, formData })
-      ).unwrap();
-
-      console.log("Category updated successfully:", update);
-      toast.success("Category updated successfully", {
-        position: "top-right",
-        duration: 3000,
-        style: {
-          background: "#10B981",
-          color: "#fff",
-        },
-      });
-
-      // Refresh the categories list before closing modal
-      await refreshCategoriesList();
-
-      // Close modal and reset state
-      closeEditModal();
-    } catch (error: any) {
-      console.log("Failed to update category:", error?.message);
-      const errorMessage =
-        error?.message || error?.data?.message || "Failed to update category";
-      console.error("Error updating category:", errorMessage);
-      toast.error(errorMessage, {
-        position: "top-right",
-        duration: 4000,
-        style: {
-          background: "#EF4444",
-          color: "#fff",
-        },
-      });
-    } finally {
-      setIsEditing(false);
-    }
-  };
 
   // Helper function to refresh categories list
   const refreshCategoriesList = async () => {
@@ -225,12 +152,12 @@ const BlogList: React.FC = () => {
     };
 
     try {
-      await dispatch(
+      await (dispatch as any)(
         fetchBlogs({
           page: pagination.page,
           limit: pagination.limit,
           filters: activeFilters,
-          searchFields: searchQuery ? { name: searchQuery } : {},
+          searchFields: searchQuery ? { title: searchQuery } : {},
           sort: { createdAt: "desc" },
         })
       ).unwrap();
@@ -255,12 +182,12 @@ const BlogList: React.FC = () => {
       ...(localFilters.status ? { status: localFilters.status } : {}),
     };
 
-    dispatch(
+    (dispatch as any)(
       fetchBlogs({
         page: pagination.page,
         limit: pagination.limit,
         filters: activeFilters,
-        searchFields: searchQuery ? { name: searchQuery } : {},
+        searchFields: searchQuery ? { title: searchQuery } : {},
         sort: { createdAt: "desc" },
       })
     );
@@ -268,14 +195,14 @@ const BlogList: React.FC = () => {
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= pagination.totalPages) {
-      dispatch(
+      (dispatch as any)(
         fetchBlogs({
           page: newPage,
           limit: pagination.limit,
           filters: {
             ...(localFilters.status ? { status: localFilters.status } : {}),
           },
-          searchFields: searchQuery ? { name: searchQuery } : {},
+          searchFields: searchQuery ? { title: searchQuery } : {},
           sort: { createdAt: "desc" },
         })
       );
@@ -283,14 +210,14 @@ const BlogList: React.FC = () => {
   };
 
   const handleLimitChange = (newLimit: number) => {
-    dispatch(
+    (dispatch as any)(
       fetchBlogs({
         page: 1,
         limit: newLimit,
         filters: {
           ...(localFilters.status ? { status: localFilters.status } : {}),
         },
-        searchFields: searchQuery ? { name: searchQuery } : {},
+        searchFields: searchQuery ? { title: searchQuery } : {},
         sort: { createdAt: "desc" },
       })
     );
@@ -325,10 +252,10 @@ const BlogList: React.FC = () => {
       setIsDeleting(true);
       try {
         // Dispatch the delete action
-        await dispatch(deleteBlog({ id: categoryToDelete?._id })).unwrap();
+        await (dispatch as any)(deleteBlog({ id: categoryToDelete?._id })).unwrap();
 
         toast.success(
-          `Category "${categoryToDelete.name}" deleted successfully`,
+          `Blog "${categoryToDelete.name || (categoryToDelete as any).title}" deleted successfully`,
           {
             position: "top-right",
             duration: 3000,
@@ -348,7 +275,7 @@ const BlogList: React.FC = () => {
         console.error("Failed to delete category:", error);
 
         const errorMessage =
-          error?.message || error?.data?.message || "Failed to delete category";
+          error?.message || error?.data?.message || "Failed to delete blog";
         toast.error(errorMessage, {
           position: "top-right",
           duration: 4000,
@@ -485,9 +412,9 @@ const BlogList: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-100 dark:bg-gray-900 dark:divide-gray-800">
-              {categories?.map((cat, idx) => (
+              {blogs?.map((blog: any, idx: number) => (
                 <tr
-                  key={cat?._id}
+                  key={blog?._id}
                   className="hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
@@ -496,46 +423,46 @@ const BlogList: React.FC = () => {
                   <td className="px-6 py-4">
                     {(() => {
                       const baseRaw = import.meta.env.VITE_IMAGE_URL || "";
-                      const imgPath = cat?.coverImage || cat?.image || cat?.thumbnailImage || "";
+                      const imgPath = blog?.coverImage || blog?.image || blog?.thumbnailImage || "";
                       const base = baseRaw.replace(/\/$/, "");
                       const path = imgPath.startsWith("/") ? imgPath : `/${imgPath}`;
-                      const src = imgPath ? `${base}${path}` : `https://placehold.co/40x40?text=${cat?.name?.charAt(0) || "C"}`;
+                      const src = imgPath ? `${base}${path}` : `https://placehold.co/40x40?text=${blog?.title?.charAt(0) || "C"}`;
                       // debug log for missing images
                       // eslint-disable-next-line no-console
                       console.log("BlogList image src:", { src, baseRaw, imgPath });
                       return (
                         <img
                           src={src}
-                          alt={cat?.title || cat?.name || "No image"}
+                          alt={blog?.title || blog?.name || "No image"}
                           className="w-10 h-10 rounded-full object-cover"
                         />
                       );
                     })()}
                   </td>
                   <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
-                    {cat?.title}
+                    {blog?.title}
                   </td>
                   <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
-                    {cat?.BlogCategory?.name}
+                    {blog?.BlogCategory?.name}
                   </td>
                   {/* <td className="px-6 py-4 text-sm">
-                    {cat?.status === "active" ? (
+                    {blog?.status === "active" ? (
                       <CheckCircle className="text-green-500 h-5 w-5" />
                     ) : (
                       <XCircle className="text-red-500 h-5 w-5" />
                     )}
                   </td> */}
                   <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                    {new Date(cat?.createdAt).toLocaleDateString()}
+                    {new Date(blog?.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 text-right space-x-2">
-                    <Link to={`/blog/edit/${cat?._id}`}>
+                    <Link to={`/blog/edit/${blog?._id}`}>
                       <button className="text-blue-500 hover:text-blue-700 transition-colors">
                         <Pencil className="h-5 w-5" />
                       </button>
                     </Link>
                     <button
-                      onClick={() => openDeleteModal(cat)}
+                      onClick={() => openDeleteModal(blog as any)}
                       className="text-red-500 hover:text-red-700 transition-colors"
                     >
                       <Trash2 className="h-5 w-5" />
@@ -561,11 +488,10 @@ const BlogList: React.FC = () => {
               <button
                 key={idx}
                 onClick={() => handlePageChange(page)}
-                className={`px-3 py-1 rounded ${
-                  pagination.page === page
-                    ? "bg-indigo-500 text-white"
-                    : "bg-gray-100 dark:bg-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700"
-                }`}
+                className={`px-3 py-1 rounded ${pagination.page === page
+                  ? "bg-indigo-500 text-white"
+                  : "bg-gray-100 dark:bg-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700"
+                  }`}
               >
                 {page}
               </button>

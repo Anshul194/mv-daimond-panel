@@ -100,20 +100,20 @@ export const fetchCoupons = createAsyncThunk<
     } = params || {};
 
     const queryParams = new URLSearchParams();
-    // queryParams.append("page", page.toString());
-    // queryParams.append("limit", limit.toString());
+    queryParams.append("page", page.toString());
+    queryParams.append("limit", limit.toString());
 
-    // if (Object.keys(filters).length > 0) {
-    //   queryParams.append("filters", JSON.stringify(filters));
-    // }
+    if (Object.keys(filters).length > 0) {
+      queryParams.append("filters", JSON.stringify(filters));
+    }
 
-    // if (Object.keys(searchFields).length > 0) {
-    //   queryParams.append("searchFields", JSON.stringify(searchFields));
-    // }
+    if (Object.keys(searchFields).length > 0) {
+      queryParams.append("searchFields", JSON.stringify(searchFields));
+    }
 
-    // if (Object.keys(sort).length > 0) {
-    //   queryParams.append("sort", JSON.stringify(sort));
-    // }
+    if (Object.keys(sort).length > 0) {
+      queryParams.append("sort", JSON.stringify(sort));
+    }
 
     const response = await axiosInstance.get(
       `${API_BASE_URL}/api/coupon?${queryParams.toString()}`
@@ -123,19 +123,17 @@ export const fetchCoupons = createAsyncThunk<
     return {
       coupons: data?.data?.result || [],
       pagination: {
-        total: data?.data?.total || 0,
-        page: data?.data?.page || 1,
-        limit: data?.data?.limit || limit,
-        totalPages:
-          data?.data?.totalPages ||
-          Math.ceil((data?.data?.coupons?.total || 0) / limit),
+        total: data?.data?.totalDocuments || 0,
+        page: data?.data?.currentPage || 1,
+        limit: limit,
+        totalPages: data?.data?.totalPages || 1,
       },
     };
   } catch (error: any) {
     return rejectWithValue(
       error.response?.data?.message ||
-        error.message ||
-        "Failed to fetch coupons"
+      error.message ||
+      "Failed to fetch coupons"
     );
   }
 });
@@ -160,13 +158,13 @@ export const deleteCoupon = createAsyncThunk<
 
 export const updateCoupon = createAsyncThunk<
   any,
-  { couponId: string; couponData: Partial<Coupon> },
+  { couponId: string; formData: Partial<Coupon> },
   { rejectValue: string }
->("coupon/update", async ({ couponId, couponData }, { rejectWithValue }) => {
+>("coupon/update", async ({ couponId, formData }, { rejectWithValue }) => {
   try {
     const response = await axiosInstance.put(
       `${API_BASE_URL}/api/coupon/${couponId}`,
-      couponData
+      formData
     );
     return response.data;
   } catch (err: any) {
@@ -183,7 +181,7 @@ export const getCouponById = createAsyncThunk<
 >("coupon/getById", async (couponId, { rejectWithValue }) => {
   try {
     const response = await axiosInstance.get(`${API_BASE_URL}/api/coupon/${couponId}`);
-        return response.data.coupon;
+    return response.data.coupon;
   } catch (err: any) {
     return rejectWithValue(
       err.response?.data?.message || "Failed to fetch coupon"

@@ -97,13 +97,16 @@ export const fetchBlogCategories = createAsyncThunk<
       limit = 10,
       filters = {},
       searchFields = {},
-      sort = { createdAt: "desc" },
     } = params || {};
 
     const queryParams = new URLSearchParams();
+    queryParams.append("page", page.toString());
+    queryParams.append("limit", limit.toString());
+    if (searchFields.name) queryParams.append("search", searchFields.name);
+    if (filters.status) queryParams.append("status", filters.status.toString());
 
     const res = await axiosPublic.get(
-      `${API_BASE_URL}/api/category?${queryParams.toString()}`
+      `${API_BASE_URL}/api/blog-category?${queryParams.toString()}`
     );
     const data = res.data?.body?.data || res.data?.data || res.data?.body || res.data;
     // Normalize different backend shapes:
@@ -139,7 +142,7 @@ export const deleteBlogCategory = createAsyncThunk<
   any,
   { id: string },
   { rejectValue: string }
->("blogCategory/delete", async (id, { rejectWithValue }) => {
+>("blogCategory/delete", async ({ id }, { rejectWithValue }) => {
   try {
     const res = await axiosInstance.delete(`${API_BASE_URL}/api/blog-category/${id}`);
     return res.data;

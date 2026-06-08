@@ -22,8 +22,8 @@ export default function AddBlog() {
     subCategory: "",
     date: "",
     content: "",
-    thumbnailImage: null as File | null,
-    coverImage: null as File | null,
+    thumbnailImage: null as File | string | null,
+    coverImage: null as File | string | null,
   });
 
   const dispatch = useDispatch();
@@ -76,13 +76,6 @@ export default function AddBlog() {
       });
       return;
     }
-    if (!blog.subCategory || blog.subCategory === "") {
-      toast.error("Blog sub-category is required.", {
-        duration: 8000,
-        position: "top-right",
-      });
-      return;
-    }
     if (!blog.thumbnailImage && !blog.coverImage) {
       toast.error("At least one image is required.", {
         duration: 8000,
@@ -104,7 +97,9 @@ export default function AddBlog() {
 
     formData.append("description", blog.description);
     formData.append("BlogCategory", blog.blogCategory);
-    formData.append("BlogSubCategory", blog.subCategory);
+    if (blog.subCategory) {
+      formData.append("BlogSubCategory", blog.subCategory);
+    }
     if (blog.thumbnailImage) {
       formData.append("thumbnailImage", blog.thumbnailImage);
     }
@@ -146,17 +141,22 @@ export default function AddBlog() {
 
   useEffect(() => {
     const getData = async () => {
+      if (!blog.blogCategory) {
+        setSubCategory([]);
+        return;
+      }
       try {
         const response = await axiosPublic.get(
-          `/api/category/subcategory?categoryId=${blog.blogCategory}`
+          `/api/blog-subcategory/by-category/${blog.blogCategory}`
         );
-        setSubCategory(response.data?.body?.data || response.data?.data || response.data || []);
+        setSubCategory(
+          response.data?.body?.data ||
+          response.data?.data ||
+          response.data ||
+          []
+        );
       } catch (error) {
         console.error("Error fetching categories:", error);
-        toast.error("Failed to fetch categories.", {
-          duration: 8000,
-          position: "top-right",
-        });
       }
     };
     getData();
@@ -245,7 +245,7 @@ export default function AddBlog() {
 
             <div>
               <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Sub Category <span className="text-red-500">*</span>
+                Sub Category
               </label>
               <select
                 name="subCategory"
@@ -257,8 +257,6 @@ export default function AddBlog() {
                   });
                 }}
                 className="w-full rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-                placeholder="Enter category name"
-                required
               >
                 <option value="">Select a Sub Category</option>
                 {subCategory &&

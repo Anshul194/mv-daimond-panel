@@ -6,6 +6,7 @@ import PageMeta from "../components/common/PageMeta";
 import toast from "react-hot-toast";
 import {
   fetchSubCategories,
+  fetchCourseCategories,
   setSearchQuery,
   setFilters,
   resetFilters,
@@ -25,14 +26,19 @@ import {
   X,
   AlertTriangle,
   Save,
+  ImageIcon,
 } from "lucide-react";
+
+const imageUrl = import.meta.env.VITE_IMAGE_URL;
 
 interface SubCategory {
   category: any;
   _id: string;
   name: string;
   slug: string;
+  description?: string;
   status: "active" | "inactive";
+  image?: string;
   createdAt: string;
   updatedAt: string;
   __v: number;
@@ -46,21 +52,30 @@ interface SubCategory {
 const EditModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (updatedSubCategory: Partial<SubCategory>) => void;
+  onSubmit: (data: { name: string; status: string; description: string; categoryId: string; image: File | null }) => void;
   subCategory: SubCategory | null;
   isUpdating: boolean;
-}> = ({ isOpen, onClose, onSubmit, subCategory, isUpdating }) => {
+  categories: { _id: string; name: string }[];
+}> = ({ isOpen, onClose, onSubmit, subCategory, isUpdating, categories }) => {
   const [formData, setFormData] = useState({
     name: "",
     status: "active" as "active" | "inactive",
+    description: "",
+    categoryId: "",
+    image: null as File | null,
+    existingImage: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (subCategory) {
       setFormData({
-        name: subCategory.name,
-        status: subCategory.status,
+        name: subCategory.name || "",
+        status: subCategory.status || "active",
+        description: subCategory.description || "",
+        categoryId: subCategory.category?._id || "",
+        image: null,
+        existingImage: subCategory.image || "",
       });
       setErrors({});
     }
@@ -68,13 +83,11 @@ const EditModal: React.FC<{
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-
     if (!formData.name.trim()) {
       newErrors.name = "Name is required";
     } else if (formData.name.trim().length < 2) {
       newErrors.name = "Name must be at least 2 characters";
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -85,6 +98,9 @@ const EditModal: React.FC<{
       onSubmit({
         name: formData.name.trim(),
         status: formData.status,
+        description: formData.description,
+        categoryId: formData.categoryId,
+        image: formData.image,
       });
     }
   };
@@ -96,7 +112,19 @@ const EditModal: React.FC<{
     }
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFormData((prev) => ({ ...prev, image: e.target.files![0] }));
+    }
+  };
+
   if (!isOpen || !subCategory) return null;
+
+  const previewImage = formData.image
+    ? URL.createObjectURL(formData.image)
+    : formData.existingImage
+      ? `${imageUrl}/${formData.existingImage}`
+      : null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -105,7 +133,7 @@ const EditModal: React.FC<{
         onClick={onClose}
       ></div>
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full">
+        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full">
           <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-3">
               <div className="flex-shrink-0 w-10 h-10 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
@@ -126,21 +154,45 @@ const EditModal: React.FC<{
 
           <form onSubmit={handleSubmit} className="p-6">
             <div className="space-y-4">
+              {/* Parent Category */}
               <div>
                 <label
-                  htmlFor="name"
+                  htmlFor="edit-categoryId"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  Parent Category
+                </label>
+                <select
+                  id="edit-categoryId"
+                  value={formData.categoryId}
+                  onChange={(e) => handleInputChange("categoryId", e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                  disabled={isUpdating}
+                >
+                  <option value="">Select Parent Category</option>
+                  {categories.map((cat) => (
+                    <option key={cat._id} value={cat._id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Name */}
+              <div>
+                <label
+                  htmlFor="edit-name"
                   className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                 >
                   Name *
                 </label>
                 <input
                   type="text"
-                  id="name"
+                  id="edit-name"
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 ${
-                    errors.name ? "border-red-500" : "border-gray-300"
-                  }`}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 ${errors.name ? "border-red-500" : "border-gray-300"
+                    }`}
                   placeholder="Enter subcategory name"
                   disabled={isUpdating}
                 />
@@ -151,15 +203,35 @@ const EditModal: React.FC<{
                 )}
               </div>
 
+              {/* Description */}
               <div>
                 <label
-                  htmlFor="status"
+                  htmlFor="edit-description"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  Description
+                </label>
+                <textarea
+                  id="edit-description"
+                  value={formData.description}
+                  onChange={(e) => handleInputChange("description", e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                  placeholder="Enter subcategory description"
+                  rows={3}
+                  disabled={isUpdating}
+                />
+              </div>
+
+              {/* Status */}
+              <div>
+                <label
+                  htmlFor="edit-status"
                   className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                 >
                   Status *
                 </label>
                 <select
-                  id="status"
+                  id="edit-status"
                   value={formData.status}
                   onChange={(e) => handleInputChange("status", e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
@@ -170,10 +242,34 @@ const EditModal: React.FC<{
                 </select>
               </div>
 
-              <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-md">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  <strong>Parent Category:</strong> {subCategory.category?.name}
-                </p>
+              {/* Image */}
+              <div>
+                <label
+                  htmlFor="edit-image"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  Image
+                </label>
+                <input
+                  type="file"
+                  id="edit-image"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                  disabled={isUpdating}
+                />
+                {previewImage && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <img
+                      src={previewImage}
+                      alt="Preview"
+                      className="w-20 h-20 object-cover rounded-md border border-gray-200 dark:border-gray-600"
+                    />
+                    {formData.image && (
+                      <span className="text-xs text-green-600 dark:text-green-400">New image selected</span>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -291,7 +387,7 @@ const DeleteModal: React.FC<{
 
 const SubCategoryList: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { subCategories, loading, error, pagination, searchQuery, filters } =
+  const { subCategories, categories, loading, error, pagination, searchQuery, filters } =
     useAppSelector((state) => state.courseCategory);
 
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -305,6 +401,10 @@ const SubCategoryList: React.FC = () => {
 
   const [searchInput, setSearchInput] = useState(searchQuery);
   const [localFilters, setLocalFilters] = useState<Record<string, any>>({});
+
+  useEffect(() => {
+    dispatch(fetchCourseCategories({}));
+  }, [dispatch]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -393,16 +493,16 @@ const SubCategoryList: React.FC = () => {
     setIsUpdating(false);
   };
 
-  const handleEditSubmit = async (updatedData: Partial<SubCategory>) => {
+  const handleEditSubmit = async (updatedData: { name: string; status: string; description: string; categoryId: string; image: File | null }) => {
     if (subCategoryToEdit) {
       setIsUpdating(true);
       try {
-        console.log("Updating subcategory with data:", subCategoryToEdit);
         const formData = new FormData();
-        if (updatedData.name !== undefined)
-          formData.append("name", updatedData.name);
-        if (updatedData.status !== undefined)
-          formData.append("status", updatedData.status);
+        formData.append("name", updatedData.name);
+        formData.append("status", updatedData.status);
+        if (updatedData.description) formData.append("description", updatedData.description);
+        if (updatedData.categoryId) formData.append("category", updatedData.categoryId);
+        if (updatedData.image instanceof File) formData.append("image", updatedData.image);
         await dispatch(
           updateSubCategory({
             subCategoryId: subCategoryToEdit._id,
@@ -672,11 +772,10 @@ const SubCategoryList: React.FC = () => {
               <button
                 key={idx}
                 onClick={() => handlePageChange(page)}
-                className={`px-3 py-1 rounded ${
-                  pagination.page === page
-                    ? "bg-indigo-500 text-white"
-                    : "bg-gray-100 dark:bg-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700"
-                }`}
+                className={`px-3 py-1 rounded ${pagination.page === page
+                  ? "bg-indigo-500 text-white"
+                  : "bg-gray-100 dark:bg-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700"
+                  }`}
               >
                 {page}
               </button>
@@ -703,6 +802,7 @@ const SubCategoryList: React.FC = () => {
         onSubmit={handleEditSubmit}
         subCategory={subCategoryToEdit}
         isUpdating={isUpdating}
+        categories={categories}
       />
 
       {/* Delete Modal */}

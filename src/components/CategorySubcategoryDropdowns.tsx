@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
-import { fetchCourseCategories,fetchsubCategoriesByCategory } from "../store/slices/courseCategorySlice";
+import { fetchCourseCategories, fetchsubCategoriesByCategory } from "../store/slices/courseCategorySlice";
 
 interface SubCategory {
     _id: string;
@@ -107,23 +107,22 @@ export default function CategorySubcategoryDropdowns({
             {/* Subcategory Dropdown */}
             <div>
                 <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Subcategory <span className="text-red-500">*</span>
+                    Subcategory
                 </label>
                 <select
                     value={selectedSubcategoryId}
                     onChange={handleSubcategoryChange}
                     disabled={disabled || !selectedCategoryId || subCategoriesLoading}
                     className="w-full rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white disabled:bg-gray-100 disabled:cursor-not-allowed dark:disabled:bg-gray-800"
-                    required
                 >
                     <option value="">
-                        {!selectedCategoryId 
-                            ? 'Please select a category first' 
-                            : subCategoriesLoading 
-                            ? 'Loading subCategories...' 
-                            : subCategories.length === 0 
-                            ? 'No subCategories available'
-                            : 'Select a subcategory'
+                        {!selectedCategoryId
+                            ? 'Please select a category first'
+                            : subCategoriesLoading
+                                ? 'Loading subCategories...'
+                                : subCategories.length === 0
+                                    ? 'No subCategories available'
+                                    : 'Select a subcategory'
                         }
                     </option>
                     {Array.isArray(subCategories) && subCategories?.length > 0 && subCategories.map((subcategory) => (

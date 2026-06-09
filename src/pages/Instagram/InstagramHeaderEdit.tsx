@@ -35,7 +35,7 @@ const InstagramHeaderEdit: React.FC = () => {
             await dispatch(updateInstagramHeader(formData)).unwrap();
             toast.success("Instagram header updated successfully");
         } catch (err: any) {
-            toast.error(err || "Failed to update header");
+            toast.error(err?.message || err || "Failed to update header");
         } finally {
             setIsUpdating(false);
         }

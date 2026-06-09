@@ -107,7 +107,6 @@ const InstagramReelModal: React.FC<InstagramReelModalProps> = ({
                             name="image"
                             value={formData.image}
                             onChange={handleChange}
-                            required
                             className="w-full px-4 py-2 border rounded-md dark:bg-gray-900 border-gray-700"
                             placeholder="/images/home-slide-one/one.webp"
                         />
@@ -128,7 +127,6 @@ const InstagramReelModal: React.FC<InstagramReelModalProps> = ({
                             name="reelUrl"
                             value={formData.reelUrl}
                             onChange={handleChange}
-                            required
                             className="w-full px-4 py-2 border rounded-md dark:bg-gray-900 border-gray-700"
                             placeholder="https://www.instagram.com/reel/..."
                         />

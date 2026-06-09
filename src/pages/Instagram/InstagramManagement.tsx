@@ -57,7 +57,7 @@ const InstagramManagement: React.FC = () => {
             }
             handleCloseModal();
         } catch (err: any) {
-            toast.error(err || "An error occurred");
+            toast.error(err?.message || err || "An error occurred");
         } finally {
             setIsProcessing(false);
         }
@@ -72,7 +72,7 @@ const InstagramManagement: React.FC = () => {
             setDeleteConfirmOpen(false);
             setReelToDelete(null);
         } catch (err: any) {
-            toast.error(err || "An error occurred");
+            toast.error(err?.message || err || "An error occurred");
         } finally {
             setIsProcessing(false);
         }
